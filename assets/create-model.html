@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创建模型 - AIGC创作平台</title>
+    <script src="../static/js/common.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            color: #333;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: #f8f9fa;
+            color: #495057;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-decoration: none;
+        }
+        
+        .back-link i {
+            margin-right: 8px;
+        }
+        
+        .create-form {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .create-form h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2196f3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        
+        .image-upload {
+            border: 2px dashed #e9ecef;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .image-upload:hover {
+            border-color: #2196f3;
+            background-color: rgba(33, 150, 243, 0.05);
+        }
+        
+        .image-upload input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .image-upload i {
+            font-size: 2.5rem;
+            color: #adb5bd;
+            margin-bottom: 15px;
+        }
+        
+        .image-upload p {
+            color: #6c757d;
+        }
+        
+        .preview-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .tag-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .remove-tag {
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: #fff;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid #2196f3;
+            color: #2196f3;
+        }
+        
+        .btn-outline:hover {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        .label-with-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .btn-ai-generate {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-ai-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+        }
+        
+        .btn-ai-generate i {
+            font-size: 1rem;
+        }
+        
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background: #fff;
+            border-radius: 18px;
+            padding: 40px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            color: #dc3545;
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .modal-footer .btn {
+            padding: 10px 24px;
+        }
+        
+        .ai-prompt {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .ai-prompt:focus {
+            outline: none;
+            border-color: #2196f3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .create-form {
+                padding: 25px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="my-assets-model.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回我的模型</a>
+        
+        <div class="create-form">
+            <h2>模型信息</h2>
+            
+            <div class="form-group">
+                <label for="modelName">模型名称</label>
+                <input type="text" id="modelName" placeholder="请输入模型名称">
+            </div>
+            
+            <div class="form-group">
+                <label for="modelDescription">模型描述</label>
+                <textarea id="modelDescription" placeholder="请输入模型描述"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <div class="label-with-button">
+                    <label>模型图片</label>
+                    <button class="btn-ai-generate" onclick="openAIModal()">
+                        <i class="fas fa-magic"></i> AI 生成
+                    </button>
+                </div>
+                <div class="image-upload" onclick="document.getElementById('modelImage').click()">
+                    <input type="file" id="modelImage" accept="image/*">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>点击上传图片或拖拽图片到此处</p>
+                    <img id="previewImage" class="preview-image hidden" src="" alt="预览图片">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="modelType">模型类型</label>
+                <select id="modelType">
+                    <option value="style">风格迁移</option>
+                    <option value="enhancement">图像增强</option>
+                    <option value="generation">图像生成</option>
+                    <option value="detection">目标检测</option>
+                    <option value="segmentation">图像分割</option>
+                    <option value="other">其他</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="modelRarity">稀有度</label>
+                <select id="modelRarity">
+                    <option value="common">普通</option>
+                    <option value="uncommon">优秀</option>
+                    <option value="rare">稀有</option>
+                    <option value="epic">史诗</option>
+                    <option value="legendary">传说</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="modelParams">技术参数</label>
+                <textarea id="modelParams" placeholder="请输入模型的技术参数，每行一个"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="modelUsage">使用方法</label>
+                <textarea id="modelUsage" placeholder="请输入模型的使用方法，每行一个步骤"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="modelTags">标签</label>
+                <input type="text" id="modelTags" placeholder="请输入标签，用逗号分隔">
+                <div class="tag-input" id="tagInput"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="modelPoints">使用积分</label>
+                <input type="number" id="modelPoints" min="0" placeholder="请输入使用该模型需要消耗的积分">
+            </div>
+            
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="goBack()">取消</button>
+                <button class="btn btn-primary" onclick="saveDraft()">保存草稿</button>
+                <button class="btn btn-primary" onclick="publishModel()">发布</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI 生成弹框 -->
+    <div class="modal-overlay" id="aiModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">AI 生成图片</h3>
+                <button class="modal-close" onclick="closeAIModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="aiPrompt">生成提示</label>
+                    <textarea class="ai-prompt" id="aiPrompt" placeholder="请输入生成提示，例如：AI模型界面，现代风格，蓝色调"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAIModal()">取消</button>
+                <button class="btn btn-primary" onclick="generateWithAI()">生成</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 获取URL参数
+        function getUrlParams() {
+            const params = {};
+            const search = window.location.search;
+            if (search) {
+                const pairs = search.substring(1).split('&');
+                pairs.forEach(pair => {
+                    const [key, value] = pair.split('=');
+                    params[decodeURIComponent(key)] = decodeURIComponent(value || '');
+                });
+            }
+            return params;
+        }
+        
+        // 模拟模型数据
+        const mockModels = {
+            my: [
+                {
+                    id: 1,
+                    title: "风格迁移模型",
+                    description: "风格迁移模型是一款基于深度学习的AI模型，可以将一张图片的风格应用到另一张图片上。它支持多种艺术风格，能够产生高质量的风格迁移效果，适用于创意设计、艺术创作等场景。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=style%20transfer%20AI%20model%20interface%20modern%20design&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-03-01",
+                    type: "style",
+                    rarity: "rare",
+                    params: "- 模型类型: 深度学习模型\n- 训练数据: 10万+艺术作品\n- 推理时间: 1-3秒/张\n- 支持分辨率: 最高4K\n- 支持风格数: 50+种",
+                    usage: "1. 上传目标图片\n2. 选择风格参考图片或预设风格\n3. 调整风格强度参数\n4. 点击生成按钮\n5. 下载生成结果",
+                    tags: ["风格迁移", "AI", "图像处理"],
+                    points: 20,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 2,
+                    title: "超分辨率模型",
+                    description: "超分辨率模型可以将低分辨率图片放大到高分辨率，同时保持图片质量。它基于先进的深度学习技术，能够智能填充细节，适用于图像处理、视频增强等场景。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=super%20resolution%20AI%20model%20interface%20modern%20design&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-28",
+                    type: "enhancement",
+                    rarity: "epic",
+                    params: "- 模型类型: 深度学习模型\n- 训练数据: 50万+高分辨率图片\n- 推理时间: 2-5秒/张\n- 支持放大倍数: 2x-4x\n- 支持分辨率: 最高8K",
+                    usage: "1. 上传低分辨率图片\n2. 选择放大倍数\n3. 点击生成按钮\n4. 下载高分辨率结果",
+                    tags: ["超分辨率", "AI", "图像处理"],
+                    points: 25,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 3,
+                    title: "图像修复模型",
+                    description: "图像修复模型可以自动修复图片中的瑕疵、划痕和缺失部分。它基于生成对抗网络技术，能够智能推断缺失内容，适用于老照片修复、图像编辑等场景。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=image%20inpainting%20restoration%20AI%20model%20interface&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-25",
+                    type: "enhancement",
+                    rarity: "rare",
+                    params: "- 模型类型: GAN生成对抗网络\n- 训练数据: 20万+修复样本\n- 推理时间: 3-6秒/张\n- 支持瑕疵类型: 划痕、污渍、缺失\n- 修复精度: 像素级",
+                    usage: "1. 上传需要修复的图片\n2. 标记需要修复的区域\n3. 点击修复按钮\n4. 查看修复结果\n5. 下载修复后的图片",
+                    tags: ["图像修复", "GAN", "老照片"],
+                    points: 22,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 4,
+                    title: "人像美化模型",
+                    description: "人像美化模型可以自动优化人像照片，包括皮肤平滑、美白、瘦脸等功能。它基于深度学习技术，能够自然美化人像，适用于摄影后期、社交媒体等场景。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=portrait%20beautification%20AI%20model%20interface&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-20",
+                    type: "enhancement",
+                    rarity: "epic",
+                    params: "- 模型类型: 深度学习模型\n- 训练数据: 30万+人像照片\n- 推理时间: 1-2秒/张\n- 支持功能: 磨皮、美白、瘦脸\n- 自然度: 95%+",
+                    usage: "1. 上传人像照片\n2. 选择美化强度\n3. 调整具体参数\n4. 预览效果\n5. 导出美化后的照片",
+                    tags: ["人像美化", "摄影", "后期"],
+                    points: 18,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 5,
+                    title: "背景移除模型",
+                    description: "背景移除模型可以自动识别并移除图片背景，保留前景主体。它基于实例分割技术，边缘处理精细，适用于电商产品图、证件照制作等场景。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=background%20removal%20AI%20model%20interface&image_size=landscape_4_3",
+                    status: "private",
+                    created: "2026-02-15",
+                    type: "segmentation",
+                    rarity: "common",
+                    params: "- 模型类型: 实例分割模型\n- 训练数据: 15万+分割样本\n- 推理时间: 0.5-1秒/张\n- 边缘精度: 像素级\n- 支持格式: PNG透明背景",
+                    usage: "1. 上传图片\n2. 自动识别主体\n3. 移除背景\n4. 可选替换背景\n5. 下载透明背景图片",
+                    tags: ["背景移除", "分割", "电商"],
+                    points: 15,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 6,
+                    title: "色彩增强模型",
+                    description: "色彩增强模型可以自动优化图片的色彩表现，提升饱和度、对比度和色彩平衡。它基于色彩科学和深度学习，能够智能分析并优化图片色彩。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=color%20enhancement%20AI%20model%20interface&image_size=landscape_4_3",
+                    status: "pending",
+                    created: "2026-02-10",
+                    type: "enhancement",
+                    rarity: "rare",
+                    params: "- 模型类型: 深度学习模型\n- 训练数据: 25万+色彩样本\n- 推理时间: 1-2秒/张\n- 支持调整: 饱和度、对比度、色调\n- 智能模式: 自动优化",
+                    usage: "1. 上传图片\n2. 选择增强模式\n3. 调整参数\n4. 预览效果\n5. 导出优化后的图片",
+                    tags: ["色彩增强", "调色", "优化"],
+                    points: 16,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                }
+            ],
+            collection: [
+                {
+                    id: 301,
+                    title: "动漫风格模型",
+                    description: "动漫风格模型可以将照片转换为动漫风格，支持多种动漫画风，效果自然生动。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=anime%20style%20conversion%20AI%20model&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-05",
+                    type: "style",
+                    rarity: "epic",
+                    params: "- 模型类型: 风格迁移模型\n- 训练数据: 8万+动漫图片\n- 推理时间: 2-4秒/张\n- 支持风格: 日系、美漫、国漫\n- 输出质量: 高清",
+                    usage: "1. 上传照片\n2. 选择动漫风格\n3. 调整强度\n4. 生成动漫效果",
+                    tags: ["动漫", "风格转换", "二次元"],
+                    points: 24,
+                    author: {
+                        name: "王五",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=wangwu"
+                    }
+                },
+                {
+                    id: 302,
+                    title: "素描转换模型",
+                    description: "素描转换模型可以将照片转换为手绘素描效果，线条流畅自然，艺术感强。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=sketch%20conversion%20AI%20model%20pencil%20drawing&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-01-28",
+                    type: "style",
+                    rarity: "rare",
+                    params: "- 模型类型: 风格迁移模型\n- 训练数据: 5万+素描作品\n- 推理时间: 1-3秒/张\n- 线条风格: 铅笔、炭笔、钢笔\n- 细节保留: 高",
+                    usage: "1. 上传照片\n2. 选择素描风格\n3. 调整线条粗细\n4. 生成素描效果",
+                    tags: ["素描", "手绘", "艺术"],
+                    points: 19,
+                    author: {
+                        name: "赵六",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=zhaoliu"
+                    }
+                }
+            ],
+            drafts: [
+                {
+                    id: 201,
+                    title: "未完成的模型",
+                    description: "正在训练中的模型，尚未完成",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=unfinished%20AI%20model%20training%20interface&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-03-05",
+                    type: "style",
+                    rarity: "common",
+                    params: "",
+                    usage: "",
+                    tags: ["未完成", "训练", "草稿"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 202,
+                    title: "新模型构思",
+                    description: "一个全新模型的概念设计",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=new%20AI%20model%20concept%20design&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-03-03",
+                    type: "enhancement",
+                    rarity: "common",
+                    params: "- 模型类型: 待定\n- 训练数据: 收集中",
+                    usage: "使用说明待完善",
+                    tags: ["构思", "新模型", "草稿"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 203,
+                    title: "实验性模型",
+                    description: "实验性模型原型",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=experimental%20AI%20model%20prototype&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-02-28",
+                    type: "experimental",
+                    rarity: "common",
+                    params: "",
+                    usage: "",
+                    tags: ["实验", "原型", "草稿"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                }
+            ]
+        };
+        
+        // 页面加载时初始化
+        function init() {
+            const params = getUrlParams();
+            if (params.type === 'edit' && params.id) {
+                loadDraftData(params.id, params.dataType);
+                document.querySelector('.create-form h2').textContent = '编辑模型';
+            }
+            
+            // 图片上传预览
+            document.getElementById('modelImage').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const previewImage = document.getElementById('previewImage');
+                        previewImage.src = e.target.result;
+                        previewImage.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // 标签输入处理
+            document.getElementById('modelTags').addEventListener('keypress', function(e) {
+                if (e.key === ',') {
+                    e.preventDefault();
+                    addTag(this.value.trim());
+                    this.value = '';
+                }
+            });
+        }
+        
+        // 加载草稿数据
+        function loadDraftData(id, dataType) {
+            const models = mockModels[dataType] || [];
+            const draft = models.find(m => m.id == id);
+            
+            if (draft) {
+                // 填充表单
+                document.getElementById('modelName').value = draft.title || '';
+                document.getElementById('modelDescription').value = draft.description || '';
+                document.getElementById('modelType').value = draft.type || 'style';
+                document.getElementById('modelRarity').value = draft.rarity || 'common';
+                document.getElementById('modelParams').value = draft.params || '';
+                document.getElementById('modelUsage').value = draft.usage || '';
+                document.getElementById('modelPoints').value = draft.points || 0;
+                
+                // 设置标签
+                if (draft.tags && draft.tags.length > 0) {
+                    document.getElementById('modelTags').value = draft.tags.join(', ');
+                    draft.tags.forEach(tag => addTag(tag));
+                }
+                
+                // 设置预览图片
+                if (draft.image) {
+                    const previewImage = document.getElementById('previewImage');
+                    previewImage.src = draft.image;
+                    previewImage.classList.remove('hidden');
+                }
+            } else {
+                console.log('未找到模型数据:', id, dataType);
+            }
+        }
+        
+        // 添加标签
+        function addTag(tagText) {
+            if (!tagText) return;
+            
+            const tagInput = document.getElementById('tagInput');
+            const tagElement = document.createElement('div');
+            tagElement.className = 'tag';
+            tagElement.innerHTML = `${tagText}<span class="remove-tag" onclick="removeTag(this)">×</span>`;
+            tagInput.appendChild(tagElement);
+        }
+        
+        // 移除标签
+        function removeTag(element) {
+            element.parentElement.remove();
+        }
+        
+        // 保存草稿
+        function saveDraft() {
+            const modelData = collectFormData();
+            modelData.status = 'draft';
+            
+            // 模拟保存操作
+            alert('草稿已保存');
+            window.location.href = 'my-assets-model.html';
+        }
+        
+        // 发布模型
+        function publishModel() {
+            const modelData = collectFormData();
+            modelData.status = 'public';
+            
+            // 模拟发布操作
+            if (confirm('确定要发布这个模型吗？')) {
+                alert('模型已提交审核！');
+                window.location.href = 'my-assets-model.html';
+            }
+        }
+        
+        // 收集表单数据
+        function collectFormData() {
+            const tags = [];
+            document.querySelectorAll('.tag').forEach(tag => {
+                tags.push(tag.textContent.replace('×', '').trim());
+            });
+            
+            return {
+                title: document.getElementById('modelName').value,
+                description: document.getElementById('modelDescription').value,
+                type: document.getElementById('modelType').value,
+                rarity: document.getElementById('modelRarity').value,
+                params: document.getElementById('modelParams').value,
+                usage: document.getElementById('modelUsage').value,
+                tags: tags,
+                points: parseInt(document.getElementById('modelPoints').value) || 0,
+                image: document.getElementById('previewImage').src
+            };
+        }
+        
+        // AI生成相关函数
+        function openAIModal() {
+            document.getElementById('aiModal').classList.add('active');
+        }
+        
+        function closeAIModal() {
+            document.getElementById('aiModal').classList.remove('active');
+        }
+        
+        function generateWithAI() {
+            const prompt = document.getElementById('aiPrompt').value;
+            if (!prompt) {
+                alert('请输入生成提示');
+                return;
+            }
+            
+            // 模拟 AI 生成过程
+            alert('AI 生成中，请稍候...');
+            
+            // 模拟生成结果
+            setTimeout(() => {
+                document.getElementById('previewImage').src = `https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(prompt)}&image_size=landscape_4_3`;
+                document.getElementById('previewImage').classList.remove('hidden');
+                closeAIModal();
+            }, 2000);
+        }
+        
+        // 返回上一页
+        function goBack() {
+            window.history.back();
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
+        });
+    </script>
+</body>
+</html>

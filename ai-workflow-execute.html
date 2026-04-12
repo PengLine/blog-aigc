@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComfyUI工作流执行</title>
+
+    <script src="static/js/common.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            display: flex;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 250px;
+            max-height: 800px;
+            background-color: rgba(45, 45, 45, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.3);
+            padding: 30px 20px;
+            margin-right: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 15px;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 12px 16px;
+            color: #b0b0b0;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-weight: 500;
+            background: linear-gradient(135deg, #333333 0%, #2a2a2a 100%);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .nav-link:hover {
+            background-color: rgba(33, 150, 243, 0.2);
+            color: #2196f3;
+            transform: translateX(5px);
+            border-color: rgba(33, 150, 243, 0.5);
+        }
+        
+        .nav-link.active {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: white;
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+            border-color: #2196f3;
+        }
+        
+        .sub-nav-menu {
+            list-style: none;
+            margin-top: 10px;
+            margin-left: 20px;
+            display: none;
+        }
+        
+        .sub-nav-item {
+            margin-bottom: 8px;
+        }
+        
+        .sub-nav-link {
+            display: block;
+            padding: 8px 12px;
+            color: #b0b0b0;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+            background: linear-gradient(135deg, #333333 0%, #2a2a2a 100%);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sub-nav-link:hover {
+            background-color: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+            transform: translateX(3px);
+            border-color: rgba(76, 175, 80, 0.5);
+        }
+        
+        .sub-nav-link.active {
+            background: linear-gradient(135deg, #4caf50, #388e3c);
+            color: white;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
+            border-color: #4caf50;
+        }
+        
+        .main-content {
+            flex: 1;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #333333 0%, #2a2a2a 100%);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 30px;
+            color: #b0b0b0;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .back-btn:hover {
+            background-color: rgba(33, 150, 243, 0.2);
+            border-color: rgba(33, 150, 243, 0.5);
+            color: #2196f3;
+            transform: translateX(-5px);
+        }
+        
+        .workflow-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .workflow-container {
+            background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .workflow-header {
+            padding: 25px 30px;
+            background: linear-gradient(135deg, #333333 0%, #2a2a2a 100%);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .workflow-header h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+        
+        .workflow-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .action-btn.execute {
+            background: linear-gradient(135deg, #4caf50, #388e3c);
+            color: white;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+        
+        .action-btn.execute:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(76, 175, 80, 0.5);
+        }
+        
+        .action-btn.clear {
+            background: linear-gradient(135deg, #333333 0%, #2a2a2a 100%);
+            color: #b0b0b0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .action-btn.clear:hover {
+            background: linear-gradient(135deg, #444444 0%, #333333 100%);
+            color: #e0e0e0;
+        }
+        
+        .workflow-canvas {
+            padding: 40px;
+            min-height: 600px;
+            position: relative;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+            overflow: auto;
+        }
+        
+        .canvas-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .comfy-node {
+            background: linear-gradient(145deg, #333333 0%, #2a2a2a 100%);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .comfy-node:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+            border-color: rgba(33, 150, 243, 0.3);
+        }
+        
+        .node-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .node-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #6b4cff, #9b59b6);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        
+        .node-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #ffffff;
+            flex: 1;
+        }
+        
+        .node-type {
+            font-size: 0.75rem;
+            color: #888;
+            background: rgba(0,0,0,0.3);
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+        
+        .node-ports {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .port {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .port-input {
+            justify-content: flex-start;
+        }
+        
+        .port-output {
+            justify-content: flex-end;
+        }
+        
+        .port-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid #6b4cff;
+            background-color: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .port-dot:hover {
+            background-color: rgba(107, 76, 255, 0.3);
+            transform: scale(1.2);
+        }
+        
+        .port-dot.connected {
+            background-color: #6b4cff;
+        }
+        
+        .port-label {
+            color: #aaa;
+            font-size: 0.8rem;
+        }
+        
+        .node-widgets {
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .widget-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .widget-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .widget-label {
+            color: #888;
+            font-size: 0.8rem;
+        }
+        
+        .widget-value {
+            color: #4fc3f7;
+            font-weight: 500;
+            background: rgba(0,0,0,0.3);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        
+        .widget-input {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 4px;
+            padding: 4px 8px;
+            color: #e0e0e0;
+            font-size: 0.8rem;
+            flex: 1;
+            margin-left: 10px;
+        }
+        
+        .node-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #4caf50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.6);
+        }
+        
+        .connection-line {
+            position: absolute;
+            background: linear-gradient(90deg, #6b4cff, #9b59b6);
+            height: 2px;
+            transform-origin: left center;
+            pointer-events: none;
+            z-index: 10;
+            top: 100px;
+            left: 280px;
+            width: 150px;
+            transform: rotate(0deg);
+        }
+        
+        .execution-log {
+            margin-top: 30px;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1f1f1f 100%);
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+        }
+        
+        .log-header {
+            padding: 20px 30px;
+            background: linear-gradient(135deg, #333333 0%, #2a2a2a 100%);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .log-header h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+        
+        .log-content {
+            padding: 30px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .log-item {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 6px;
+            border-left: 3px solid #4caf50;
+        }
+        
+        .log-item.info {
+            border-left-color: #2196f3;
+        }
+        
+        .log-item.warning {
+            border-left-color: #ff9800;
+        }
+        
+        .log-item.error {
+            border-left-color: #f44336;
+        }
+        
+        @media (max-width: 1200px) {
+            .canvas-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+                padding: 30px 20px;
+            }
+            
+            .sidebar {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 30px;
+            }
+            
+            .nav-menu {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .nav-item {
+                margin-bottom: 0;
+                position: relative;
+            }
+            
+            .sub-nav-menu {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                background: linear-gradient(135deg, #333333 0%, #2a2a2a 100%);
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                padding: 10px;
+                min-width: 150px;
+                z-index: 1000;
+                margin-top: 5px;
+                border: 1px solid rgba(255,255,255,0.1);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .workflow-canvas {
+                padding: 20px;
+            }
+            
+            .canvas-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .workflow-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .action-btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="main-content">
+            <div class="header">
+                <!-- 返回上一页 -->
+                <a href="javascript:history.back(-1)" class="back-btn">← 返回</a>
+                <h1 class="workflow-title">ComfyUI 工作流执行</h1>
+            </div>
+            
+            <div class="workflow-container">
+                <div class="workflow-header">
+                    <h3>智能文生图工作流</h3>
+                    <div class="workflow-actions">
+                        <button class="action-btn execute" onclick="executeWorkflow()">
+                            <span>▶️</span> 执行工作流
+                        </button>
+                        <button class="action-btn clear" onclick="clearLog()">
+                            <span>🗑️</span> 清空日志
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="workflow-canvas">
+                    <div class="canvas-grid">
+                        <div class="comfy-node">
+                            <div class="node-status"></div>
+                            <div class="node-header">
+                                <div class="node-icon">📝</div>
+                                <span class="node-title">文本提示</span>
+                                <span class="node-type">TextPrompt</span>
+                            </div>
+                            <div class="node-ports">
+                                <div class="port port-output">
+                                    <span class="port-label">text</span>
+                                    <span class="port-dot connected"></span>
+                                </div>
+                            </div>
+                            <div class="node-widgets">
+                                <div class="widget-item">
+                                    <span class="widget-label">text</span>
+                                    <input type="text" class="widget-input" value="a beautiful sunset over mountains" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="comfy-node">
+                            <div class="node-status"></div>
+                            <div class="node-header">
+                                <div class="node-icon">🔤</div>
+                                <span class="node-title">CLIP文本编码</span>
+                                <span class="node-type">CLIPTextEncode</span>
+                            </div>
+                            <div class="node-ports">
+                                <div class="port port-input">
+                                    <span class="port-dot connected"></span>
+                                    <span class="port-label">text</span>
+                                </div>
+                                <div class="port port-input">
+                                    <span class="port-dot connected"></span>
+                                    <span class="port-label">clip</span>
+                                </div>
+                                <div class="port port-output">
+                                    <span class="port-label">CONDITIONING</span>
+                                    <span class="port-dot connected"></span>
+                                </div>
+                            </div>
+                            <div class="node-widgets">
+                                <div class="widget-item">
+                                    <span class="widget-label">clip</span>
+                                    <span class="widget-value">CLIP</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="comfy-node">
+                            <div class="node-status"></div>
+                            <div class="node-header">
+                                <div class="node-icon">🖼️</div>
+                                <span class="node-title">潜在空间图像</span>
+                                <span class="node-type">EmptyLatentImage</span>
+                            </div>
+                            <div class="node-ports">
+                                <div class="port port-output">
+                                    <span class="port-label">LATENT</span>
+                                    <span class="port-dot connected"></span>
+                                </div>
+                            </div>
+                            <div class="node-widgets">
+                                <div class="widget-item">
+                                    <span class="widget-label">width</span>
+                                    <span class="widget-value">512</span>
+                                </div>
+                                <div class="widget-item">
+                                    <span class="widget-label">height</span>
+                                    <span class="widget-value">512</span>
+                                </div>
+                                <div class="widget-item">
+                                    <span class="widget-label">batch_size</span>
+                                    <span class="widget-value">1</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="comfy-node">
+                            <div class="node-status"></div>
+                            <div class="node-header">
+                                <div class="node-icon">⚙️</div>
+                                <span class="node-title">采样器</span>
+                                <span class="node-type">KSampler</span>
+                            </div>
+                            <div class="node-ports">
+                                <div class="port port-input">
+                                    <span class="port-dot connected"></span>
+                                    <span class="port-label">model</span>
+                                </div>
+                                <div class="port port-input">
+                                    <span class="port-dot connected"></span>
+                                    <span class="port-label">positive</span>
+                                </div>
+                                <div class="port port-input">
+                                    <span class="port-dot connected"></span>
+                                    <span class="port-label">negative</span>
+                                </div>
+                                <div class="port port-input">
+                                    <span class="port-dot connected"></span>
+                                    <span class="port-label">latent_image</span>
+                                </div>
+                                <div class="port port-output">
+                                    <span class="port-label">LATENT</span>
+                                    <span class="port-dot connected"></span>
+                                </div>
+                            </div>
+                            <div class="node-widgets">
+                                <div class="widget-item">
+                                    <span class="widget-label">seed</span>
+                                    <span class="widget-value">42</span>
+                                </div>
+                                <div class="widget-item">
+                                    <span class="widget-label">steps</span>
+                                    <span class="widget-value">20</span>
+                                </div>
+                                <div class="widget-item">
+                                    <span class="widget-label">cfg</span>
+                                    <span class="widget-value">8.0</span>
+                                </div>
+                                <div class="widget-item">
+                                    <span class="widget-label">sampler_name</span>
+                                    <span class="widget-value">euler</span>
+                                </div>
+                                <div class="widget-item">
+                                    <span class="widget-label">scheduler</span>
+                                    <span class="widget-value">normal</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="comfy-node">
+                            <div class="node-status"></div>
+                            <div class="node-header">
+                                <div class="node-icon">🧠</div>
+                                <span class="node-title">VAE解码</span>
+                                <span class="node-type">VAEDecode</span>
+                            </div>
+                            <div class="node-ports">
+                                <div class="port port-input">
+                                    <span class="port-dot connected"></span>
+                                    <span class="port-label">vae</span>
+                                </div>
+                                <div class="port port-input">
+                                    <span class="port-dot connected"></span>
+                                    <span class="port-label">samples</span>
+                                </div>
+                                <div class="port port-output">
+                                    <span class="port-label">IMAGE</span>
+                                    <span class="port-dot connected"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="comfy-node">
+                            <div class="node-status"></div>
+                            <div class="node-header">
+                                <div class="node-icon">💾</div>
+                                <span class="node-title">保存图像</span>
+                                <span class="node-type">SaveImage</span>
+                            </div>
+                            <div class="node-ports">
+                                <div class="port port-input">
+                                    <span class="port-dot connected"></span>
+                                    <span class="port-label">images</span>
+                                </div>
+                            </div>
+                            <div class="node-widgets">
+                                <div class="widget-item">
+                                    <span class="widget-label">filename_prefix</span>
+                                    <span class="widget-value">ComfyUI</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="connection-line" style="top: 125px; left: 280px; width: 170px;"></div>
+                    <div class="connection-line" style="top: 375px; left: 280px; width: 170px;"></div>
+                    <div class="connection-line" style="top: 625px; left: 280px; width: 170px;"></div>
+                    <div class="connection-line" style="top: 205px; left: 570px; width: 2px; height: 170px; transform: rotate(90deg);"></div>
+                    <div class="connection-line" style="top: 455px; left: 570px; width: 2px; height: 170px; transform: rotate(90deg);"></div>
+                    <div class="connection-line" style="top: 705px; left: 570px; width: 2px; height: 170px; transform: rotate(90deg);"></div>
+                </div>
+            </div>
+            
+            <div class="execution-log">
+                <div class="log-header">
+                    <h3>执行日志</h3>
+                    <span id="logTimestamp" style="font-size: 0.8rem; color: #888;">2024-01-15 14:30:00</span>
+                </div>
+                <div class="log-content" id="logContent">
+                    <div class="log-item info">
+                        <strong>[INFO]</strong> 工作流加载完成
+                    </div>
+                    <div class="log-item info">
+                        <strong>[INFO]</strong> 所有节点已连接
+                    </div>
+                    <div class="log-item info">
+                        <strong>[INFO]</strong> 等待执行命令...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function init() {
+            initNavMenu();
+            updateTimestamp();
+            bindEvents();
+        }
+        
+        function bindEvents() {
+            // 执行工作流按钮点击事件
+            document.getElementById('executeBtn').addEventListener('click', executeWorkflow);
+        }
+        
+        function updateTimestamp() {
+            const now = new Date();
+            const timestamp = now.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('logTimestamp').textContent = timestamp;
+        }
+        
+        function executeWorkflow() {
+            const logContent = document.getElementById('logContent');
+            const nodes = document.querySelectorAll('.comfy-node');
+            
+            logContent.innerHTML = '';
+            addLog('info', '开始执行工作流...');
+            
+            // 模拟执行过程
+            let step = 0;
+            const steps = [
+                { node: 0, message: '文本提示节点处理中...' },
+                { node: 1, message: 'CLIP文本编码节点处理中...' },
+                { node: 2, message: '潜在空间图像节点处理中...' },
+                { node: 3, message: '采样器节点处理中...' },
+                { node: 4, message: 'VAE解码节点处理中...' },
+                { node: 5, message: '保存图像节点处理中...' }
+            ];
+            
+            const interval = setInterval(() => {
+                if (step < steps.length) {
+                    const { node, message } = steps[step];
+                    addLog('info', message);
+                    
+                    // 高亮当前节点
+                    nodes.forEach((n, index) => {
+                        if (index === node) {
+                            n.style.borderColor = '#4caf50';
+                            n.style.boxShadow = '0 0 20px rgba(76, 175, 80, 0.5)';
+                        } else {
+                            n.style.borderColor = 'rgba(255,255,255,0.1)';
+                            n.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+                        }
+                    });
+                    
+                    step++;
+                } else {
+                    clearInterval(interval);
+                    addLog('info', '工作流执行完成！');
+                    addLog('info', '图像已保存到输出目录');
+                    
+                    // 恢复所有节点样式
+                    nodes.forEach(n => {
+                        n.style.borderColor = 'rgba(255,255,255,0.1)';
+                        n.style.boxShadow = '0 4px 15px rgba(0,0,0,0.3)';
+                    });
+                }
+            }, 1000);
+        }
+        
+        function addLog(type, message) {
+            const logContent = document.getElementById('logContent');
+            const logItem = document.createElement('div');
+            logItem.className = `log-item ${type}`;
+            logItem.innerHTML = `<strong>[${type.toUpperCase()}]</strong> ${message}`;
+            logContent.appendChild(logItem);
+            logContent.scrollTop = logContent.scrollHeight;
+            updateTimestamp();
+        }
+        
+        function clearLog() {
+            const logContent = document.getElementById('logContent');
+            logContent.innerHTML = '';
+            addLog('info', '日志已清空');
+        }
+        
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

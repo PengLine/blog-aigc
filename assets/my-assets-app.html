@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的应用 - AIGC创作平台</title>
+    <link rel="stylesheet" href="/css/hexo-common.css">
+    <link rel="stylesheet" href="/css/hexo-full-screen.css">
+    <link rel="stylesheet" href="/css/hidden-div.css">
+    <script src="common.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            color: #333;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        
+        /* 左侧导航栏 */
+        .sidebar {
+            width: 250px;
+            max-height: 800px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            padding: 30px 20px;
+            margin-right: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .sidebar h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: 2px;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 12px;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 12px 20px;
+            color: #4a5568;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(33, 150, 243, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .nav-link:hover::before {
+            left: 100%;
+        }
+        
+        .nav-link:hover {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            transform: translateX(8px);
+        }
+        
+        .nav-link.active {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+        }
+        
+        /* 二级导航菜单 */
+        .sub-nav-menu {
+            list-style: none;
+            margin-top: 8px;
+            margin-left: 20px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            border:1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .sub-nav-item {
+            margin-bottom: 6px;
+        }
+        
+        .sub-nav-link {
+            display: block;
+            padding: 8px 15px;
+            color: #666;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .sub-nav-link:hover {
+            background-color: #f0f0f0;
+            color: #1976d2;
+        }
+        
+        .sub-nav-link.active {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            font-weight: 600;
+        }
+        
+        /* 主内容区域 */
+        .main-content {
+            flex:1;
+            padding: 30px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            backdrop-filter: blur(10px);
+            border:1px solid rgba(0,0,0,0.05);
+        }
+        
+        .page-header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .page-description {
+            font-size: 1rem;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+        
+        /* 资产类型导航 */
+        .asset-type-nav {
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 15px;
+        }
+        
+        .asset-type-tabs {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        
+        .asset-type-tab {
+            padding: 12px 30px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .asset-type-tab:hover {
+            color: #1976d2;
+        }
+        
+        .asset-type-tab.active {
+            color: #1976d2;
+            border-bottom-color: #1976d2;
+        }
+        
+        /* 资产状态筛选 */
+        .asset-status-filter {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border:1px solid #e9ecef;
+        }
+        
+        .filter-tabs {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-tab {
+            padding: 8px 20px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-tab:hover {
+            border-color: #2196f3;
+            color: #1976d2;
+        }
+        
+        .filter-tab.active {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: white;
+            border-color: #2196f3;
+        }
+        
+        /* 资产卡片容器 */
+        .assets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        /* 资产卡片 */
+        .asset-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .asset-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .asset-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+        }
+        
+        .asset-content {
+            padding: 20px;
+        }
+        
+        .asset-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .asset-description {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .asset-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #999;
+        }
+        
+        .asset-status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status-public {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .status-private {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        .status-pending {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .status-rejected {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .status-success {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .status-failed {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .status-queued {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .status-draft {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        .asset-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            background: white;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            background: #f8f9fa;
+            border-color: #2196f3;
+            color: #1976d2;
+        }
+        
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #999;
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        .empty-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .empty-description {
+            font-size: 1rem;
+            margin-bottom: 30px;
+        }
+        
+        .empty-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .empty-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+                padding: 0;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+                padding: 20px 0;
+            }
+            
+            .nav-menu {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                padding: 0 20px;
+            }
+            
+            .nav-item {
+                margin-bottom: 0;
+                position: relative;
+            }
+            
+            .sub-nav-menu {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                background-color: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                padding: 10px;
+                min-width: 150px;
+                z-index: 1000;
+                margin-top: 5px;
+            }
+            
+            .main-content {
+                padding: 30px 20px;
+            }
+            
+            .assets-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 20px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px 15px;
+            }
+            
+            .page-title {
+                font-size: 1.5rem;
+            }
+            
+            .asset-type-tabs {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .asset-type-tab {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+            
+            .filter-tabs {
+                gap: 10px;
+            }
+            
+            .filter-tab {
+                padding: 6px 16px;
+                font-size: 0.8rem;
+            }
+            
+            .assets-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 15px 10px;
+            }
+            
+            .page-title {
+                font-size: 1.3rem;
+            }
+            
+            .asset-content {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧导航栏 -->
+        <div class="sidebar">
+            <h2>AIGC导航</h2>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">首页</a>
+                    <ul class="sub-nav-menu">
+                        <li class="sub-nav-item">
+                            <a href="#" class="sub-nav-link" data-type="character">角色</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="#" class="sub-nav-link" data-type="prop">道具</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="#" class="sub-nav-link" data-type="scenic">景点</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="#" class="sub-nav-link" data-type="video">短剧</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="ai-apps.html" class="nav-link">AI应用</a>
+                </li>
+                <li class="nav-item">
+                    <a href="lora-train.html" class="nav-link">Lora训练</a>
+                </li>
+                <li class="nav-item">
+                    <a href="profile.html" class="nav-link">个人中心</a>
+                </li>
+                <li class="nav-item">
+                    <a href="my-assets.html" class="nav-link active">我的资产</a>
+                    <ul class="sub-nav-menu" style="display: block;">
+                        <li class="sub-nav-item">
+                            <a href="my-assets-character.html" class="sub-nav-link">我的角色</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="my-assets-prop.html" class="sub-nav-link">我的道具</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="my-assets-scenic.html" class="sub-nav-link">我的景点</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="my-assets-video.html" class="sub-nav-link">我的短剧</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="my-assets-app.html" class="sub-nav-link active">我的应用</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="my-assets-model.html" class="sub-nav-link">我的模型</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">我的应用</h1>
+                <p class="page-description">管理您的AI应用资产</p>
+            </div>
+            
+            <!-- 资产类型导航 -->
+            <div class="asset-type-nav">
+                <div class="asset-type-tabs">
+                    <button class="asset-type-tab" data-tab="create" id="createTab">创建应用</button>
+                    <button class="asset-type-tab active" data-tab="my-assets" id="myAssetsTab">我的应用</button>
+                    <button class="asset-type-tab" data-tab="collections">我的收藏</button>
+                    <button class="asset-type-tab" data-tab="drafts">草稿箱</button>
+                    <button class="asset-type-tab" data-tab="app-instances" id="appInstancesTab">应用实例</button>
+                </div>
+            </div>
+            
+            <!-- 资产状态筛选 -->
+            <div class="asset-status-filter" id="assetStatusFilter">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">全部</button>
+                    <button class="filter-tab" data-filter="success">执行成功</button>
+                    <button class="filter-tab" data-filter="failed">执行失败</button>
+                    <button class="filter-tab" data-filter="queued">未执行</button>
+                </div>
+            </div>
+            
+            <!-- 资产卡片容器 -->
+            <div class="assets-grid" id="assetsGrid">
+                <!-- 资产卡片将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 模拟应用数据
+        const mockAssets = [
+            {
+                id: 1,
+                title: "智能文生图",
+                description: "通过文字描述生成高质量图片，支持多种风格和场景",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20text%20to%20image%20generation%20tool%20interface&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-03-01"
+            },
+            {
+                id: 2,
+                title: "AI对话助手",
+                description: "智能对话助手，支持多轮对话和上下文理解",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20chatbot%20interface%20with%20conversation%20history%20and%20chat%20bubbles&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-02-28"
+            },
+            {
+                id: 3,
+                title: "图像风格转换",
+                description: "将图片转换为不同艺术风格，如油画、素描等",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20image%20style%20transfer%20tool%20with%20different%20art%20styles&image_size=landscape_4_3",
+                status: "private",
+                created: "2026-02-25"
+            },
+            {
+                id: 4,
+                title: "视频生成工具",
+                description: "根据文字描述生成短视频内容",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20video%20generation%20tool%20with%20text%20input%20and%20video%20output&image_size=landscape_4_3",
+                status: "pending",
+                created: "2026-02-20"
+            },
+            {
+                id: 5,
+                title: "文本摘要工具",
+                description: "自动生成长文本的摘要和关键点",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20text%20summarization%20tool%20with%20key%20points%20extraction&image_size=landscape_4_3",
+                status: "rejected",
+                created: "2026-02-15"
+            },
+            {
+                id: 6,
+                title: "语音识别工具",
+                description: "将语音转换为文本，支持多种语言",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20speech%20recognition%20tool%20with%20audio%20waveform%20and%20text%20output&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-02-10"
+            },
+            {
+                id: 7,
+                title: "图像增强工具",
+                description: "提升图片质量，去噪、锐化、超分辨率",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20image%20enhancement%20tool%20with%20before%20and%20after%20comparison&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-02-05"
+            },
+            {
+                id: 8,
+                title: "代码生成工具",
+                description: "根据需求描述生成代码，支持多种编程语言",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20code%20generation%20tool%20with%20programming%20languages%20and%20syntax%20highlighting&image_size=landscape_4_3",
+                status: "private",
+                created: "2026-02-01"
+            },
+            {
+                id: 9,
+                title: "文本翻译工具",
+                description: "支持多种语言之间的文本翻译",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20text%20translation%20tool%20with%20multiple%20languages&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-01-28"
+            },
+            {
+                id: 10,
+                title: "情感分析工具",
+                description: "分析文本的情感倾向，识别情绪",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20sentiment%20analysis%20tool%20with%20emotion%20detection&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-01-25"
+            },
+            {
+                id: 11,
+                title: "内容审核工具",
+                description: "自动检测和过滤不良内容",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20content%20moderation%20tool%20interface&image_size=landscape_4_3",
+                status: "pending",
+                created: "2026-01-20"
+            },
+            {
+                id: 12,
+                title: "数据可视化工具",
+                description: "将数据转换为直观的图表和可视化效果",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20data%20visualization%20tool%20with%20charts%20and%20graphs&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-01-15"
+            }
+        ];
+        
+        // 模拟收藏数据
+        const mockCollections = [
+            {
+                id: 101,
+                title: "智能文生图",
+                description: "通过文字描述生成高质量图片，支持多种风格和场景",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20text%20to%20image%20generation%20tool%20interface&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-03-01"
+            },
+            {
+                id: 102,
+                title: "AI对话助手",
+                description: "智能对话助手，支持多轮对话和上下文理解",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20chatbot%20interface%20with%20conversation%20history%20and%20chat%20bubbles&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-02-28"
+            },
+            {
+                id: 103,
+                title: "代码生成工具",
+                description: "根据需求描述生成代码，支持多种编程语言",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20code%20generation%20tool%20with%20programming%20languages%20and%20syntax%20highlighting&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-02-01"
+            },
+            {
+                id: 104,
+                title: "文本翻译工具",
+                description: "支持多种语言之间的文本翻译",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20text%20translation%20tool%20with%20multiple%20languages&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-01-28"
+            }
+        ];
+        
+        // 模拟草稿数据
+        const mockDrafts = [
+            {
+                id: 201,
+                title: "未完成的应用设计",
+                description: "正在设计中的应用，尚未完成",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=unfinished%20app%20design%20sketch%20and%20draft&image_size=landscape_4_3",
+                status: "draft",
+                created: "2026-03-05"
+            },
+            {
+                id: 202,
+                title: "应用概念草稿",
+                description: "应用概念设计的初步草稿",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=app%20concept%20art%20draft%20sketch&image_size=landscape_4_3",
+                status: "draft",
+                created: "2026-03-03"
+            },
+            {
+                id: 203,
+                title: "智能助手应用",
+                description: "智能助手应用的设计草案",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=smart%20assistant%20app%20concept%20draft&image_size=landscape_4_3",
+                status: "draft",
+                created: "2026-03-01"
+            },
+            {
+                id: 204,
+                title: "图像识别应用",
+                description: "图像识别应用的设计草案",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=image%20recognition%20app%20concept%20draft&image_size=landscape_4_3",
+                status: "draft",
+                created: "2026-02-28"
+            }
+        ];
+        
+        // 模拟应用实例数据 - 用户点击"一键应用"后的执行记录
+        const mockAppInstances = [
+            {
+                id: 301,
+                appId: 2,
+                title: "智能文生图 - 执行实例 #1",
+                description: "执行成功：生成了一张科幻风格的城市夜景图",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=sci-fi%20city%20night%20scene%20futuristic%20neon%20lights&image_size=landscape_4_3",
+                status: "success",
+                created: "2026-03-05",
+                submittedAt: "2026-03-05 14:30:25",
+                completedAt: "2026-03-05 14:30:45",
+                executionTime: "20秒",
+                sourceApp: "智能文生图",
+                parameters: {
+                    prompt: "未来科幻城市夜景，霓虹灯光，高楼大厦，飞行汽车",
+                    style: "赛博朋克",
+                    size: "1024x768",
+                    quality: "高清"
+                },
+                result: {
+                    outputUrl: "https://example.com/output/image_301.jpg",
+                    outputSize: "2.5MB",
+                    format: "JPEG"
+                }
+            },
+            {
+                id: 302,
+                appId: 3,
+                title: "AI对话助手 - 执行实例 #1",
+                description: "执行成功：完成了50轮客服对话",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=chat%20conversation%20interface%20customer%20service%20success&image_size=landscape_4_3",
+                status: "success",
+                created: "2026-03-04",
+                submittedAt: "2026-03-04 09:15:10",
+                completedAt: "2026-03-04 09:45:30",
+                executionTime: "30分20秒",
+                sourceApp: "AI对话助手",
+                parameters: {
+                    scenario: "客服场景",
+                    personality: "友好专业",
+                    knowledge: "产品知识库V2.0",
+                    maxTurns: 50
+                },
+                result: {
+                    totalConversations: 50,
+                    satisfaction: "98%",
+                    resolved: 48,
+                    escalated: 2
+                }
+            },
+            {
+                id: 303,
+                appId: 6,
+                title: "图像风格转换 - 执行实例 #1",
+                description: "执行失败：输入图片格式不支持",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=error%20failed%20image%20processing%20red%20warning&image_size=landscape_4_3",
+                status: "failed",
+                created: "2026-03-03",
+                submittedAt: "2026-03-03 16:20:00",
+                completedAt: "2026-03-03 16:20:05",
+                executionTime: "5秒",
+                sourceApp: "图像风格转换",
+                parameters: {
+                    inputImage: "document.bmp",
+                    targetStyle: "梵高风格",
+                    intensity: 0.8
+                },
+                result: {
+                    errorCode: "ERR_FORMAT_NOT_SUPPORTED",
+                    errorMessage: "不支持的图片格式：BMP，请使用 JPG 或 PNG 格式"
+                }
+            },
+            {
+                id: 304,
+                appId: 1,
+                title: "智能写作助手 - 执行实例 #1",
+                description: "执行成功：生成了一篇2000字的产品介绍文案",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=document%20writing%20success%20text%20content%20professional&image_size=landscape_4_3",
+                status: "success",
+                created: "2026-03-02",
+                submittedAt: "2026-03-02 11:00:00",
+                completedAt: "2026-03-02 11:00:15",
+                executionTime: "15秒",
+                sourceApp: "智能写作助手",
+                parameters: {
+                    topic: "智能家居产品介绍",
+                    style: "专业正式",
+                    length: "2000字",
+                    tone: " persuasive"
+                },
+                result: {
+                    wordCount: 2056,
+                    outputFormat: "Markdown",
+                    readability: "优秀",
+                    keywords: ["智能家居", "物联网", "便捷生活"]
+                }
+            },
+            {
+                id: 305,
+                appId: 4,
+                title: "代码生成工具 - 执行实例 #1",
+                description: "执行成功：生成了用户登录模块的完整代码",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=code%20programming%20success%20screen%20green%20check&image_size=landscape_4_3",
+                status: "success",
+                created: "2026-03-01",
+                submittedAt: "2026-03-01 15:30:00",
+                completedAt: "2026-03-01 15:30:08",
+                executionTime: "8秒",
+                sourceApp: "代码生成工具",
+                parameters: {
+                    language: "Python",
+                    framework: "Flask",
+                    feature: "用户登录注册模块",
+                    includeTests: true
+                },
+                result: {
+                    files: 5,
+                    totalLines: 450,
+                    testCoverage: "85%",
+                    downloadUrl: "/download/code_305.zip"
+                }
+            },
+            {
+                id: 306,
+                appId: 5,
+                title: "数据分析助手 - 执行实例 #1",
+                description: "执行中：正在分析Q1销售数据...",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=data%20analysis%20processing%20loading%20charts%20blue&image_size=landscape_4_3",
+                status: "queued",
+                created: "2026-03-06",
+                submittedAt: "2026-03-06 10:00:00",
+                completedAt: null,
+                executionTime: "进行中",
+                sourceApp: "数据分析助手",
+                parameters: {
+                    dataSource: "sales_q1_2026.csv",
+                    analysisType: "趋势分析",
+                    charts: ["折线图", "柱状图", "饼图"],
+                    forecast: true
+                },
+                result: {
+                    progress: 65,
+                    currentStep: "生成可视化图表",
+                    estimatedTime: "剩余2分钟"
+                }
+            }
+        ];
+        
+        let currentTab = 'my-assets';
+        let currentFilter = 'all';
+        
+        // 渲染资产
+        function renderAssets() {
+            const assetsGrid = document.getElementById('assetsGrid');
+            
+            // 获取当前数据
+            let assets = [];
+            if (currentTab === 'my-assets') {
+                assets = mockAssets;
+            } else if (currentTab === 'collections') {
+                assets = mockCollections;
+            } else if (currentTab === 'drafts') {
+                assets = mockDrafts;
+            } else if (currentTab === 'app-instances') {
+                assets = mockAppInstances;
+            }
+            
+            // 根据状态筛选
+            if (currentFilter !== 'all') {
+                assets = assets.filter(asset => asset.status === currentFilter);
+            }
+            
+            // 如果没有数据，显示空状态
+            if (assets.length === 0) {
+                const tabNames = {
+                    'my-assets': '应用',
+                    'collections': '收藏',
+                    'drafts': '草稿',
+                    'app-instances': '应用实例'
+                };
+                const tabName = tabNames[currentTab] || '应用';
+                
+                assetsGrid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <h3 class="empty-title">暂无${tabName}</h3>
+                        <p class="empty-description">${currentTab === 'my-assets' ? '您还没有创建任何应用，点击"创建应用"开始创作吧！' : currentTab === 'collections' ? '您还没有收藏任何应用，去发现更多精彩内容吧！' : currentTab === 'drafts' ? '您还没有保存的草稿' : '您还没有创建任何应用实例'}</p>
+                        ${currentTab === 'my-assets' ? '<button class="empty-btn" onclick="createNewAsset()">创建应用</button>' : ''}
+                    </div>
+                `;
+                return;
+            }
+            
+            // 渲染资产卡片
+            assetsGrid.innerHTML = assets.map(asset => `
+                <div class="asset-card">
+                    <img src="${asset.image}" alt="${asset.title}" class="asset-image">
+                    <div class="asset-content">
+                        <h3 class="asset-title">${asset.title}</h3>
+                        <p class="asset-description">${asset.description}</p>
+                        <div class="asset-meta">
+                            <span class="asset-status status-${asset.status}">${getStatusText(asset.status)}</span>
+                            <span>${asset.created}</span>
+                        </div>
+                        <div class="asset-actions">
+                            ${currentTab === 'my-assets' ? `
+                                ${(asset.status === 'private' || asset.status === 'rejected' || asset.status === 'pending' || asset.status === 'draft') ? `
+                                    <button class="action-btn" onclick="editAsset(${asset.id})">编辑</button>
+                                ` : ''}
+                                <button class="action-btn" onclick="previewAsset(${asset.id})">预览</button>
+                                ${asset.status === 'public' ? `
+                                    <button class="action-btn" onclick="setAssetPrivate(${asset.id})">私有</button>
+                                ` : ''}
+                                ${asset.status === 'private' ? `
+                                    <button class="action-btn" onclick="setAssetPublic(${asset.id})">公开</button>
+                                ` : ''}
+                                ${(asset.status === 'pending' || asset.status === 'rejected') ? `
+                                    <button class="action-btn" onclick="deleteAsset(${asset.id})">删除</button>
+                                ` : ''}
+                                ${asset.status === 'rejected' ? `
+                                    <button class="action-btn" onclick="publishAsset(${asset.id})">发布</button>
+                                ` : ''}
+                            ` : currentTab === 'collections' ? `
+                                <button class="action-btn" onclick="previewAsset(${asset.id})">预览</button>
+                                <button class="action-btn" onclick="cancelCollection(${asset.id})">取消收藏</button>
+                            ` : currentTab === 'drafts' ? `
+                                <button class="action-btn" onclick="editAsset(${asset.id})">编辑</button>
+                                <button class="action-btn" onclick="previewAsset(${asset.id})">预览</button>
+                                <button class="action-btn" onclick="publishAsset(${asset.id})">发布</button>
+                                <button class="action-btn" onclick="deleteAsset(${asset.id})">删除</button>
+                            ` : `
+                                ${asset.status === 'queued' ? `
+                                    <button class="action-btn" onclick="editAsset(${asset.id})">编辑</button>
+                                    <button class="action-btn" onclick="previewAsset(${asset.id})">预览</button>
+                                    <button class="action-btn" onclick="deleteAsset(${asset.id})">删除</button>
+                                ` : `
+                                    <button class="action-btn" onclick="executeAppInstance(${asset.id})">执行</button>
+                                    <button class="action-btn" onclick="editAsset(${asset.id})">编辑</button>
+                                    <button class="action-btn" onclick="previewAsset(${asset.id})">预览</button>
+                                    <button class="action-btn" onclick="deleteAsset(${asset.id})">删除</button>
+                                `}
+                            `}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 获取状态文本
+        function getStatusText(status) {
+            const statusTexts = {
+                public: '已公开',
+                private: '仅自己可见',
+                pending: '审核中',
+                rejected: '审核未通过',
+                success: '执行成功',
+                queued: '排队中',
+                failed: '执行失败',
+                draft: '待发布'
+            };
+            return statusTexts[status] || status;
+        }
+        
+        // 创建新资产
+        function createNewAsset() {
+            window.location.href = 'ai-app-create.html';
+        }
+        
+        // 编辑资产
+        function editAsset(id) {
+            window.location.href = `create-app.html?id=${id}&type=edit&dataType=${currentTab === 'drafts' ? 'drafts' : 'my'}`;
+        }
+        
+        // 预览资产
+        function previewAsset(id) {
+            window.location.href = `app-detail.html?id=${id}&type=${currentTab === 'drafts' ? 'drafts' : 'my'}`;
+        }
+        
+        // 删除资产
+        function deleteAsset(id) {
+            if (confirm('确定要删除此应用吗？')) {
+                alert(`删除应用 ID: ${id}`);
+                renderAssets();
+            }
+        }
+        
+        // 设置资产为公开
+        function setAssetPublic(id) {
+            if (confirm('确定要将此应用公开吗？')) {
+                alert(`应用 ID: ${id} 已公开`);
+                renderAssets();
+            }
+        }
+        
+        // 设置资产为私有
+        function setAssetPrivate(id) {
+            if (confirm('确定要将此应用设为仅自己可见吗？')) {
+                alert(`应用 ID: ${id} 已设为仅自己可见`);
+                renderAssets();
+            }
+        }
+        
+        // 发布资产（从草稿箱发布）
+        function publishAsset(id) {
+            if (confirm('确定要发布此应用吗？发布后应用将进入审核流程。')) {
+                alert(`应用 ID: ${id} 已发布，等待审核`);
+                renderAssets();
+            }
+        }
+        
+        // 取消收藏
+        function cancelCollection(id) {
+            if (confirm('确定要取消收藏此应用吗？')) {
+                alert(`已取消收藏应用 ID: ${id}`);
+                renderAssets();
+            }
+        }
+        
+        // 执行应用实例
+        function executeAppInstance(id) {
+            if (confirm('确定要执行此应用实例吗？')) {
+                alert(`应用实例 ID: ${id} 已开始执行`);
+                renderAssets();
+            }
+        }
+        
+        // 绑定事件
+        function bindEvents() {
+            // 资产类型标签事件
+            const assetTypeTabs = document.querySelectorAll('.asset-type-tab');
+            assetTypeTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabValue = tab.getAttribute('data-tab');
+                    
+                    // 如果是"创建应用"tab，跳转到创建页面
+                    if (tabValue === 'create') {
+                        window.location.href = 'ai-app-create.html';
+                        return;
+                    }
+                    
+                    assetTypeTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentTab = tabValue;
+                    
+                    // 控制筛选区域的显示/隐藏
+                    toggleFilterSection();
+                    
+                    renderAssets();
+                });
+            });
+        }
+        
+        // 控制筛选区域的显示/隐藏
+        function toggleFilterSection() {
+            const filterSection = document.getElementById('assetStatusFilter');
+            const filterTabs = filterSection.querySelectorAll('.filter-tab');
+            
+            // 清除所有筛选标签
+            filterSection.innerHTML = '';
+            
+            if (currentTab === 'my-assets') {
+                // 我的应用标签下显示原来的筛选标签
+                filterSection.innerHTML = `
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" data-filter="all">全部</button>
+                        <button class="filter-tab" data-filter="public">已公开</button>
+                        <button class="filter-tab" data-filter="private">仅自己可见</button>
+                        <button class="filter-tab" data-filter="pending">审核中</button>
+                        <button class="filter-tab" data-filter="rejected">审核未通过</button>
+                    </div>
+                `;
+                filterSection.style.display = 'block';
+            } else if (currentTab === 'app-instances') {
+                // 应用实例标签下显示新的筛选标签
+                filterSection.innerHTML = `
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" data-filter="all">全部</button>
+                        <button class="filter-tab" data-filter="success">执行成功</button>
+                        <button class="filter-tab" data-filter="failed">执行失败</button>
+                        <button class="filter-tab" data-filter="queued">未执行</button>
+                    </div>
+                `;
+                filterSection.style.display = 'block';
+            } else {
+                filterSection.style.display = 'none';
+            }
+            
+            // 重新绑定筛选标签事件
+            bindFilterEvents();
+        }
+        
+        // 绑定筛选标签事件
+        function bindFilterEvents() {
+            const filterTabs = document.querySelectorAll('.filter-tab');
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentFilter = tab.getAttribute('data-filter');
+                    renderAssets();
+                });
+            });
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            initNavMenu();
+            toggleFilterSection();
+            renderAssets();
+            bindEvents();
+            bindFilterEvents();
+        });
+    </script>
+</body>
+</html>

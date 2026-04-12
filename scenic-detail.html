@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>景点详情 - AIGC创作平台</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 详情页样式 - 与character-detail.html保持一致 */
+        .detail-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .detail-header {
+            margin-bottom: 40px;
+        }
+        
+        .detail-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: inline-block;
+            margin-right: 15px;
+        }
+        
+        .detail-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .detail-author {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .author-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .detail-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+        }
+        
+        .meta-item i {
+            color: #2196f3;
+        }
+        
+        .detail-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .detail-main {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .detail-sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .detail-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        
+        .detail-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .detail-section {
+            margin-bottom: 30px;
+        }
+        
+        .detail-section h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: #fff;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid #2196f3;
+            color: #2196f3;
+        }
+        
+        .btn-outline:hover {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: #f8f9fa;
+            color: #495057;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-decoration: none;
+        }
+        
+        .back-link i {
+            margin-right: 8px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .stat-label {
+            color: #666;
+        }
+        
+        .stat-value {
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .action-buttons {
+            margin-top: 30px;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #4caf50, #388e3c);
+            color: #fff;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: #fff;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
+        }
+        
+        .btn-like {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-like:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        .btn-share {
+            background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-share:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4);
+        }
+        
+        .btn-apply {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: #fff;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-apply:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+        }
+        
+        .social-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .detail-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .detail-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .detail-author {
+                margin-top: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="detail-container">
+        <a href="my-assets-scenic.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回我的景点</a>
+        
+        <div class="detail-header">
+            <h1 id="detailTitle">神秘森林</h1>
+            <div class="detail-author">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=myself" alt="作者头像" class="author-avatar">
+                <span>我自己</span>
+            </div>
+        </div>
+        
+        <div class="detail-meta">
+            <div class="meta-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span id="detailCreated">2026-03-01</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-tag"></i>
+                <span id="detailType">forest</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-star"></i>
+                <span id="detailRarity"> rare</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-coins"></i>
+                <span id="detailPoints">15 积分</span>
+            </div>
+        </div>
+        
+        <div class="detail-content">
+            <div class="detail-main">
+                <img id="detailImage" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=mysterious%20forest%20scenic%20view%20fantasy%20magical%20atmosphere&image_size=landscape_4_3" alt="景点图片" class="detail-image">
+                
+                <div class="detail-section">
+                    <h3>景点描述</h3>
+                    <p id="detailDescription" class="detail-description">
+                        神秘森林是一个充满魔法的地方，这里有高大的古树、闪烁的萤火虫和各种神奇的生物。阳光透过树叶洒下斑驳的光影，营造出梦幻般的氛围。这是一个适合冒险和探索的地方，隐藏着许多秘密等待发现。
+                    </p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>景点特色</h3>
+                    <p id="detailFeatures">
+                        - 高大的古老树木，有些树龄超过千年<br>
+                        - 夜晚闪烁的萤火虫，形成美丽的光带<br>
+                        - 清澈的小溪，水流叮咚作响<br>
+                        - 各种神奇的植物，有的会发光，有的会移动<br>
+                        - 隐藏的洞穴和小径，通往未知的地方
+                    </p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>最佳游览时间</h3>
+                    <p id="detailBestTime">
+                        - 春季：万物复苏，花朵盛开，空气清新<br>
+                        - 夏季：树木茂盛，萤火虫最多，适合夜晚探险<br>
+                        - 秋季：树叶变色，景色绚丽，适合拍照<br>
+                        - 冬季：银装素裹，静谧祥和，适合冥想
+                    </p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>标签</h3>
+                    <div id="detailTags" class="tag-list">
+                        <span class="tag">森林</span>
+                        <span class="tag">神秘</span>
+                        <span class="tag">魔法</span>
+                        <span class="tag">探险</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-sidebar">
+                <div class="detail-section">
+                    <h3>景点信息</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">状态</span>
+                        <span id="detailStatus" class="stat-value">公开</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">创建时间</span>
+                        <span id="detailCreatedSidebar">2026-03-01</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">使用积分</span>
+                        <span id="detailPointsSidebar">15</span>
+                    </div>
+                </div>
+                
+                <div class="social-buttons">
+                    <button class="btn btn-like" onclick="likeScenic()">
+                        <i class="fas fa-heart"></i> 点赞
+                    </button>
+                    <button class="btn btn-share" onclick="shareScenic()">
+                        <i class="fas fa-share-alt"></i> 分享
+                    </button>
+                </div>
+                
+                <div class="action-buttons" id="actionButtons">
+                    <!-- 按钮将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="static/js/common.js"></script>
+    <script>
+        // 获取URL参数
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                id: params.get('id'),
+                type: params.get('type') || 'my',
+                source: params.get('source') || 'scenic'
+            };
+        }
+        
+        // 模拟景点数据
+        const mockScenics = {
+            my: [
+                {
+                    id: 1,
+                    title: "神秘森林",
+                    description: "神秘森林是一个充满魔法的地方，这里有高大的古树、闪烁的萤火虫和各种神奇的生物。阳光透过树叶洒下斑驳的光影，营造出梦幻般的氛围。这是一个适合冒险和探索的地方，隐藏着许多秘密等待发现。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=mysterious%20forest%20scenic%20view%20fantasy%20magical%20atmosphere&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-03-01",
+                    type: "forest",
+                    rarity: "rare",
+                    features: "- 高大的古老树木，有些树龄超过千年\n- 夜晚闪烁的萤火虫，形成美丽的光带\n- 清澈的小溪，水流叮咚作响\n- 各种神奇的植物，有的会发光，有的会移动\n- 隐藏的洞穴和小径，通往未知的地方",
+                    bestTime: "- 春季：万物复苏，花朵盛开，空气清新\n- 夏季：树木茂盛，萤火虫最多，适合夜晚探险\n- 秋季：树叶变色，景色绚丽，适合拍照\n- 冬季：银装素裹，静谧祥和，适合冥想",
+                    tags: ["森林", "神秘", "魔法", "探险"],
+                    points: 15,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 2,
+                    title: "星空海岸",
+                    description: "星空海岸是一个神奇的地方，夜晚的星空与海浪交相辉映，仿佛置身于宇宙之中。这里的沙滩细腻柔软，海水清澈见底，是观赏星空和海浪的绝佳地点。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=starry%20coast%20night%20sky%20waves%20beautiful%20scenery&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-28",
+                    type: "coast",
+                    rarity: "epic",
+                    features: "- 夜晚星空璀璨，银河清晰可见\n- 海浪声如音乐般动听\n- 沙滩细腻柔软，适合漫步\n- 偶尔能看到发光的浮游生物\n- 日出日落景色壮观",
+                    bestTime: "- 夜晚：星空最璀璨，适合观星\n- 清晨：日出景色壮观\n- 傍晚：日落时分，海水被染成金色\n- 夏季：天气温暖，适合游泳",
+                    tags: ["海岸", "星空", "浪漫", "自然"],
+                    points: 20,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 3,
+                    title: "云端仙境",
+                    description: "云端仙境位于高山之巅，常年云雾缭绕，宛如仙境。这里有奇特的岩石、珍稀的高山植物和壮观的云海景观。站在山顶俯瞰，云海翻腾，令人心旷神怡。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=cloud%20wonderland%20mountain%20peak%20sea%20of%20clouds&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-25",
+                    type: "mountain",
+                    rarity: "legendary",
+                    features: "- 壮观的云海景观，如梦如幻\n- 奇特的岩石造型，形态各异\n- 珍稀的高山植物，四季常青\n- 古老的道观建筑，历史悠久\n- 日出时分金光万道，美不胜收",
+                    bestTime: "- 清晨：云海最壮观，日出金光\n- 雨后：云雾缭绕，如入仙境\n- 秋季：天高气爽，视野开阔\n- 冬季：雪景如画，银装素裹",
+                    tags: ["山峰", "云海", "仙境", "壮观"],
+                    points: 30,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 4,
+                    title: "水晶洞穴",
+                    description: "水晶洞穴是一个神秘的地下世界，洞壁上布满了晶莹剔透的水晶，在灯光照射下闪烁着七彩光芒。洞内还有地下河流和奇特的钟乳石，宛如童话世界。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=crystal%20cave%20underground%20world%20sparkling%20crystals&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-20",
+                    type: "cave",
+                    rarity: "epic",
+                    features: "- 晶莹剔透的水晶，七彩光芒\n- 形态各异的钟乳石和石笋\n- 清澈见底的地下河流\n- 神秘的洞穴通道，等待探索\n- 恒温环境，冬暖夏凉",
+                    bestTime: "- 全年适宜：洞内恒温\n- 夏季：避暑胜地\n- 冬季：温暖如春\n- 任何时间：灯光秀表演",
+                    tags: ["洞穴", "水晶", "神秘", "地下"],
+                    points: 25,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 5,
+                    title: "樱花山谷",
+                    description: "樱花山谷是一个充满浪漫气息的地方，每年春天，漫山遍野的樱花盛开，粉色的花海令人陶醉。微风吹过，花瓣飘落，如雨如雪，美不胜收。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=cherry%20blossom%20valley%20pink%20flowers%20spring&image_size=landscape_4_3",
+                    status: "private",
+                    created: "2026-02-15",
+                    type: "valley",
+                    rarity: "rare",
+                    features: "- 漫山遍野的樱花树\n- 粉色花海，如梦如幻\n- 花瓣飘落，如雨如雪\n- 传统日式建筑点缀其中\n- 茶香四溢的樱花茶室",
+                    bestTime: "- 春季：樱花盛开，最佳观赏期\n- 清晨：人少景美，适合拍照\n- 傍晚：夕阳下的樱花更迷人\n- 夜间：灯光下的夜樱",
+                    tags: ["樱花", "山谷", "浪漫", "春天"],
+                    points: 18,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 6,
+                    title: "极光冰原",
+                    description: "极光冰原位于极地地区，是观赏极光的最佳地点。在寒冷的冬夜，绚丽的极光在天空中舞动，绿色、紫色、粉色的光芒交织，与冰雪覆盖的大地相映成趣。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=aurora%20borealis%20ice%20field%20northern%20lights&image_size=landscape_4_3",
+                    status: "pending",
+                    created: "2026-02-10",
+                    type: "ice",
+                    rarity: "legendary",
+                    features: "- 绚丽的极光，色彩斑斓\n- 广袤的冰原，一望无际\n- 独特的冰雕景观\n- 可爱的极地动物\n- 冰屋体验，独特住宿",
+                    bestTime: "- 冬季：极光最活跃\n- 夜晚：最佳观赏时间\n- 新月期：天空最暗，极光最明显\n- 寒冷季节：冰雪景观最佳",
+                    tags: ["极光", "冰原", "极地", "壮观"],
+                    points: 35,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                }
+            ],
+            collection: [
+                {
+                    id: 301,
+                    title: "彩虹瀑布",
+                    description: "彩虹瀑布位于热带雨林深处，瀑布从百米高的悬崖倾泻而下，水雾弥漫，阳光照射下形成美丽的彩虹。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=rainbow%20waterfall%20tropical%20rainforest%20misty&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-05",
+                    type: "waterfall",
+                    rarity: "epic",
+                    features: "- 百米高瀑布，气势磅礴\n- 彩虹经常出现，美轮美奂\n- 热带雨林环绕，生机勃勃\n- 清凉的水雾，沁人心脾\n- 天然泳池，可以游泳",
+                    bestTime: "- 雨季：水量充沛，瀑布壮观\n- 晴天：彩虹出现概率高\n- 上午：光线最佳，适合拍照\n- 夏季：避暑胜地",
+                    tags: ["瀑布", "彩虹", "雨林", "清凉"],
+                    points: 22,
+                    author: {
+                        name: "旅行者A",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=travelerA"
+                    }
+                },
+                {
+                    id: 302,
+                    title: "古城遗迹",
+                    description: "古城遗迹是一座失落的文明遗址，古老的建筑、神秘的壁画和精美的雕刻，诉说着千年前的辉煌历史。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=ancient%20city%20ruins%20archaeological%20site%20mysterious&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-01-28",
+                    type: "ruins",
+                    rarity: "rare",
+                    features: "- 古老的石质建筑\n- 神秘的壁画和雕刻\n- 地下宫殿和通道\n- 珍贵的文物和宝藏\n- 历史的痕迹随处可见",
+                    bestTime: "- 春秋：气候宜人\n- 早晨：人少安静\n- 傍晚：夕阳下的古城更有韵味\n- 避开雨季：道路更好走",
+                    tags: ["古城", "遗迹", "历史", "文明"],
+                    points: 20,
+                    author: {
+                        name: "探险家B",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=explorerB"
+                    }
+                }
+            ],
+            drafts: [
+                {
+                    id: 201,
+                    title: "未完成的景点",
+                    description: "正在设计中的景点，尚未完成",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=unfinished%20scenic%20design%20concept%20sketch&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-03-05",
+                    type: "forest",
+                    rarity: "common",
+                    features: "",
+                    bestTime: "",
+                    tags: ["未完成", "设计", "草稿"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 202,
+                    title: "新景点构思",
+                    description: "一个新景点的概念设计",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=new%20scenic%20concept%20design%20sketch&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-03-03",
+                    type: "mountain",
+                    rarity: "common",
+                    features: "- 构思中的特色1\n- 构思中的特色2",
+                    bestTime: "待定",
+                    tags: ["构思", "新景点", "草稿"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 203,
+                    title: "景点改进方案",
+                    description: "现有景点的改进设计方案",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=scenic%20improvement%20design%20plan&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-02-28",
+                    type: "water",
+                    rarity: "common",
+                    features: "",
+                    bestTime: "",
+                    tags: ["改进", "方案", "草稿"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                }
+            ]
+        };
+        
+        let currentScenic = null;
+        
+        // 初始化页面
+        function init() {
+            const params = getUrlParams();
+            const scenic = findScenic(params.id, params.type);
+            
+            if (!scenic) {
+                alert('景点不存在');
+                goBack();
+                return;
+            }
+            
+            currentScenic = scenic;
+            renderScenicDetail(scenic, params.type);
+        }
+        
+        // 查找景点
+        function findScenic(id, type) {
+            const scenics = mockScenics[type] || [];
+            return scenics.find(s => s.id == id);
+        }
+        
+        // 渲染景点详情
+        function renderScenicDetail(scenic, type) {
+            // 设置标题
+            document.getElementById('detailTitle').textContent = scenic.title;
+            
+            // 设置图片
+            document.getElementById('detailImage').src = scenic.image;
+            
+            // 设置描述
+            document.getElementById('detailDescription').textContent = scenic.description;
+            
+            // 设置元数据
+            document.getElementById('detailCreated').textContent = scenic.created;
+            document.getElementById('detailCreatedSidebar').textContent = scenic.created;
+            document.getElementById('detailType').textContent = scenic.type;
+            document.getElementById('detailRarity').textContent = scenic.rarity;
+            document.getElementById('detailPoints').textContent = scenic.points + ' 积分';
+            document.getElementById('detailPointsSidebar').textContent = scenic.points;
+            document.getElementById('detailStatus').textContent = scenic.status === 'public' ? '公开' : scenic.status === 'private' ? '私有' : scenic.status === 'pending' ? '审核中' : scenic.status === 'rejected' ? '已拒绝' : scenic.status;
+            
+            // 设置景点特色
+            document.getElementById('detailFeatures').innerHTML = scenic.features;
+            
+            // 设置最佳游览时间
+            document.getElementById('detailBestTime').innerHTML = scenic.bestTime;
+            
+            // 设置标签
+            const tagsContainer = document.getElementById('detailTags');
+            tagsContainer.innerHTML = '';
+            if (scenic.tags && scenic.tags.length > 0) {
+                scenic.tags.forEach(tag => {
+                    const tagElement = document.createElement('span');
+                    tagElement.className = 'tag';
+                    tagElement.textContent = tag;
+                    tagsContainer.appendChild(tagElement);
+                });
+            }
+            
+            // 渲染操作按钮
+            renderActionButtons(scenic, type);
+        }
+        
+        // 渲染操作按钮
+        function renderActionButtons(scenic, type) {
+            const actionButtons = document.getElementById('actionButtons');
+            let buttonsHtml = '';
+            
+            // 如果是收藏别人的作品
+            if (type === 'collection') {
+                buttonsHtml = `
+                    <button class="btn btn-apply" onclick="applyScenic()">
+                        <i class="fas fa-magic"></i> 一键应用
+                    </button>
+                    <button class="btn btn-outline" onclick="cancelCollection()">
+                        <i class="fas fa-heart-broken"></i> 取消收藏
+                    </button>
+                `;
+            } else {
+                // 根据状态显示不同的按钮
+                switch (scenic.status) {
+                    case 'public':
+                        buttonsHtml = `
+                            <button class="btn btn-apply" onclick="applyScenic()">
+                                <i class="fas fa-magic"></i> 一键应用
+                            </button>
+                            <button class="btn btn-secondary" onclick="setPrivate()">
+                                <i class="fas fa-lock"></i> 设为私有
+                            </button>
+                        `;
+                        break;
+                    case 'private':
+                        buttonsHtml = `
+                            <button class="btn btn-apply" onclick="applyScenic()">
+                                <i class="fas fa-magic"></i> 一键应用
+                            </button>
+                            <button class="btn btn-success" onclick="setPublic()">
+                                <i class="fas fa-globe"></i> 设为公开
+                            </button>
+                            <button class="btn btn-primary" onclick="editScenic()">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                        `;
+                        break;
+                    case 'pending':
+                        buttonsHtml = `
+                            <button class="btn btn-apply" onclick="applyScenic()">
+                                <i class="fas fa-magic"></i> 一键应用
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteScenic()">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        `;
+                        break;
+                    case 'rejected':
+                        buttonsHtml = `
+                            <button class="btn btn-apply" onclick="applyScenic()">
+                                <i class="fas fa-magic"></i> 一键应用
+                            </button>
+                            <button class="btn btn-primary" onclick="editScenic()">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteScenic()">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                            <button class="btn btn-success" onclick="publishScenic()">
+                                <i class="fas fa-paper-plane"></i> 发布
+                            </button>
+                        `;
+                        break;
+                    default:
+                        buttonsHtml = `
+                            <button class="btn btn-apply" onclick="applyScenic()">
+                                <i class="fas fa-magic"></i> 一键应用
+                            </button>
+                        `;
+                }
+            }
+            
+            actionButtons.innerHTML = buttonsHtml;
+        }
+        
+        // 编辑景点
+        function editScenic() {
+            // 将当前景点数据序列化为URL参数
+            const params = new URLSearchParams();
+            params.append('id', currentScenic.id);
+            params.append('type', 'edit');
+            params.append('dataType', getUrlParams().type);
+            
+            // 跳转到创建页面并传递数据
+            window.location.href = `create-scenic.html?${params.toString()}`;
+        }
+        
+        // 点赞景点
+        function likeScenic() {
+            isLiked = !isLiked;
+            const likeBtn = document.querySelector('.btn-like');
+            if (isLiked) {
+                likeBtn.innerHTML = '<i class="fas fa-heart"></i> 已点赞';
+                likeBtn.style.background = 'linear-gradient(135deg, #e91e63, #c2185b)';
+            } else {
+                likeBtn.innerHTML = '<i class="fas fa-heart"></i> 点赞';
+                likeBtn.style.background = 'linear-gradient(135deg, #ff6b6b, #ee5a5a)';
+            }
+        }
+        
+        // 分享景点
+        function shareScenic() {
+            const shareUrl = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: currentScenic.title,
+                    text: currentScenic.description,
+                    url: shareUrl
+                }).catch(err => console.log('分享失败', err));
+            } else {
+                // 复制链接到剪贴板
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    alert('链接已复制到剪贴板！');
+                }).catch(err => {
+                    alert('分享链接: ' + shareUrl);
+                });
+            }
+        }
+        
+        // 一键应用
+        function applyScenic() {
+            alert('正在启动景点: ' + currentScenic.title);
+        }
+        
+        // 设为私有
+        function setPrivate() {
+            if (confirm('确定要将此景点设为私有吗？')) {
+                alert('景点已设为私有');
+                location.reload();
+            }
+        }
+        
+        // 设为公开
+        function setPublic() {
+            if (confirm('确定要将此景点设为公开吗？')) {
+                alert('景点已设为公开');
+                location.reload();
+            }
+        }
+        
+        // 删除景点
+        function deleteScenic() {
+            if (confirm('确定要删除此景点吗？此操作不可恢复！')) {
+                alert('景点已删除');
+                window.location.href = 'my-assets-scenic.html';
+            }
+        }
+        
+        // 取消收藏
+        function cancelCollection() {
+            if (confirm('确定要取消收藏吗？')) {
+                alert('已取消收藏');
+                window.location.href = 'my-assets-scenic.html';
+            }
+        }
+        
+        // 预览景点
+        function previewScenic() {
+            alert('预览景点效果');
+        }
+        
+        // 发布景点
+        function publishScenic() {
+            if (confirm('确定要发布这个景点吗？')) {
+                alert('景点已提交审核！');
+            }
+        }
+        
+        // 返回上一页
+        function goBack() {
+            window.history.back();
+        }
+        
+        // 初始化页面
+        init();
+    </script>
+</body>
+</html>

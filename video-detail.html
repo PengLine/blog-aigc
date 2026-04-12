@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>短剧详情 - AIGC创作平台</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 详情页样式 - 与character-detail.html保持一致 */
+        .detail-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .detail-header {
+            margin-bottom: 40px;
+        }
+        
+        .detail-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: inline-block;
+            margin-right: 15px;
+        }
+        
+        .detail-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .detail-author {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .author-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .detail-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+        }
+        
+        .meta-item i {
+            color: #2196f3;
+        }
+        
+        .detail-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .detail-main {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .detail-sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .detail-video {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            background-color: #000;
+        }
+        
+        .detail-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .detail-section {
+            margin-bottom: 30px;
+        }
+        
+        .detail-section h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: #fff;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid #2196f3;
+            color: #2196f3;
+        }
+        
+        .btn-outline:hover {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: #f8f9fa;
+            color: #495057;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-decoration: none;
+        }
+        
+        .back-link i {
+            margin-right: 8px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .stat-label {
+            color: #666;
+        }
+        
+        .stat-value {
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .action-buttons {
+            margin-top: 30px;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #4caf50, #388e3c);
+            color: #fff;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: #fff;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
+        }
+        
+        .btn-like {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-like:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        .btn-share {
+            background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-share:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4);
+        }
+        
+        .btn-apply {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: #fff;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-apply:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+        }
+        
+        .social-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .detail-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .detail-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .detail-author {
+                margin-top: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="detail-container">
+        <a href="my-assets-video.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回我的短剧</a>
+        
+        <div class="detail-header">
+            <h1 id="detailTitle">星际探险</h1>
+            <div class="detail-author">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=myself" alt="作者头像" class="author-avatar">
+                <span>我自己</span>
+            </div>
+        </div>
+        
+        <div class="detail-meta">
+            <div class="meta-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span id="detailCreated">2026-03-01</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-tag"></i>
+                <span id="detailType"> sci-fi</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-star"></i>
+                <span id="detailRarity"> epic</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-coins"></i>
+                <span id="detailPoints">25 积分</span>
+            </div>
+        </div>
+        
+        <div class="detail-content">
+            <div class="detail-main">
+                <video id="detailVideo" class="detail-video" controls poster="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=space%20adventure%20scene%20sci-fi%20cinematic&image_size=landscape_4_3">
+                    <source src="#" type="video/mp4">
+                    您的浏览器不支持视频播放。
+                </video>
+                
+                <div class="detail-section">
+                    <h3>剧情简介</h3>
+                    <p id="detailDescription" class="detail-description">
+                        《星际探险》讲述了一群宇航员在遥远的未来探索未知星球的故事。他们在太空中遭遇了各种挑战和危险，同时也发现了宇宙中令人惊叹的奥秘。这是一部充满科幻元素和人性探索的短剧，展现了人类对未知世界的好奇和勇气。
+                    </p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>剧集信息</h3>
+                    <p id="detailEpisodes">
+                        - 集数：5集<br>
+                        - 每集时长：10-15分钟<br>
+                        - 总时长：约60分钟<br>
+                        - 语言：中文<br>
+                        - 字幕：中文、英文
+                    </p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>角色列表</h3>
+                    <p id="detailCharacters">
+                        - 队长 李明：经验丰富的宇航员，带领团队探索未知星球<br>
+                        - 科学家 张华：负责研究星球上的生命迹象<br>
+                        - 工程师 王芳：维护飞船和设备的专家<br>
+                        - 医生 刘强：团队的医疗保障<br>
+                        - 机器人助手 K-9：智能机器人，协助团队完成任务
+                    </p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>标签</h3>
+                    <div id="detailTags" class="tag-list">
+                        <span class="tag">科幻</span>
+                        <span class="tag">探险</span>
+                        <span class="tag">太空</span>
+                        <span class="tag">冒险</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-sidebar">
+                <div class="detail-section">
+                    <h3>短剧信息</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">状态</span>
+                        <span id="detailStatus" class="stat-value">公开</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">创建时间</span>
+                        <span id="detailCreatedSidebar">2026-03-01</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">使用积分</span>
+                        <span id="detailPointsSidebar">25</span>
+                    </div>
+                </div>
+                
+                <div class="social-buttons">
+                    <button class="btn btn-like" onclick="likeVideo()">
+                        <i class="fas fa-heart"></i> 点赞
+                    </button>
+                    <button class="btn btn-share" onclick="shareVideo()">
+                        <i class="fas fa-share-alt"></i> 分享
+                    </button>
+                </div>
+                
+                <div class="action-buttons" id="actionButtons">
+                    <!-- 按钮将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="static/js/common.js"></script>
+    <script>
+        // 获取URL参数
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                id: params.get('id'),
+                type: params.get('type') || 'my',
+                source: params.get('source') || 'video'
+            };
+        }
+        
+        // 模拟短剧数据
+        const mockVideos = {
+            my: [
+                {
+                    id: 1,
+                    title: "星际探险",
+                    description: "《星际探险》讲述了一群宇航员在遥远的未来探索未知星球的故事。他们在太空中遭遇了各种挑战和危险，同时也发现了宇宙中令人惊叹的奥秘。这是一部充满科幻元素和人性探索的短剧，展现了人类对未知世界的好奇和勇气。",
+                    video: "#",
+                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=space%20adventure%20scene%20sci-fi%20cinematic&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-03-01",
+                    type: "sci-fi",
+                    rarity: "epic",
+                    episodes: "- 集数：5集\n- 每集时长：10-15分钟\n- 总时长：约60分钟\n- 语言：中文\n- 字幕：中文、英文",
+                    characters: "- 队长 李明：经验丰富的宇航员，带领团队探索未知星球\n- 科学家 张华：负责研究星球上的生命迹象\n- 工程师 王芳：维护飞船和设备的专家\n- 医生 刘强：团队的医疗保障\n- 机器人助手 K-9：智能机器人，协助团队完成任务",
+                    tags: ["科幻", "探险", "太空", "冒险"],
+                    points: 25,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 2,
+                    title: "魔法学院",
+                    description: "《魔法学院》讲述了一群年轻魔法师在魔法学院学习和成长的故事。他们面临各种挑战和考验，同时也发现了自己的魔法潜能。这是一部充满奇幻元素和青春成长的短剧，展现了友谊和勇气的力量。",
+                    video: "#",
+                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=magic%20academy%20fantasy%20scene%20cinematic&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-28",
+                    type: "fantasy",
+                    rarity: "rare",
+                    episodes: "- 集数：4集\n- 每集时长：12-18分钟\n- 总时长：约60分钟\n- 语言：中文\n- 字幕：中文、英文",
+                    characters: "- 主角 小雨：普通女孩，发现自己有魔法天赋\n- 导师 梅林：魔法学院的资深教授\n- 同学 小明：小雨的好友，擅长变形术\n- 同学 小花：小雨的室友，擅长元素魔法\n- 反派 黑暗巫师：试图破坏魔法学院",
+                    tags: ["奇幻", "魔法", "青春", "成长"],
+                    points: 20,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 3,
+                    title: "都市爱情",
+                    description: "《都市爱情》讲述了一对年轻人在繁华都市中相遇、相知、相爱的故事。他们面对工作压力、家庭矛盾和生活挑战，最终携手走向幸福。这是一部温馨浪漫的爱情短剧，展现了现代都市人的情感世界。",
+                    video: "#",
+                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=urban%20romance%20city%20love%20story%20cinematic&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-25",
+                    type: "romance",
+                    rarity: "rare",
+                    episodes: "- 集数：6集\n- 每集时长：8-12分钟\n- 总时长：约60分钟\n- 语言：中文\n- 字幕：中文、英文",
+                    characters: "- 男主角 陈浩：年轻有为的职场精英\n- 女主角 林晓：温柔善良的设计师\n- 闺蜜 小美：林晓的好友，经常出谋划策\n- 同事 大伟：陈浩的竞争对手，后来成为朋友\n- 父母：关心子女婚姻大事的长辈",
+                    tags: ["爱情", "都市", "浪漫", "现代"],
+                    points: 18,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 4,
+                    title: "悬疑推理",
+                    description: "《悬疑推理》讲述了一位天才侦探破解一系列离奇案件的故事。每个案件都充满谜团和反转，观众可以跟随侦探一起推理，体验解谜的乐趣。这是一部烧脑的悬疑短剧，展现了逻辑推理的魅力。",
+                    video: "#",
+                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=mystery%20detective%20investigation%20crime%20scene%20cinematic&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-20",
+                    type: "mystery",
+                    rarity: "epic",
+                    episodes: "- 集数：5集\n- 每集时长：15-20分钟\n- 总时长：约85分钟\n- 语言：中文\n- 字幕：中文、英文",
+                    characters: "- 侦探 秦风：智商超群的天才侦探\n- 助手 小雨：秦风的得力助手，观察力敏锐\n- 警官 老李：经验丰富的老警察\n- 法医 王博士：专业的法医鉴定专家\n- 神秘人 X：幕后黑手，身份成谜",
+                    tags: ["悬疑", "推理", "侦探", "烧脑"],
+                    points: 28,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 5,
+                    title: "古装武侠",
+                    description: "《古装武侠》讲述了一位少年侠客在江湖中成长的故事。他历经磨难，习得绝世武功，最终成为一代大侠，维护江湖正义。这是一部热血沸腾的武侠短剧，展现了中华武术的博大精深。",
+                    video: "#",
+                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=ancient%20wuxia%20martial%20arts%20sword%20fighting%20cinematic&image_size=landscape_4_3",
+                    status: "private",
+                    created: "2026-02-15",
+                    type: "wuxia",
+                    rarity: "legendary",
+                    episodes: "- 集数：8集\n- 每集时长：12-15分钟\n- 总时长：约100分钟\n- 语言：中文\n- 字幕：中文、英文",
+                    characters: "- 主角 李逍遥：少年侠客，正义感强\n- 师父 张三丰：武林泰斗，传授绝世武功\n- 女主角 赵灵儿：温柔善良的医女\n- 反派 魔教教主：野心勃勃，企图称霸武林\n- 好友 段誉：大理王子，精通六脉神剑",
+                    tags: ["武侠", "古装", "江湖", "功夫"],
+                    points: 35,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 6,
+                    title: "搞笑日常",
+                    description: "《搞笑日常》讲述了一群室友的搞笑日常生活。他们性格各异，经常发生各种有趣的故事，让人捧腹大笑。这是一部轻松幽默的喜剧短剧，展现了年轻人的生活状态。",
+                    video: "#",
+                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=comedy%20roommates%20funny%20daily%20life%20sitcom&image_size=landscape_4_3",
+                    status: "pending",
+                    created: "2026-02-10",
+                    type: "comedy",
+                    rarity: "common",
+                    episodes: "- 集数：10集\n- 每集时长：5-8分钟\n- 总时长：约65分钟\n- 语言：中文\n- 字幕：中文",
+                    characters: "- 小明：宅男程序员，技术宅\n- 小强：运动达人，四肢发达\n- 小美：时尚女孩，爱美爱购物\n- 大智：学霸，经常语出惊人\n- 房东阿姨：爱唠叨但心地善良",
+                    tags: ["喜剧", "搞笑", "日常", "轻松"],
+                    points: 15,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                }
+            ],
+            collection: [
+                {
+                    id: 301,
+                    title: "历史传奇",
+                    description: "《历史传奇》讲述了历史上著名人物的故事，通过精彩的剧情再现历史场景，让观众了解历史、感受历史。",
+                    video: "#",
+                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=historical%20drama%20ancient%20china%20epic%20scene&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-05",
+                    type: "history",
+                    rarity: "epic",
+                    episodes: "- 集数：6集\n- 每集时长：20-25分钟\n- 总时长：约130分钟\n- 语言：中文\n- 字幕：中文、英文",
+                    characters: "- 历史人物A：著名将领\n- 历史人物B：智慧谋士\n- 历史人物C：美丽公主",
+                    tags: ["历史", "传奇", "古装", "史诗"],
+                    points: 26,
+                    author: {
+                        name: "创作者C",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=creatorC"
+                    }
+                },
+                {
+                    id: 302,
+                    title: "恐怖惊悚",
+                    description: "《恐怖惊悚》讲述了一系列离奇恐怖的事件，氛围紧张刺激，适合喜欢恐怖片的观众。",
+                    video: "#",
+                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=horror%20thriller%20dark%20atmosphere%20scary%20scene&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-01-28",
+                    type: "horror",
+                    rarity: "rare",
+                    episodes: "- 集数：4集\n- 每集时长：10-12分钟\n- 总时长：约45分钟\n- 语言：中文\n- 字幕：中文",
+                    characters: "- 主角：勇敢的年轻人\n- 神秘人：身份不明\n- 受害者：遭遇不幸的人",
+                    tags: ["恐怖", "惊悚", "悬疑", "刺激"],
+                    points: 22,
+                    author: {
+                        name: "导演D",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=directorD"
+                    }
+                }
+            ],
+            drafts: [
+                {
+                    id: 201,
+                    title: "未完成的短剧",
+                    description: "正在制作中的短剧，尚未完成",
+                    video: "#",
+                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=unfinished%20video%20production%20concept%20storyboard&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-03-05",
+                    type: "sci-fi",
+                    rarity: "common",
+                    episodes: "",
+                    characters: "",
+                    tags: ["未完成", "制作", "草稿"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 202,
+                    title: "短剧创意构思",
+                    description: "一个新短剧的创意构思",
+                    video: "#",
+                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=video%20concept%20creative%20idea%20storyboard&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-03-03",
+                    type: "drama",
+                    rarity: "common",
+                    episodes: "- 集数：待定",
+                    characters: "- 主角：待设定\n- 配角：待设定",
+                    tags: ["构思", "创意", "草稿"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 203,
+                    title: "剧本初稿",
+                    description: "正在编写的剧本初稿",
+                    video: "#",
+                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=script%20writing%20draft%20document%20paper&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-02-28",
+                    type: "romance",
+                    rarity: "common",
+                    episodes: "",
+                    characters: "",
+                    tags: ["剧本", "初稿", "草稿"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                }
+            ]
+        };
+        
+        let currentVideo = null;
+        
+        // 初始化页面
+        function init() {
+            const params = getUrlParams();
+            const video = findVideo(params.id, params.type);
+            
+            if (!video) {
+                alert('短剧不存在');
+                goBack();
+                return;
+            }
+            
+            currentVideo = video;
+            renderVideoDetail(video, params.type);
+        }
+        
+        // 查找短剧
+        function findVideo(id, type) {
+            const videos = mockVideos[type] || [];
+            return videos.find(v => v.id == id);
+        }
+        
+        // 渲染短剧详情
+        function renderVideoDetail(video, type) {
+            // 设置标题
+            document.getElementById('detailTitle').textContent = video.title;
+            
+            // 设置视频
+            const videoElement = document.getElementById('detailVideo');
+            videoElement.src = video.video;
+            videoElement.poster = video.poster;
+            
+            // 设置描述
+            document.getElementById('detailDescription').textContent = video.description;
+            
+            // 设置元数据
+            document.getElementById('detailCreated').textContent = video.created;
+            document.getElementById('detailCreatedSidebar').textContent = video.created;
+            document.getElementById('detailType').textContent = video.type;
+            document.getElementById('detailRarity').textContent = video.rarity;
+            document.getElementById('detailPoints').textContent = video.points + ' 积分';
+            document.getElementById('detailPointsSidebar').textContent = video.points;
+            document.getElementById('detailStatus').textContent = video.status === 'public' ? '公开' : video.status === 'private' ? '私有' : video.status === 'pending' ? '审核中' : video.status === 'rejected' ? '已拒绝' : video.status;
+            
+            // 设置剧集信息
+            document.getElementById('detailEpisodes').innerHTML = video.episodes;
+            
+            // 设置角色列表
+            document.getElementById('detailCharacters').innerHTML = video.characters;
+            
+            // 设置标签
+            const tagsContainer = document.getElementById('detailTags');
+            tagsContainer.innerHTML = '';
+            if (video.tags && video.tags.length > 0) {
+                video.tags.forEach(tag => {
+                    const tagElement = document.createElement('span');
+                    tagElement.className = 'tag';
+                    tagElement.textContent = tag;
+                    tagsContainer.appendChild(tagElement);
+                });
+            }
+            
+            // 渲染操作按钮
+            renderActionButtons(video, type);
+        }
+        
+        // 渲染操作按钮
+        function renderActionButtons(video, type) {
+            const actionButtons = document.getElementById('actionButtons');
+            let buttonsHtml = '';
+            
+            // 如果是收藏别人的作品
+            if (type === 'collection') {
+                buttonsHtml = `
+                    <button class="btn btn-apply" onclick="applyVideo()">
+                        <i class="fas fa-magic"></i> 一键应用
+                    </button>
+                    <button class="btn btn-outline" onclick="cancelCollection()">
+                        <i class="fas fa-heart-broken"></i> 取消收藏
+                    </button>
+                `;
+            } else {
+                // 根据状态显示不同的按钮
+                switch (video.status) {
+                    case 'public':
+                        buttonsHtml = `
+                            <button class="btn btn-apply" onclick="applyVideo()">
+                                <i class="fas fa-magic"></i> 一键应用
+                            </button>
+                            <button class="btn btn-secondary" onclick="setPrivate()">
+                                <i class="fas fa-lock"></i> 设为私有
+                            </button>
+                        `;
+                        break;
+                    case 'private':
+                        buttonsHtml = `
+                            <button class="btn btn-apply" onclick="applyVideo()">
+                                <i class="fas fa-magic"></i> 一键应用
+                            </button>
+                            <button class="btn btn-success" onclick="setPublic()">
+                                <i class="fas fa-globe"></i> 设为公开
+                            </button>
+                            <button class="btn btn-primary" onclick="editVideo()">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                        `;
+                        break;
+                    case 'pending':
+                        buttonsHtml = `
+                            <button class="btn btn-apply" onclick="applyVideo()">
+                                <i class="fas fa-magic"></i> 一键应用
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteVideo()">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        `;
+                        break;
+                    case 'rejected':
+                        buttonsHtml = `
+                            <button class="btn btn-apply" onclick="applyVideo()">
+                                <i class="fas fa-magic"></i> 一键应用
+                            </button>
+                            <button class="btn btn-primary" onclick="editVideo()">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteVideo()">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                            <button class="btn btn-success" onclick="publishVideo()">
+                                <i class="fas fa-paper-plane"></i> 发布
+                            </button>
+                        `;
+                        break;
+                    default:
+                        buttonsHtml = `
+                            <button class="btn btn-apply" onclick="applyVideo()">
+                                <i class="fas fa-magic"></i> 一键应用
+                            </button>
+                        `;
+                }
+            }
+            
+            actionButtons.innerHTML = buttonsHtml;
+        }
+        
+        // 编辑短剧
+        function editVideo() {
+            // 将当前短剧数据序列化为URL参数
+            const params = new URLSearchParams();
+            params.append('id', currentVideo.id);
+            params.append('type', 'edit');
+            params.append('dataType', getUrlParams().type);
+            
+            // 跳转到创建页面并传递数据
+            window.location.href = `create-video.html?${params.toString()}`;
+        }
+        
+        // 点赞短剧
+        function likeVideo() {
+            isLiked = !isLiked;
+            const likeBtn = document.querySelector('.btn-like');
+            if (isLiked) {
+                likeBtn.innerHTML = '<i class="fas fa-heart"></i> 已点赞';
+                likeBtn.style.background = 'linear-gradient(135deg, #e91e63, #c2185b)';
+            } else {
+                likeBtn.innerHTML = '<i class="fas fa-heart"></i> 点赞';
+                likeBtn.style.background = 'linear-gradient(135deg, #ff6b6b, #ee5a5a)';
+            }
+        }
+        
+        // 分享短剧
+        function shareVideo() {
+            const shareUrl = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: currentVideo.title,
+                    text: currentVideo.description,
+                    url: shareUrl
+                }).catch(err => console.log('分享失败', err));
+            } else {
+                // 复制链接到剪贴板
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    alert('链接已复制到剪贴板！');
+                }).catch(err => {
+                    alert('分享链接: ' + shareUrl);
+                });
+            }
+        }
+        
+        // 一键应用
+        function applyVideo() {
+            alert('正在启动短剧: ' + currentVideo.title);
+        }
+        
+        // 设为私有
+        function setPrivate() {
+            if (confirm('确定要将此短剧设为私有吗？')) {
+                alert('短剧已设为私有');
+                location.reload();
+            }
+        }
+        
+        // 设为公开
+        function setPublic() {
+            if (confirm('确定要将此短剧设为公开吗？')) {
+                alert('短剧已设为公开');
+                location.reload();
+            }
+        }
+        
+        // 删除短剧
+        function deleteVideo() {
+            if (confirm('确定要删除此短剧吗？此操作不可恢复！')) {
+                alert('短剧已删除');
+                window.location.href = 'my-assets-video.html';
+            }
+        }
+        
+        // 取消收藏
+        function cancelCollection() {
+            if (confirm('确定要取消收藏吗？')) {
+                alert('已取消收藏');
+                window.location.href = 'my-assets-video.html';
+            }
+        }
+        
+        // 预览短剧
+        function previewVideo() {
+            alert('预览短剧效果');
+        }
+        
+        // 发布短剧
+        function publishVideo() {
+            if (confirm('确定要发布这个短剧吗？')) {
+                alert('短剧已提交审核！');
+            }
+        }
+        
+        // 返回上一页
+        function goBack() {
+            window.history.back();
+        }
+        
+        // 初始化页面
+        init();
+    </script>
+</body>
+</html>

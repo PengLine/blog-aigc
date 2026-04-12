@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创建景点 - AIGC创作平台</title>
+    <script src="../static/js/common.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            color: #333;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: #f8f9fa;
+            color: #495057;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-decoration: none;
+        }
+        
+        .back-link i {
+            margin-right: 8px;
+        }
+        
+        .create-form {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .create-form h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2196f3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        
+        .image-upload {
+            border: 2px dashed #e9ecef;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .image-upload:hover {
+            border-color: #2196f3;
+            background-color: rgba(33, 150, 243, 0.05);
+        }
+        
+        .image-upload input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .image-upload i {
+            font-size: 2.5rem;
+            color: #adb5bd;
+            margin-bottom: 15px;
+        }
+        
+        .image-upload p {
+            color: #6c757d;
+        }
+        
+        .preview-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .tag-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .remove-tag {
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: #fff;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid #2196f3;
+            color: #2196f3;
+        }
+        
+        .btn-outline:hover {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        .label-with-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .btn-ai-generate {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-ai-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+        }
+        
+        .btn-ai-generate i {
+            font-size: 1rem;
+        }
+        
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background: #fff;
+            border-radius: 18px;
+            padding: 40px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            color: #dc3545;
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .modal-footer .btn {
+            padding: 10px 24px;
+        }
+        
+        .ai-prompt {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .ai-prompt:focus {
+            outline: none;
+            border-color: #2196f3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .create-form {
+                padding: 25px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="my-assets-scenic.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回我的景点</a>
+        
+        <div class="create-form">
+            <h2>景点信息</h2>
+            
+            <div class="form-group">
+                <label for="scenicName">景点名称</label>
+                <input type="text" id="scenicName" placeholder="请输入景点名称">
+            </div>
+            
+            <div class="form-group">
+                <label for="scenicDescription">景点描述</label>
+                <textarea id="scenicDescription" placeholder="请输入景点描述"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <div class="label-with-button">
+                    <label>景点图片</label>
+                    <button class="btn-ai-generate" onclick="openAIModal()">
+                        <i class="fas fa-magic"></i> AI 生成
+                    </button>
+                </div>
+                <div class="image-upload" onclick="document.getElementById('scenicImage').click()">
+                    <input type="file" id="scenicImage" accept="image/*">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>点击上传图片或拖拽图片到此处</p>
+                    <img id="previewImage" class="preview-image hidden" src="" alt="预览图片">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="scenicType">景点类型</label>
+                <select id="scenicType">
+                    <option value="forest">森林</option>
+                    <option value="mountain">山脉</option>
+                    <option value="coast">海岸</option>
+                    <option value="lake">湖泊</option>
+                    <option value="desert">沙漠</option>
+                    <option value="city">城市</option>
+                    <option value="other">其他</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="scenicRarity">稀有度</label>
+                <select id="scenicRarity">
+                    <option value="common">普通</option>
+                    <option value="uncommon">优秀</option>
+                    <option value="rare">稀有</option>
+                    <option value="epic">史诗</option>
+                    <option value="legendary">传说</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="scenicFeatures">景点特色</label>
+                <textarea id="scenicFeatures" placeholder="请输入景点特色，每行一个"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="scenicBestTime">最佳游览时间</label>
+                <textarea id="scenicBestTime" placeholder="请输入最佳游览时间，每行一个"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="scenicTags">标签</label>
+                <input type="text" id="scenicTags" placeholder="请输入标签，用逗号分隔">
+                <div class="tag-input" id="tagInput"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="scenicPoints">使用积分</label>
+                <input type="number" id="scenicPoints" min="0" placeholder="请输入使用该景点需要消耗的积分">
+            </div>
+            
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="goBack()">取消</button>
+                <button class="btn btn-primary" onclick="saveDraft()">保存草稿</button>
+                <button class="btn btn-primary" onclick="publishScenic()">发布</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI 生成弹框 -->
+    <div class="modal-overlay" id="aiModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">AI 生成图片</h3>
+                <button class="modal-close" onclick="closeAIModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="aiPrompt">生成提示</label>
+                    <textarea class="ai-prompt" id="aiPrompt" placeholder="请输入生成提示，例如：神秘森林，魔法氛围，梦幻光影"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAIModal()">取消</button>
+                <button class="btn btn-primary" onclick="generateWithAI()">生成</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 获取URL参数
+        function getUrlParams() {
+            const params = {};
+            const search = window.location.search;
+            if (search) {
+                const pairs = search.substring(1).split('&');
+                pairs.forEach(pair => {
+                    const [key, value] = pair.split('=');
+                    params[decodeURIComponent(key)] = decodeURIComponent(value || '');
+                });
+            }
+            return params;
+        }
+        
+        // 模拟景点数据
+        const mockScenics = {
+            my: [
+                {
+                    id: 1,
+                    title: "神秘森林",
+                    description: "神秘森林是一个充满魔法的地方，这里有高大的古树、闪烁的萤火虫和各种神奇的生物。阳光透过树叶洒下斑驳的光影，营造出梦幻般的氛围。这是一个适合冒险和探索的地方，隐藏着许多秘密等待发现。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=mysterious%20forest%20scenic%20view%20fantasy%20magical%20atmosphere&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-03-01",
+                    type: "forest",
+                    rarity: "rare",
+                    features: "- 高大的古老树木，有些树龄超过千年\n- 夜晚闪烁的萤火虫，形成美丽的光带\n- 清澈的小溪，水流叮咚作响\n- 各种神奇的植物，有的会发光，有的会移动\n- 隐藏的洞穴和小径，通往未知的地方",
+                    bestTime: "- 春季：万物复苏，花朵盛开，空气清新\n- 夏季：树木茂盛，萤火虫最多，适合夜晚探险\n- 秋季：树叶变色，景色绚丽，适合拍照\n- 冬季：银装素裹，静谧祥和，适合冥想",
+                    tags: ["森林", "神秘", "魔法", "探险"],
+                    points: 15,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 2,
+                    title: "星空海岸",
+                    description: "星空海岸是一个神奇的地方，夜晚的星空与海浪交相辉映，仿佛置身于宇宙之中。这里的沙滩细腻柔软，海水清澈见底，是观赏星空和海浪的绝佳地点。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=starry%20coast%20night%20sky%20waves%20beautiful%20scenery&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-28",
+                    type: "coast",
+                    rarity: "epic",
+                    features: "- 夜晚星空璀璨，银河清晰可见\n- 海浪声如音乐般动听\n- 沙滩细腻柔软，适合漫步\n- 偶尔能看到发光的浮游生物\n- 日出日落景色壮观",
+                    bestTime: "- 夜晚：星空最璀璨，适合观星\n- 清晨：日出景色壮观\n- 傍晚：日落时分，海水被染成金色\n- 夏季：天气温暖，适合游泳",
+                    tags: ["海岸", "星空", "浪漫", "自然"],
+                    points: 20,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 3,
+                    title: "云端仙境",
+                    description: "云端仙境位于高山之巅，常年云雾缭绕，宛如仙境。这里有奇特的岩石、珍稀的高山植物和壮观的云海景观。站在山顶俯瞰，云海翻腾，令人心旷神怡。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=cloud%20wonderland%20mountain%20peak%20sea%20of%20clouds&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-25",
+                    type: "mountain",
+                    rarity: "legendary",
+                    features: "- 壮观的云海景观，如梦如幻\n- 奇特的岩石造型，形态各异\n- 珍稀的高山植物，四季常青\n- 古老的道观建筑，历史悠久\n- 日出时分金光万道，美不胜收",
+                    bestTime: "- 清晨：云海最壮观，日出金光\n- 雨后：云雾缭绕，如入仙境\n- 秋季：天高气爽，视野开阔\n- 冬季：雪景如画，银装素裹",
+                    tags: ["山峰", "云海", "仙境", "壮观"],
+                    points: 30,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 4,
+                    title: "水晶洞穴",
+                    description: "水晶洞穴是一个神秘的地下世界，洞壁上布满了晶莹剔透的水晶，在灯光照射下闪烁着七彩光芒。洞内还有地下河流和奇特的钟乳石，宛如童话世界。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=crystal%20cave%20underground%20world%20sparkling%20crystals&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-20",
+                    type: "cave",
+                    rarity: "epic",
+                    features: "- 晶莹剔透的水晶，七彩光芒\n- 形态各异的钟乳石和石笋\n- 清澈见底的地下河流\n- 神秘的洞穴通道，等待探索\n- 恒温环境，冬暖夏凉",
+                    bestTime: "- 全年适宜：洞内恒温\n- 夏季：避暑胜地\n- 冬季：温暖如春\n- 任何时间：灯光秀表演",
+                    tags: ["洞穴", "水晶", "神秘", "地下"],
+                    points: 25,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 5,
+                    title: "樱花山谷",
+                    description: "樱花山谷是一个充满浪漫气息的地方，每年春天，漫山遍野的樱花盛开，粉色的花海令人陶醉。微风吹过，花瓣飘落，如雨如雪，美不胜收。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=cherry%20blossom%20valley%20pink%20flowers%20spring&image_size=landscape_4_3",
+                    status: "private",
+                    created: "2026-02-15",
+                    type: "valley",
+                    rarity: "rare",
+                    features: "- 漫山遍野的樱花树\n- 粉色花海，如梦如幻\n- 花瓣飘落，如雨如雪\n- 传统日式建筑点缀其中\n- 茶香四溢的樱花茶室",
+                    bestTime: "- 春季：樱花盛开，最佳观赏期\n- 清晨：人少景美，适合拍照\n- 傍晚：夕阳下的樱花更迷人\n- 夜间：灯光下的夜樱",
+                    tags: ["樱花", "山谷", "浪漫", "春天"],
+                    points: 18,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 6,
+                    title: "极光冰原",
+                    description: "极光冰原位于极地地区，是观赏极光的最佳地点。在寒冷的冬夜，绚丽的极光在天空中舞动，绿色、紫色、粉色的光芒交织，与冰雪覆盖的大地相映成趣。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=aurora%20borealis%20ice%20field%20northern%20lights&image_size=landscape_4_3",
+                    status: "pending",
+                    created: "2026-02-10",
+                    type: "ice",
+                    rarity: "legendary",
+                    features: "- 绚丽的极光，色彩斑斓\n- 广袤的冰原，一望无际\n- 独特的冰雕景观\n- 可爱的极地动物\n- 冰屋体验，独特住宿",
+                    bestTime: "- 冬季：极光最活跃\n- 夜晚：最佳观赏时间\n- 新月期：天空最暗，极光最明显\n- 寒冷季节：冰雪景观最佳",
+                    tags: ["极光", "冰原", "极地", "壮观"],
+                    points: 35,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                }
+            ],
+            collection: [
+                {
+                    id: 301,
+                    title: "彩虹瀑布",
+                    description: "彩虹瀑布位于热带雨林深处，瀑布从百米高的悬崖倾泻而下，水雾弥漫，阳光照射下形成美丽的彩虹。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=rainbow%20waterfall%20tropical%20rainforest%20misty&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-05",
+                    type: "waterfall",
+                    rarity: "epic",
+                    features: "- 百米高瀑布，气势磅礴\n- 彩虹经常出现，美轮美奂\n- 热带雨林环绕，生机勃勃\n- 清凉的水雾，沁人心脾\n- 天然泳池，可以游泳",
+                    bestTime: "- 雨季：水量充沛，瀑布壮观\n- 晴天：彩虹出现概率高\n- 上午：光线最佳，适合拍照\n- 夏季：避暑胜地",
+                    tags: ["瀑布", "彩虹", "雨林", "清凉"],
+                    points: 22,
+                    author: {
+                        name: "旅行者A",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=travelerA"
+                    }
+                },
+                {
+                    id: 302,
+                    title: "古城遗迹",
+                    description: "古城遗迹是一座失落的文明遗址，古老的建筑、神秘的壁画和精美的雕刻，诉说着千年前的辉煌历史。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=ancient%20city%20ruins%20archaeological%20site%20mysterious&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-01-28",
+                    type: "ruins",
+                    rarity: "rare",
+                    features: "- 古老的石质建筑\n- 神秘的壁画和雕刻\n- 地下宫殿和通道\n- 珍贵的文物和宝藏\n- 历史的痕迹随处可见",
+                    bestTime: "- 春秋：气候宜人\n- 早晨：人少安静\n- 傍晚：夕阳下的古城更有韵味\n- 避开雨季：道路更好走",
+                    tags: ["古城", "遗迹", "历史", "文明"],
+                    points: 20,
+                    author: {
+                        name: "探险家B",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=explorerB"
+                    }
+                }
+            ],
+            drafts: [
+                {
+                    id: 201,
+                    title: "未完成的景点",
+                    description: "正在设计中的景点，尚未完成",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=unfinished%20scenic%20design%20concept%20sketch&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-03-05",
+                    type: "forest",
+                    rarity: "common",
+                    features: "",
+                    bestTime: "",
+                    tags: ["未完成", "设计", "草稿"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 202,
+                    title: "新景点构思",
+                    description: "一个新景点的概念设计",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=new%20scenic%20concept%20design%20sketch&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-03-03",
+                    type: "mountain",
+                    rarity: "common",
+                    features: "- 构思中的特色1\n- 构思中的特色2",
+                    bestTime: "待定",
+                    tags: ["构思", "新景点", "草稿"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 203,
+                    title: "景点改进方案",
+                    description: "现有景点的改进设计方案",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=scenic%20improvement%20design%20plan&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-02-28",
+                    type: "water",
+                    rarity: "common",
+                    features: "",
+                    bestTime: "",
+                    tags: ["改进", "方案", "草稿"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                }
+            ]
+        };
+        
+        // 页面加载时初始化
+        function init() {
+            const params = getUrlParams();
+            if (params.type === 'edit' && params.id) {
+                loadDraftData(params.id, params.dataType);
+                document.querySelector('.create-form h2').textContent = '编辑景点';
+            }
+            
+            // 图片上传预览
+            document.getElementById('scenicImage').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const previewImage = document.getElementById('previewImage');
+                        previewImage.src = e.target.result;
+                        previewImage.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // 标签输入处理
+            document.getElementById('scenicTags').addEventListener('keypress', function(e) {
+                if (e.key === ',') {
+                    e.preventDefault();
+                    addTag(this.value.trim());
+                    this.value = '';
+                }
+            });
+        }
+        
+        // 加载草稿数据
+        function loadDraftData(id, dataType) {
+            const scenics = mockScenics[dataType] || [];
+            const draft = scenics.find(s => s.id == id);
+            
+            if (draft) {
+                // 填充表单
+                document.getElementById('scenicName').value = draft.title || '';
+                document.getElementById('scenicDescription').value = draft.description || '';
+                document.getElementById('scenicType').value = draft.type || 'forest';
+                document.getElementById('scenicRarity').value = draft.rarity || 'common';
+                document.getElementById('scenicFeatures').value = draft.features || '';
+                document.getElementById('scenicBestTime').value = draft.bestTime || '';
+                document.getElementById('scenicPoints').value = draft.points || 0;
+                
+                // 设置标签
+                if (draft.tags && draft.tags.length > 0) {
+                    document.getElementById('scenicTags').value = draft.tags.join(', ');
+                    draft.tags.forEach(tag => addTag(tag));
+                }
+                
+                // 设置预览图片
+                if (draft.image) {
+                    const previewImage = document.getElementById('previewImage');
+                    previewImage.src = draft.image;
+                    previewImage.classList.remove('hidden');
+                }
+            } else {
+                console.log('未找到景点数据:', id, dataType);
+            }
+        }
+        
+        // 添加标签
+        function addTag(tagText) {
+            if (!tagText) return;
+            
+            const tagInput = document.getElementById('tagInput');
+            const tagElement = document.createElement('div');
+            tagElement.className = 'tag';
+            tagElement.innerHTML = `${tagText}<span class="remove-tag" onclick="removeTag(this)">×</span>`;
+            tagInput.appendChild(tagElement);
+        }
+        
+        // 移除标签
+        function removeTag(element) {
+            element.parentElement.remove();
+        }
+        
+        // 保存草稿
+        function saveDraft() {
+            const scenicData = collectFormData();
+            scenicData.status = 'draft';
+            
+            // 模拟保存操作
+            alert('草稿已保存');
+            window.location.href = 'my-assets-scenic.html';
+        }
+        
+        // 发布景点
+        function publishScenic() {
+            const scenicData = collectFormData();
+            scenicData.status = 'public';
+            
+            // 模拟发布操作
+            if (confirm('确定要发布这个景点吗？')) {
+                alert('景点已提交审核！');
+                window.location.href = 'my-assets-scenic.html';
+            }
+        }
+        
+        // 收集表单数据
+        function collectFormData() {
+            const tags = [];
+            document.querySelectorAll('.tag').forEach(tag => {
+                tags.push(tag.textContent.replace('×', '').trim());
+            });
+            
+            return {
+                title: document.getElementById('scenicName').value,
+                description: document.getElementById('scenicDescription').value,
+                type: document.getElementById('scenicType').value,
+                rarity: document.getElementById('scenicRarity').value,
+                features: document.getElementById('scenicFeatures').value,
+                bestTime: document.getElementById('scenicBestTime').value,
+                tags: tags,
+                points: parseInt(document.getElementById('scenicPoints').value) || 0,
+                image: document.getElementById('previewImage').src
+            };
+        }
+        
+        // AI生成相关函数
+        function openAIModal() {
+            document.getElementById('aiModal').classList.add('active');
+        }
+        
+        function closeAIModal() {
+            document.getElementById('aiModal').classList.remove('active');
+        }
+        
+        function generateWithAI() {
+            const prompt = document.getElementById('aiPrompt').value;
+            if (!prompt) {
+                alert('请输入生成提示');
+                return;
+            }
+            
+            // 模拟 AI 生成过程
+            alert('AI 生成中，请稍候...');
+            
+            // 模拟生成结果
+            setTimeout(() => {
+                document.getElementById('previewImage').src = `https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(prompt)}&image_size=landscape_4_3`;
+                document.getElementById('previewImage').classList.remove('hidden');
+                closeAIModal();
+            }, 2000);
+        }
+        
+        // 返回上一页
+        function goBack() {
+            window.history.back();
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
+        });
+    </script>
+</body>
+</html>

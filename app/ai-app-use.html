@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI应用制作</title>
+    <script src="../static/js/common.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            color: #333;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            display: flex;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 250px;
+            max-height: 800px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            padding: 30px 20px;
+            margin-right: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .sidebar h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 15px;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 12px 16px;
+            color: #666;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .nav-link:hover {
+            background-color: #e3f2fd;
+            color: #2196f3;
+            transform: translateX(5px);
+        }
+        
+        .nav-link.active {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: white;
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+        }
+        
+        .sub-nav-menu {
+            list-style: none;
+            margin-top: 10px;
+            margin-left: 20px;
+            display: none;
+        }
+        
+        .sub-nav-item {
+            margin-bottom: 8px;
+        }
+        
+        .sub-nav-link {
+            display: block;
+            padding: 8px 12px;
+            color: #666;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .sub-nav-link:hover {
+            background-color: #e8f5e8;
+            color: #4caf50;
+            transform: translateX(3px);
+        }
+        
+        .sub-nav-link.active {
+            background: linear-gradient(135deg, #4caf50, #388e3c);
+            color: white;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
+        }
+        
+        .main-content {
+            flex: 1;
+        }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background-color: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 30px;
+            color: #666;
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+            cursor: pointer;
+        }
+        
+        .back-btn:hover {
+            background-color: #e3f2fd;
+            border-color: #2196f3;
+            color: #2196f3;
+            transform: translateX(-5px);
+        }
+        
+        .create-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .left-panel, .right-panel {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            overflow: hidden;
+        }
+        
+        .panel-header {
+            padding: 25px 30px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .panel-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .panel-body {
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background-color: #fff;
+        }
+        
+        .form-input[readonly], .form-textarea[readonly] {
+            background-color: #f5f5f5;
+            color: #666;
+            cursor: not-allowed;
+        }
+        
+        .form-input:not([readonly]):focus, .form-textarea:not([readonly]):focus, .form-select:focus {
+            outline: none;
+            border-color: #2196f3;
+            box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.1);
+        }
+        
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .tags-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            min-height: 50px;
+            align-items: center;
+        }
+        
+        .tags-input:focus-within {
+            border-color: #2196f3;
+            box-shadow: 0 0 0 4px rgba(33, 150, 243, 0.1);
+        }
+        
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            color: #1976d2;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .tag-remove {
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .tag-input {
+            border: none;
+            outline: none;
+            flex: 1;
+            min-width: 100px;
+            padding: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .param-group {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        .param-item {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .param-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .param-value {
+            color: #2196f3;
+            font-weight: 700;
+        }
+        
+        .param-slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #e0e0e0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .param-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
+        }
+        
+        .param-slider::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
+        }
+        
+        .preview-area {
+            min-height: 400px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .preview-area img, .preview-area video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            max-height: 400px;
+        }
+        
+        .preview-placeholder {
+            text-align: center;
+            color: #999;
+        }
+        
+        .preview-placeholder-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+        
+        .preview-params {
+            margin-top: 25px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .preview-params-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .preview-param-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.9rem;
+        }
+        
+        .preview-param-item:last-child {
+            border-bottom: none;
+        }
+        
+        .preview-param-label {
+            color: #666;
+        }
+        
+        .preview-param-value {
+            color: #2196f3;
+            font-weight: 600;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 16px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .action-btn.save {
+            background: linear-gradient(135deg, #9e9e9e, #757575);
+            color: white;
+            box-shadow: 0 4px 15px rgba(158, 158, 158, 0.4);
+        }
+        
+        .action-btn.save:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(158, 158, 158, 0.5);
+        }
+        
+        .action-btn.create {
+            background: linear-gradient(135deg, #4caf50, #388e3c);
+            color: white;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+        
+        .action-btn.create:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.5);
+        }
+        
+        @media (max-width: 1200px) {
+            .create-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+                padding: 30px 20px;
+            }
+            
+            .sidebar {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 30px;
+            }
+            
+            .nav-menu {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .nav-item {
+                margin-bottom: 0;
+                position: relative;
+            }
+            
+            .sub-nav-menu {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                background-color: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                padding: 10px;
+                min-width: 150px;
+                z-index: 1000;
+                margin-top: 5px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .param-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .panel-body {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        
+        <div class="main-content">
+            <a href="ai-app-detail.html" class="back-btn">← 返回详情页</a>
+            
+            <div class="create-container">
+                <div class="left-panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title">📝 参数设置</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <input type="text" class="form-input" id="titleInput" placeholder="输入作品标题" readonly>
+                        </div>
+                        
+                        <div class="form-group">
+                            <textarea class="form-textarea" id="descInput" placeholder="输入作品描述" readonly></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="tags-input" id="tagsInput" style="pointer-events: none;">
+                                <span class="tag">AI生成<span class="tag-remove" style="display: none;">×</span></span>
+                                <span class="tag">文生图<span class="tag-remove" style="display: none;">×</span></span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">提示词</label>
+                            <textarea class="form-textarea" id="promptInput" placeholder="输入详细的提示词描述，例如：a beautiful sunset over mountains, cinematic lighting, 8k resolution..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">LLM参数设置</label>
+                            <div class="param-group">
+                                <div class="param-item">
+                                    <div class="param-label">
+                                        <span>干扰强度 (Temperature)</span>
+                                        <span class="param-value" id="tempValue">0.7</span>
+                                    </div>
+                                    <input type="range" class="param-slider" id="tempSlider" min="0" max="2" step="0.1" value="0.7">
+                                </div>
+                                
+                                <div class="param-item">
+                                    <div class="param-label">
+                                        <span>最大令牌数 (Max Tokens)</span>
+                                        <span class="param-value" id="tokenValue">2048</span>
+                                    </div>
+                                    <input type="range" class="param-slider" id="tokenSlider" min="256" max="4096" step="256" value="2048">
+                                </div>
+                                
+                                <div class="param-item">
+                                    <div class="param-label">
+                                        <span>Top P</span>
+                                        <span class="param-value" id="topPValue">0.9</span>
+                                    </div>
+                                    <input type="range" class="param-slider" id="topPSlider" min="0" max="1" step="0.05" value="0.9">
+                                </div>
+                                
+                                <div class="param-item">
+                                    <div class="param-label">
+                                        <span>重复惩罚 (Frequency Penalty)</span>
+                                        <span class="param-value" id="freqValue">0.0</span>
+                                    </div>
+                                    <input type="range" class="param-slider" id="freqSlider" min="-2" max="2" step="0.1" value="0">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="action-buttons">
+                            <button class="action-btn save" onclick="saveDraft()">
+                                <span>💾</span> 保存草稿
+                            </button>
+                            <button class="action-btn create" onclick="startCreating()">
+                                <span>🚀</span> 开始制作（10）
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="right-panel">
+                    <div class="panel-header">
+                        <h3 class="panel-title">👁️ 实时预览</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="preview-area" id="previewArea">
+                            <div class="preview-placeholder">
+                                <div class="preview-placeholder-icon">
+                                    <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=romantic%20couple%20AI%20character%20illustration&image_size=landscape_16_9" alt="预览图标">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="preview-params">
+                            <h4 class="preview-params-title">当前参数配置</h4>
+                            <div class="preview-param-item">
+                                <span class="preview-param-label">提示词</span>
+                                <span class="preview-param-value" id="previewPrompt">a beautiful sunset over the mountains</span>
+                            </div>
+                            <div class="preview-param-item">
+                                <span class="preview-param-label">温度</span>
+                                <span class="preview-param-value" id="previewTemp">0.7</span>
+                            </div>
+                            <div class="preview-param-item">
+                                <span class="preview-param-label">最大令牌</span>
+                                <span class="preview-param-value" id="previewTokens">2048</span>
+                            </div>
+                            <div class="preview-param-item">
+                                <span class="preview-param-label">Top P</span>
+                                <span class="preview-param-value" id="previewTopP">0.9</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const appData = {
+            id: 1,
+            title: "智能文生图",
+            description: "通过文字描述生成高质量图片",
+            prompt: "a beautiful sunset over the mountains, cinematic lighting, 8k resolution",
+            image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20text%20to%20image%20generation%20tool%20interface&image_size=landscape_16_9"
+        };
+        
+        function init() {
+            document.getElementById('titleInput').value = appData.title;
+            document.getElementById('descInput').value = appData.description;
+            document.getElementById('promptInput').value = appData.prompt;
+            
+            initNavMenu();
+            bindEvents();
+            updatePreview();
+        }
+        
+        function bindEvents() {
+            document.getElementById('tempSlider').addEventListener('input', function() {
+                document.getElementById('tempValue').textContent = this.value;
+                updatePreview();
+            });
+            
+            document.getElementById('tokenSlider').addEventListener('input', function() {
+                document.getElementById('tokenValue').textContent = this.value;
+                updatePreview();
+            });
+            
+            document.getElementById('topPSlider').addEventListener('input', function() {
+                document.getElementById('topPValue').textContent = this.value;
+                updatePreview();
+            });
+            
+            document.getElementById('freqSlider').addEventListener('input', function() {
+                document.getElementById('freqValue').textContent = this.value;
+                updatePreview();
+            });
+            
+            document.getElementById('promptInput').addEventListener('input', updatePreview);
+            
+            updatePreview();
+        }
+        
+        function updatePreview() {
+            const prompt = document.getElementById('promptInput').value || 'a beautiful sunset over the mountains';
+            const temp = document.getElementById('tempSlider').value;
+            const tokens = document.getElementById('tokenSlider').value;
+            const topP = document.getElementById('topPSlider').value;
+            
+            document.getElementById('previewPrompt').textContent = prompt;
+            document.getElementById('previewTemp').textContent = temp;
+            document.getElementById('previewTokens').textContent = tokens;
+            document.getElementById('previewTopP').textContent = topP;
+        }
+        
+        function saveDraft() {
+            const draft = {
+                prompt: document.getElementById('promptInput').value,
+                temperature: document.getElementById('tempSlider').value,
+                maxTokens: document.getElementById('tokenSlider').value,
+                topP: document.getElementById('topPSlider').value,
+                frequencyPenalty: document.getElementById('freqSlider').value,
+                savedAt: new Date().toLocaleString()
+            };
+            
+            localStorage.setItem('aiAppDraft', JSON.stringify(draft));
+            alert('草稿已保存！');
+        }
+        
+        function startCreating() {
+            const previewArea = document.getElementById('previewArea');
+            previewArea.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div style="font-size: 3rem; margin-bottom: 20px;">⏳</div>
+                    <p style="font-size: 1.1rem; color: #666; margin-bottom: 10px;">正在生成中...</p>
+                    <p style="font-size: 0.9rem; color: #999;">请稍候，AI正在根据您的参数创作内容</p>
+                </div>
+            `;
+            
+            setTimeout(() => {
+                previewArea.innerHTML = `
+                    <img src="${appData.image}" alt="生成结果" style="width: 100%; height: 100%; object-fit: cover;">
+                `;
+                alert('制作完成！');
+            }, 3000);
+        }
+        
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>应用详情 - AIGC创作平台</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 详情页样式 - 与character-detail.html保持一致 */
+        .detail-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .detail-header {
+            margin-bottom: 40px;
+        }
+        
+        .detail-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: inline-block;
+            margin-right: 15px;
+        }
+        
+        .detail-header {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .title-status-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .status-badge.public {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .status-badge.private {
+            background: #f3e5f5;
+            color: #4a148c;
+        }
+        
+        .status-badge.pending {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        .status-badge.rejected {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .detail-author {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            width: 100%;
+            justify-content: flex-end;
+        }
+        
+        .author-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .detail-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+        }
+        
+        .meta-item i {
+            color: #2196f3;
+        }
+        
+        .detail-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .detail-main {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .detail-sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .detail-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        
+        .detail-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .detail-section {
+            margin-bottom: 30px;
+        }
+        
+        .detail-section h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: #fff;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid #2196f3;
+            color: #2196f3;
+        }
+        
+        .btn-outline:hover {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #4caf50, #388e3c);
+            color: #fff;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: #fff;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
+        }
+        
+        .btn-like {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-like:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        .btn-share {
+            background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-share:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4);
+        }
+        
+        .btn-apply {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: #fff;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-apply:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+        }
+        
+        .social-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: #f8f9fa;
+            color: #495057;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-decoration: none;
+        }
+        
+        .back-link i {
+            margin-right: 8px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .stat-label {
+            color: #666;
+        }
+        
+        .stat-value {
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .action-buttons {
+            margin-top: 30px;
+        }
+        
+        /* 应用实例列表样式 */
+        .instances-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .instance-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid #2196f3;
+            transition: all 0.3s ease;
+        }
+        
+        .instance-item:hover {
+            background: #e3f2fd;
+            transform: translateX(5px);
+        }
+        
+        .instance-item.success {
+            border-left-color: #4caf50;
+        }
+        
+        .instance-item.failed {
+            border-left-color: #f44336;
+        }
+        
+        .instance-item.running {
+            border-left-color: #ff9800;
+        }
+        
+        .instance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .instance-title {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+        
+        .instance-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .instance-status.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .instance-status.failed {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .instance-status.running {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        .instance-description {
+            color: #666;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .instance-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9rem;
+            color: #999;
+        }
+        
+        .instance-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .instance-params {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ddd;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .instance-params-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .empty-instances {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        .empty-instances-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        
+        /* 实例预览和进度样式 */
+        .instance-preview {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f0f8ff;
+            border-left: 3px solid #4CAF50;
+            border-radius: 4px;
+        }
+        
+        .instance-preview-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .preview-link {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .preview-link:hover {
+            text-decoration: underline;
+        }
+        
+        .output-size, .output-format {
+            margin-left: 10px;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .instance-error {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #ffebee;
+            border-left: 3px solid #f44336;
+            border-radius: 4px;
+        }
+        
+        .instance-error-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #f44336;
+        }
+        
+        .error-message {
+            color: #c62828;
+        }
+        
+        .instance-progress {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e3f2fd;
+            border-left: 3px solid #2196F3;
+            border-radius: 4px;
+        }
+        
+        .instance-progress-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #2196F3;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            font-size: 0.9rem;
+            color: #333;
+        }
+        
+        .estimated-time {
+            margin-left: 10px;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .detail-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .detail-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .detail-author {
+                margin-top: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="detail-container">
+        <a href="my-assets-app.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回我的应用</a>
+        
+        
+        <div class="detail-author" id="detailAuthor">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=myself" alt="作者头像" class="author-avatar">
+            <span>我自己</span>
+        </div>
+        
+        <div class="detail-header">
+            <div class="title-status-container">
+                <h1 id="detailTitle">智能写作助手</h1>
+                <span id="detailStatusBadge" class="status-badge">公开</span>
+            </div>
+        </div>
+        
+        <div class="detail-meta">
+            <div class="meta-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span id="detailCreated">2026-03-01</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-tag"></i>
+                <span id="detailType"> productivity</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-star"></i>
+                <span id="detailRarity"> rare</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-coins"></i>
+                <span id="detailPoints">15 积分</span>
+            </div>
+        </div>
+        
+        <div class="detail-content">
+            <div class="detail-main">
+                <img id="detailImage" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=smart%20writing%20assistant%20app%20interface%20modern%20design&image_size=landscape_4_3" alt="应用图片" class="detail-image">
+                
+                <div class="detail-section">
+                    <h3>应用描述</h3>
+                    <p id="detailDescription" class="detail-description">
+                        智能写作助手是一款基于AI的写作工具，可以帮助用户生成高质量的文章、报告、邮件等内容。它支持多种写作风格和格式，能够根据用户的输入提供智能建议和修改意见，大幅提高写作效率。
+                    </p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>功能特点</h3>
+                    <p id="detailFeatures">
+                        - 智能内容生成<br>
+                        - 多种写作风格支持<br>
+                        - 实时语法检查<br>
+                        - 内容优化建议<br>
+                        - 多种格式导出
+                    </p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>使用方法</h3>
+                    <p id="detailUsage">
+                        1. 输入写作主题或关键词<br>
+                        2. 选择写作风格和格式<br>
+                        3. 点击生成按钮<br>
+                        4. 编辑和优化生成的内容<br>
+                        5. 导出为所需格式
+                    </p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>标签</h3>
+                    <div id="detailTags" class="tag-list">
+                        <span class="tag">写作</span>
+                        <span class="tag">AI</span>
+                        <span class="tag">生产力</span>
+                    </div>
+                </div>
+                
+                <!-- 应用实例/执行记录 -->
+                <div class="detail-section" id="appInstancesSection">
+                    <h3>使用记录</h3>
+                    <div id="appInstancesList" class="instances-list">
+                        <!-- 实例列表将通过JavaScript动态生成 -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-sidebar">
+                <div class="detail-section">
+                    <h3>应用信息</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">状态</span>
+                        <span id="detailStatus" class="stat-value">公开</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">创建时间</span>
+                        <span id="detailCreatedSidebar">2026-03-01</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">使用积分</span>
+                        <span id="detailPointsSidebar">15</span>
+                    </div>
+                </div>
+                
+                <div class="social-buttons">
+                    <button class="btn btn-like" onclick="likeApp()">
+                        <i class="fas fa-heart"></i> 点赞
+                    </button>
+                    <button class="btn btn-share" onclick="shareApp()">
+                        <i class="fas fa-share-alt"></i> 分享
+                    </button>
+                </div>
+                
+                <div class="action-buttons" id="actionButtons">
+                    <!-- 按钮将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 获取URL参数
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                id: params.get('id'),
+                type: params.get('type') || 'my',
+                source: params.get('source') || 'app'
+            };
+        }
+        
+        // 模拟应用实例数据 - 用户点击"一键应用"后的执行记录
+        const mockAppInstances = [
+            {
+                id: 301,
+                appId: 2,
+                title: "智能文生图 - 执行实例 #1",
+                description: "执行成功：生成了一张科幻风格的城市夜景图",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=sci-fi%20city%20night%20scene%20futuristic%20neon%20lights&image_size=landscape_4_3",
+                status: "success",
+                created: "2026-03-05",
+                submittedAt: "2026-03-05 14:30:25",
+                completedAt: "2026-03-05 14:30:45",
+                executionTime: "20秒",
+                sourceApp: "智能文生图",
+                parameters: {
+                    prompt: "未来科幻城市夜景，霓虹灯光，高楼大厦，飞行汽车",
+                    style: "赛博朋克",
+                    size: "1024x768",
+                    quality: "高清"
+                },
+                result: {
+                    outputUrl: "https://example.com/output/image_301.jpg",
+                    outputSize: "2.5MB",
+                    format: "JPEG"
+                }
+            },
+            {
+                id: 302,
+                appId: 3,
+                title: "AI对话助手 - 执行实例 #1",
+                description: "执行成功：完成了50轮客服对话",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=chat%20conversation%20interface%20customer%20service%20success&image_size=landscape_4_3",
+                status: "success",
+                created: "2026-03-04",
+                submittedAt: "2026-03-04 09:15:10",
+                completedAt: "2026-03-04 09:45:30",
+                executionTime: "30分20秒",
+                sourceApp: "AI对话助手",
+                parameters: {
+                    scenario: "客服场景",
+                    personality: "友好专业",
+                    knowledge: "产品知识库V2.0",
+                    maxTurns: 50
+                },
+                result: {
+                    totalConversations: 50,
+                    satisfaction: "98%",
+                    resolved: 48,
+                    escalated: 2
+                }
+            },
+            {
+                id: 303,
+                appId: 6,
+                title: "图像风格转换 - 执行实例 #1",
+                description: "执行失败：输入图片格式不支持",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=error%20failed%20image%20processing%20red%20warning&image_size=landscape_4_3",
+                status: "failed",
+                created: "2026-03-03",
+                submittedAt: "2026-03-03 16:20:00",
+                completedAt: "2026-03-03 16:20:05",
+                executionTime: "5秒",
+                sourceApp: "图像风格转换",
+                parameters: {
+                    inputImage: "document.bmp",
+                    targetStyle: "梵高风格",
+                    intensity: 0.8
+                },
+                result: {
+                    errorCode: "ERR_FORMAT_NOT_SUPPORTED",
+                    errorMessage: "不支持的图片格式：BMP，请使用 JPG 或 PNG 格式"
+                }
+            },
+            {
+                id: 304,
+                appId: 1,
+                title: "智能写作助手 - 执行实例 #1",
+                description: "执行成功：生成了一篇2000字的产品介绍文案",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=document%20writing%20success%20text%20content%20professional&image_size=landscape_4_3",
+                status: "success",
+                created: "2026-03-02",
+                submittedAt: "2026-03-02 11:00:00",
+                completedAt: "2026-03-02 11:00:15",
+                executionTime: "15秒",
+                sourceApp: "智能写作助手",
+                parameters: {
+                    topic: "智能家居产品介绍",
+                    style: "专业正式",
+                    length: "2000字",
+                    tone: " persuasive"
+                },
+                result: {
+                    wordCount: 2056,
+                    outputFormat: "Markdown",
+                    readability: "优秀",
+                    keywords: ["智能家居", "物联网", "便捷生活"]
+                }
+            },
+            {
+                id: 305,
+                appId: 4,
+                title: "代码生成工具 - 执行实例 #1",
+                description: "执行成功：生成了用户登录模块的完整代码",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=code%20programming%20success%20screen%20green%20check&image_size=landscape_4_3",
+                status: "success",
+                created: "2026-03-01",
+                submittedAt: "2026-03-01 15:30:00",
+                completedAt: "2026-03-01 15:30:08",
+                executionTime: "8秒",
+                sourceApp: "代码生成工具",
+                parameters: {
+                    language: "Python",
+                    framework: "Flask",
+                    feature: "用户登录注册模块",
+                    includeTests: true
+                },
+                result: {
+                    files: 5,
+                    totalLines: 450,
+                    testCoverage: "85%",
+                    downloadUrl: "/download/code_305.zip"
+                }
+            },
+            {
+                id: 306,
+                appId: 5,
+                title: "数据分析助手 - 执行实例 #1",
+                description: "执行中：正在分析Q1销售数据...",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=data%20analysis%20processing%20loading%20charts%20blue&image_size=landscape_4_3",
+                status: "queued",
+                created: "2026-03-06",
+                submittedAt: "2026-03-06 10:00:00",
+                completedAt: null,
+                executionTime: "进行中",
+                sourceApp: "数据分析助手",
+                parameters: {
+                    dataSource: "sales_q1_2026.csv",
+                    analysisType: "趋势分析",
+                    charts: ["折线图", "柱状图", "饼图"],
+                    forecast: true
+                },
+                result: {
+                    progress: 65,
+                    currentStep: "生成可视化图表",
+                    estimatedTime: "剩余2分钟"
+                }
+            }
+        ];
+
+        // 模拟应用数据
+        const mockApps = {
+            my: [
+                {
+                    id: 1,
+                    title: "智能文生图",
+                    description: "通过文字描述生成高质量图片，支持多种风格和场景。这款应用利用先进的AI技术，能够将您的创意想法转化为视觉作品，适用于设计、营销、教育等多种场景。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20text%20to%20image%20generation%20tool%20interface&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-03-01",
+                    type: "creative",
+                    rarity: "epic",
+                    features: "- 多种艺术风格支持\n- 高分辨率图像输出\n- 批量生成功能\n- 图像编辑工具\n- 创意提示库",
+                    usage: "1. 输入详细的图像描述\n2. 选择艺术风格和参数\n3. 点击生成按钮\n4. 预览和编辑生成的图像\n5. 下载或分享最终作品",
+                    tags: ["图像生成", "AI", "创意", "设计"],
+                    points: 20,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 2,
+                    title: "AI对话助手",
+                    description: "智能对话助手，支持多轮对话和上下文理解。这款应用可以作为客户服务、教育辅导、个人助手等多种角色，能够理解用户意图并提供准确的回应。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20chatbot%20interface%20with%20conversation%20history%20and%20chat%20bubbles&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-28",
+                    type: "productivity",
+                    rarity: "rare",
+                    features: "- 自然语言理解\n- 上下文记忆\n- 多轮对话能力\n- 知识库集成\n- 情感分析",
+                    usage: "1. 打开应用并选择对话场景\n2. 输入您的问题或需求\n3. 与AI进行自然对话\n4. 获取所需信息或建议\n5. 保存重要对话内容",
+                    tags: ["对话", "AI", "助手", "客服"],
+                    points: 18,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 3,
+                    title: "图像风格转换",
+                    description: "将图片转换为不同艺术风格，如油画、素描等。这款应用可以将普通照片转换为艺术作品，支持多种艺术风格和自定义参数。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20image%20style%20transfer%20tool%20with%20different%20art%20styles&image_size=landscape_4_3",
+                    status: "private",
+                    created: "2026-02-25",
+                    type: "creative",
+                    rarity: "rare",
+                    features: "- 多种艺术风格\n- 实时预览效果\n- 自定义风格强度\n- 批量处理\n- 高清输出",
+                    usage: "1. 上传原始图片\n2. 选择目标艺术风格\n3. 调整风格强度和参数\n4. 预览转换效果\n5. 下载或分享结果",
+                    tags: ["图像处理", "艺术", "风格转换"],
+                    points: 15,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 4,
+                    title: "视频生成工具",
+                    description: "根据文字描述生成短视频内容。这款应用可以将您的创意文字转化为生动的视频，支持多种场景和风格。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20video%20generation%20tool%20with%20text%20input%20and%20video%20output&image_size=landscape_4_3",
+                    status: "pending",
+                    created: "2026-02-20",
+                    type: "creative",
+                    rarity: "epic",
+                    features: "- 文字到视频生成\n- 多种视频风格\n- 背景音乐支持\n- 字幕自动生成\n- 高清输出",
+                    usage: "1. 输入详细的视频描述\n2. 选择视频风格和长度\n3. 添加背景音乐（可选）\n4. 生成视频\n5. 编辑和导出",
+                    tags: ["视频生成", "AI", "创意", "内容创作"],
+                    points: 25,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 5,
+                    title: "文本摘要工具",
+                    description: "自动生成长文本的摘要和关键点。这款应用可以快速提取长文档的核心内容，生成简洁的摘要，提高阅读和理解效率。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20text%20summarization%20tool%20with%20key%20points%20extraction&image_size=landscape_4_3",
+                    status: "rejected",
+                    created: "2026-02-15",
+                    type: "productivity",
+                    rarity: "common",
+                    features: "- 自动文本摘要\n- 关键点提取\n- 多种摘要长度\n- 多语言支持\n- 批量处理",
+                    usage: "1. 输入或上传长文本\n2. 设置摘要长度和风格\n3. 点击生成摘要\n4. 查看和编辑摘要\n5. 导出或分享结果",
+                    tags: ["文本处理", "摘要", "效率"],
+                    points: 10,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 6,
+                    title: "语音识别工具",
+                    description: "将语音转换为文本，支持多种语言。这款应用可以快速将语音内容转录为文字，适用于会议记录、采访整理、学习笔记等场景。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20speech%20recognition%20tool%20with%20audio%20waveform%20and%20text%20output&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-10",
+                    type: "productivity",
+                    rarity: "rare",
+                    features: "- 实时语音识别\n- 多语言支持\n-  speaker区分\n- 文本编辑功能\n- 多种导出格式",
+                    usage: "1. 上传音频文件或开始录音\n2. 选择语言和识别模式\n3. 开始识别\n4. 编辑和校对文本\n5. 导出或分享结果",
+                    tags: ["语音识别", "转录", "效率"],
+                    points: 12,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 7,
+                    title: "图像增强工具",
+                    description: "提升图片质量，去噪、锐化、超分辨率。这款应用可以自动增强图片质量，修复模糊、噪点等问题，让您的照片更加清晰锐利。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20image%20enhancement%20tool%20with%20before%20and%20after%20comparison&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-05",
+                    type: "creative",
+                    rarity: "common",
+                    features: "- 自动图像增强\n- 去噪和锐化\n- 超分辨率放大\n- 颜色校正\n- 批量处理",
+                    usage: "1. 上传需要增强的图片\n2. 选择增强模式和强度\n3. 预览增强效果\n4. 调整参数（可选）\n5. 下载增强后的图片",
+                    tags: ["图像处理", "增强", "修复"],
+                    points: 10,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 8,
+                    title: "代码生成工具",
+                    description: "根据需求描述生成代码，支持多种编程语言。这款应用可以根据自然语言描述生成高质量的代码，提高开发效率，减少重复工作。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20code%20generation%20tool%20with%20programming%20languages%20and%20syntax%20highlighting&image_size=landscape_4_3",
+                    status: "private",
+                    created: "2026-02-01",
+                    type: "development",
+                    rarity: "epic",
+                    features: "- 多种编程语言支持\n- 框架和库集成\n- 代码质量检查\n- 测试代码生成\n- 代码重构建议",
+                    usage: "1. 输入功能需求描述\n2. 选择编程语言和框架\n3. 生成代码\n4. 检查和修改代码\n5. 集成到项目中",
+                    tags: ["编程", "开发", "AI", "效率"],
+                    points: 25,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 9,
+                    title: "文本翻译工具",
+                    description: "支持多种语言之间的文本翻译。这款应用采用先进的机器翻译技术，能够提供准确、自然的翻译结果，支持多种语言对。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20text%20translation%20tool%20with%20multiple%20languages&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-01-28",
+                    type: "productivity",
+                    rarity: "common",
+                    features: "- 多语言支持\n- 实时翻译\n- 上下文理解\n- 专业术语翻译\n- 批量翻译",
+                    usage: "1. 选择源语言和目标语言\n2. 输入要翻译的文本\n3. 点击翻译按钮\n4. 查看翻译结果\n5. 复制或导出翻译",
+                    tags: ["翻译", "语言", "工具"],
+                    points: 8,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 10,
+                    title: "情感分析工具",
+                    description: "分析文本的情感倾向，识别情绪。这款应用可以分析用户反馈、社交媒体内容等文本的情感倾向，帮助企业了解用户态度。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20sentiment%20analysis%20tool%20with%20emotion%20detection&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-01-25",
+                    type: "business",
+                    rarity: "rare",
+                    features: "- 情感倾向分析\n- 情绪识别\n- 多语言支持\n- 批量分析\n- 可视化报告",
+                    usage: "1. 输入或上传文本\n2. 选择分析模式\n3. 运行分析\n4. 查看情感分析结果\n5. 导出报告",
+                    tags: ["情感分析", "文本分析", "商业智能"],
+                    points: 15,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 11,
+                    title: "内容审核工具",
+                    description: "自动检测和过滤不良内容。这款应用可以自动检测文本、图像中的不良内容，帮助平台保持内容健康。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20content%20moderation%20tool%20interface&image_size=landscape_4_3",
+                    status: "pending",
+                    created: "2026-01-20",
+                    type: "business",
+                    rarity: "rare",
+                    features: "- 多类型内容审核\n- 实时检测\n- 自定义规则\n- 批量处理\n- 审核报告",
+                    usage: "1. 上传或输入内容\n2. 选择审核类型\n3. 运行审核\n4. 查看审核结果\n5. 处理违规内容",
+                    tags: ["内容审核", "安全", "合规"],
+                    points: 18,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 12,
+                    title: "数据可视化工具",
+                    description: "将数据转换为直观的图表和可视化效果。这款应用可以将复杂的数据转化为易于理解的图表和可视化效果，帮助用户更好地理解数据。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20data%20visualization%20tool%20with%20charts%20and%20graphs&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-01-15",
+                    type: "business",
+                    rarity: "common",
+                    features: "- 多种图表类型\n- 智能数据处理\n- 交互式可视化\n- 批量数据导入\n- 报告导出",
+                    usage: "1. 上传或输入数据\n2. 选择图表类型\n3. 配置可视化参数\n4. 生成可视化效果\n5. 导出或分享",
+                    tags: ["数据可视化", "图表", "分析"],
+                    points: 12,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+
+            ],
+            collection: [
+                {
+                    id: 101,
+                    title: "智能文生图",
+                    description: "通过文字描述生成高质量图片，支持多种风格和场景",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20text%20to%20image%20generation%20tool%20interface&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-03-01",
+                    type: "creative",
+                    rarity: "epic",
+                    features: "- 多种艺术风格支持\n- 高分辨率图像输出\n- 批量生成功能\n- 图像编辑工具\n- 创意提示库",
+                    usage: "1. 输入详细的图像描述\n2. 选择艺术风格和参数\n3. 点击生成按钮\n4. 预览和编辑生成的图像\n5. 下载或分享最终作品",
+                    tags: ["图像生成", "AI", "创意", "设计"],
+                    points: 20,
+                    author: {
+                        name: "张三",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=zhangsan"
+                    }
+                },
+                {
+                    id: 102,
+                    title: "AI对话助手",
+                    description: "智能对话助手，支持多轮对话和上下文理解",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20chatbot%20interface%20with%20conversation%20history%20and%20chat%20bubbles&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-28",
+                    type: "productivity",
+                    rarity: "rare",
+                    features: "- 自然语言理解\n- 上下文记忆\n- 多轮对话能力\n- 知识库集成\n- 情感分析",
+                    usage: "1. 打开应用并选择对话场景\n2. 输入您的问题或需求\n3. 与AI进行自然对话\n4. 获取所需信息或建议\n5. 保存重要对话内容",
+                    tags: ["对话", "AI", "助手", "客服"],
+                    points: 18,
+                    author: {
+                        name: "李四",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=lisi"
+                    }
+                },
+                {
+                    id: 103,
+                    title: "代码生成工具",
+                    description: "根据需求描述生成代码，支持多种编程语言",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20code%20generation%20tool%20with%20programming%20languages%20and%20syntax%20highlighting&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-01",
+                    type: "development",
+                    rarity: "epic",
+                    features: "- 多种编程语言支持\n- 框架和库集成\n- 代码质量检查\n- 测试代码生成\n- 代码重构建议",
+                    usage: "1. 输入功能需求描述\n2. 选择编程语言和框架\n3. 生成代码\n4. 检查和修改代码\n5. 集成到项目中",
+                    tags: ["编程", "开发", "AI", "效率"],
+                    points: 25,
+                    author: {
+                        name: "王五",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=wangwu"
+                    }
+                },
+                {
+                    id: 104,
+                    title: "文本翻译工具",
+                    description: "支持多种语言之间的文本翻译",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20text%20translation%20tool%20with%20multiple%20languages&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-01-28",
+                    type: "productivity",
+                    rarity: "common",
+                    features: "- 多语言支持\n- 实时翻译\n- 上下文理解\n- 专业术语翻译\n- 批量翻译",
+                    usage: "1. 选择源语言和目标语言\n2. 输入要翻译的文本\n3. 点击翻译按钮\n4. 查看翻译结果\n5. 复制或导出翻译",
+                    tags: ["翻译", "语言", "工具"],
+                    points: 8,
+                    author: {
+                        name: "赵六",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=zhaoliu"
+                    }
+                }
+            ],
+            drafts: [
+                {
+                    id: 201,
+                    title: "未完成的应用设计",
+                    description: "正在设计中的应用，尚未完成",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=unfinished%20app%20design%20sketch%20and%20draft&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-03-05",
+                    type: "productivity",
+                    rarity: "common",
+                    features: "",
+                    usage: "",
+                    tags: ["未完成", "开发", "草稿"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 202,
+                    title: "应用概念草稿",
+                    description: "应用概念设计的初步草稿",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=app%20concept%20art%20draft%20sketch&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-03-03",
+                    type: "creative",
+                    rarity: "common",
+                    features: "",
+                    usage: "",
+                    tags: ["草稿", "设计", "原型"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 203,
+                    title: "智能助手应用",
+                    description: "智能助手应用的设计草案",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=smart%20assistant%20app%20concept%20draft&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-03-01",
+                    type: "productivity",
+                    rarity: "common",
+                    features: "",
+                    usage: "",
+                    tags: ["智能助手", "应用", "草稿"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 204,
+                    title: "图像识别应用",
+                    description: "图像识别应用的设计草案",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=image%20recognition%20app%20concept%20draft&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-02-28",
+                    type: "creative",
+                    rarity: "common",
+                    features: "",
+                    usage: "",
+                    tags: ["图像识别", "应用", "草稿"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                }
+            ]
+        };
+        
+        let currentApp = null;
+        let isLiked = false;
+        
+        // 初始化页面
+        function init() {
+            const params = getUrlParams();
+            const app = findApp(params.id, params.type);
+            
+            if (!app) {
+                alert('应用不存在');
+                goBack();
+                return;
+            }
+            
+            currentApp = app;
+            renderAppDetail(app, params.type);
+        }
+        
+        // 查找应用
+        function findApp(id, type) {
+            const apps = mockApps[type] || [];
+            return apps.find(p => p.id == id);
+        }
+        
+        // 渲染应用详情
+        function renderAppDetail(app, type) {
+            // 设置标题
+            document.getElementById('detailTitle').textContent = app.title;
+            
+            // 设置图片
+            document.getElementById('detailImage').src = app.image;
+            
+            // 设置描述
+            document.getElementById('detailDescription').textContent = app.description;
+            
+            // 设置元数据
+            document.getElementById('detailCreated').textContent = app.created;
+            document.getElementById('detailCreatedSidebar').textContent = app.created;
+            document.getElementById('detailType').textContent = app.type;
+            document.getElementById('detailRarity').textContent = app.rarity;
+            document.getElementById('detailPoints').textContent = app.points + ' 积分';
+            document.getElementById('detailPointsSidebar').textContent = app.points;
+            
+            // 设置状态
+            const statusText = app.status === 'public' ? '公开' : app.status === 'private' ? '私有' : app.status === 'pending' ? '审核中' : app.status === 'rejected' ? '已拒绝' : app.status;
+            document.getElementById('detailStatus').textContent = statusText;
+            
+            // 设置状态徽章
+            const statusBadge = document.getElementById('detailStatusBadge');
+            statusBadge.textContent = statusText;
+            statusBadge.className = `status-badge ${app.status}`;
+            
+            // 设置作者信息
+            const authorContainer = document.getElementById('detailAuthor');
+            if (app.author) {
+                authorContainer.innerHTML = `
+                    <img src="${app.author.avatar}" alt="作者头像" class="author-avatar">
+                    <span>${app.author.name}</span>
+                `;
+            } else {
+                authorContainer.innerHTML = '';
+            }
+            
+            // 渲染操作按钮
+            renderActionButtons(app, type);
+            
+            // 设置功能特点
+            document.getElementById('detailFeatures').innerHTML = app.features;
+            
+            // 设置使用方法
+            document.getElementById('detailUsage').innerHTML = app.usage;
+            
+            // 设置标签
+            const tagsContainer = document.getElementById('detailTags');
+            tagsContainer.innerHTML = '';
+            if (app.tags && app.tags.length > 0) {
+                app.tags.forEach(tag => {
+                    const tagElement = document.createElement('span');
+                    tagElement.className = 'tag';
+                    tagElement.textContent = tag;
+                    tagsContainer.appendChild(tagElement);
+                });
+            }
+            
+            // 渲染应用实例列表
+            renderAppInstances(app.id);
+        }
+        
+        // 渲染操作按钮
+        function renderActionButtons(app, type) {
+            const actionButtons = document.getElementById('actionButtons');
+            let buttonsHtml = '';
+            
+            // 如果是收藏别人的作品
+            if (type === 'collection') {
+                buttonsHtml = `
+                    <button class="btn btn-apply" onclick="applyApp()">
+                        <i class="fas fa-magic"></i> 一键应用
+                    </button>
+                    <button class="btn btn-outline" onclick="cancelCollection()">
+                        <i class="fas fa-heart-broken"></i> 取消收藏
+                    </button>
+                `;
+            } else {
+                // 根据状态显示不同的按钮
+                switch (app.status) {
+                    case 'public':
+                        buttonsHtml = `
+                            <button class="btn btn-apply" onclick="applyApp()">
+                                <i class="fas fa-magic"></i> 一键应用
+                            </button>
+                            <button class="btn btn-secondary" onclick="setPrivate()">
+                                <i class="fas fa-lock"></i> 设为私有
+                            </button>
+                        `;
+                        break;
+                    case 'private':
+                        buttonsHtml = `
+                            <button class="btn btn-apply" onclick="applyApp()">
+                                <i class="fas fa-magic"></i> 一键应用
+                            </button>
+                            <button class="btn btn-success" onclick="setPublic()">
+                                <i class="fas fa-globe"></i> 设为公开
+                            </button>
+                            <button class="btn btn-primary" onclick="editApp()">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                        `;
+                        break;
+                    case 'pending':
+                        buttonsHtml = `
+                            <button class="btn btn-apply" onclick="applyApp()">
+                                <i class="fas fa-magic"></i> 一键应用
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteApp()">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        `;
+                        break;
+                    case 'rejected':
+                        buttonsHtml = `
+                            <button class="btn btn-apply" onclick="applyApp()">
+                                <i class="fas fa-magic"></i> 一键应用
+                            </button>
+                            <button class="btn btn-primary" onclick="editApp()">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteApp()">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                            <button class="btn btn-success" onclick="publishApp()">
+                                <i class="fas fa-paper-plane"></i> 发布
+                            </button>
+                        `;
+                        break;
+                    default:
+                        buttonsHtml = `
+                            <button class="btn btn-apply" onclick="applyApp()">
+                                <i class="fas fa-magic"></i> 一键应用
+                            </button>
+                        `;
+                }
+            }
+            
+            actionButtons.innerHTML = buttonsHtml;
+        }
+        
+        // 渲染应用实例列表
+        function renderAppInstances(appId) {
+            const instancesList = document.getElementById('appInstancesList');
+            const instancesSection = document.getElementById('appInstancesSection');
+            
+            // 筛选出当前应用的实例
+            const instances = mockAppInstances.filter(instance => instance.appId === appId);
+            
+            if (instances.length === 0) {
+                instancesList.innerHTML = `
+                    <div class="empty-instances">
+                        <div class="empty-instances-icon">📭</div>
+                        <p>暂无使用记录</p>
+                        <p style="font-size: 0.9rem; margin-top: 10px;">点击"一键应用"开始使用此应用</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            instancesList.innerHTML = instances.map(instance => {
+                const statusText = {
+                    'success': '执行成功',
+                    'failed': '执行失败',
+                    'running': '执行中'
+                }[instance.status] || instance.status;
+                
+                // 格式化参数显示
+                const paramsHtml = Object.entries(instance.parameters)
+                    .map(([key, value]) => `<span style="margin-right: 15px;"><strong>${key}:</strong> ${value}</span>`)
+                    .join('');
+                
+                // 检查是否有预览数据
+                let previewHtml = '';
+                if (instance.result && instance.result.outputUrl) {
+                    previewHtml = `
+                        <div class="instance-preview">
+                            <div class="instance-preview-title">执行结果：</div>
+                            <a href="${instance.result.outputUrl}" target="_blank" class="preview-link">
+                                查看预览
+                            </a>
+                            ${instance.result.outputSize ? `<span class="output-size">${instance.result.outputSize}</span>` : ''}
+                            ${instance.result.format ? `<span class="output-format">${instance.result.format}</span>` : ''}
+                        </div>
+                    `;
+                } else if (instance.result && instance.result.errorCode) {
+                    previewHtml = `
+                        <div class="instance-error">
+                            <div class="instance-error-title">错误信息：</div>
+                            <span class="error-message">${instance.result.errorMessage}</span>
+                        </div>
+                    `;
+                } else if (instance.result && instance.result.progress) {
+                    previewHtml = `
+                        <div class="instance-progress">
+                            <div class="instance-progress-title">执行进度：</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${instance.result.progress}%"></div>
+                            </div>
+                            <span class="progress-text">${instance.result.progress}% - ${instance.result.currentStep}</span>
+                            ${instance.result.estimatedTime ? `<span class="estimated-time">${instance.result.estimatedTime}</span>` : ''}
+                        </div>
+                    `;
+                }
+                
+                return `
+                    <div class="instance-item ${instance.status}">
+                        <div class="instance-header">
+                            <span class="instance-title">${instance.title}</span>
+                            <span class="instance-status ${instance.status}">${statusText}</span>
+                        </div>
+                        <div class="instance-description">${instance.description}</div>
+                        <div class="instance-meta">
+                            <span>📅 ${instance.submittedAt}</span>
+                            <span>⏱️ ${instance.executionTime}</span>
+                        </div>
+                        <div class="instance-params">
+                            <div class="instance-params-title">提交参数：</div>
+                            <div>${paramsHtml}</div>
+                        </div>
+                        ${previewHtml}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // 编辑应用
+        function editApp() {
+            // 将当前应用数据序列化为URL参数
+            const params = new URLSearchParams();
+            params.append('id', currentApp.id);
+            params.append('type', 'edit');
+            params.append('dataType', getUrlParams().type);
+            
+            // 跳转到创建页面并传递数据
+            window.location.href = `create-app.html?${params.toString()}`;
+        }
+        
+        // 点赞应用
+        function likeApp() {
+            isLiked = !isLiked;
+            const likeBtn = document.querySelector('.btn-like');
+            if (isLiked) {
+                likeBtn.innerHTML = '<i class="fas fa-heart"></i> 已点赞';
+                likeBtn.style.background = 'linear-gradient(135deg, #e91e63, #c2185b)';
+            } else {
+                likeBtn.innerHTML = '<i class="fas fa-heart"></i> 点赞';
+                likeBtn.style.background = 'linear-gradient(135deg, #ff6b6b, #ee5a5a)';
+            }
+        }
+        
+        // 分享应用
+        function shareApp() {
+            const shareUrl = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: currentApp.title,
+                    text: currentApp.description,
+                    url: shareUrl
+                }).catch(err => console.log('分享失败', err));
+            } else {
+                // 复制链接到剪贴板
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    alert('链接已复制到剪贴板！');
+                }).catch(err => {
+                    alert('分享链接: ' + shareUrl);
+                });
+            }
+        }
+        
+        // 一键应用
+        function applyApp() {
+            alert('正在启动应用: ' + currentApp.title);
+        }
+        
+        // 设为私有
+        function setPrivate() {
+            if (confirm('确定要将此应用设为私有吗？')) {
+                alert('应用已设为私有');
+                location.reload();
+            }
+        }
+        
+        // 设为公开
+        function setPublic() {
+            if (confirm('确定要将此应用设为公开吗？')) {
+                alert('应用已设为公开');
+                location.reload();
+            }
+        }
+        
+        // 删除应用
+        function deleteApp() {
+            if (confirm('确定要删除此应用吗？此操作不可恢复！')) {
+                alert('应用已删除');
+                window.location.href = 'my-assets-app.html';
+            }
+        }
+        
+        // 取消收藏
+        function cancelCollection() {
+            if (confirm('确定要取消收藏吗？')) {
+                alert('已取消收藏');
+                window.location.href = 'my-assets-app.html';
+            }
+        }
+        
+        // 预览应用
+        function previewApp() {
+            alert('预览应用效果');
+        }
+        
+        // 发布应用
+        function publishApp() {
+            if (confirm('确定要发布这个应用吗？')) {
+                alert('应用已提交审核！');
+            }
+        }
+        
+        // 返回上一页
+        function goBack() {
+            window.history.back();
+        }
+        
+        // 初始化页面
+        init();
+    </script>
+</body>
+</html>

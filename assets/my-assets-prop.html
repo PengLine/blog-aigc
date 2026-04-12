@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的道具 - AIGC创作平台</title>
+    <link rel="stylesheet" href="/css/hexo-common.css">
+    <link rel="stylesheet" href="/css/hexo-full-screen.css">
+    <link rel="stylesheet" href="/css/hidden-div.css">
+    <script src="common.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            color: #333;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        
+        /* 左侧导航栏 */
+        .sidebar {
+            width: 250px;
+            max-height: 800px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            padding: 30px 20px;
+            margin-right: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .sidebar h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: 2px;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 12px;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 12px 20px;
+            color: #4a5568;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(33, 150, 243, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .nav-link:hover::before {
+            left: 100%;
+        }
+        
+        .nav-link:hover {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            transform: translateX(8px);
+        }
+        
+        .nav-link.active {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+        }
+        
+        /* 二级导航菜单 */
+        .sub-nav-menu {
+            list-style: none;
+            margin-top: 8px;
+            margin-left: 20px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            border:1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .sub-nav-item {
+            margin-bottom: 6px;
+        }
+        
+        .sub-nav-link {
+            display: block;
+            padding: 8px 15px;
+            color: #666;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .sub-nav-link:hover {
+            background-color: #f0f0f0;
+            color: #1976d2;
+        }
+        
+        .sub-nav-link.active {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            font-weight: 600;
+        }
+        
+        /* 主内容区域 */
+        .main-content {
+            flex:1;
+            padding: 30px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .page-header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .page-description {
+            font-size: 1rem;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+        
+        /* 资产类型导航 */
+        .asset-type-nav {
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 15px;
+        }
+        
+        .asset-type-tabs {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        
+        .asset-type-tab {
+            padding: 12px 30px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .asset-type-tab:hover {
+            color: #1976d2;
+        }
+        
+        .asset-type-tab.active {
+            color: #1976d2;
+            border-bottom-color: #1976d2;
+        }
+        
+        /* 资产状态筛选 */
+        .asset-status-filter {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .filter-tabs {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-tab {
+            padding: 8px 20px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-tab:hover {
+            border-color: #2196f3;
+            color: #1976d2;
+        }
+        
+        .filter-tab.active {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: white;
+            border-color: #2196f3;
+        }
+        
+        /* 资产卡片容器 */
+        .assets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        /* 资产卡片 */
+        .asset-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .asset-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .asset-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+        }
+        
+        .asset-content {
+            padding: 20px;
+        }
+        
+        .asset-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .asset-description {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .asset-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #999;
+        }
+        
+        .asset-status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status-public {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .status-private {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        .status-pending {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .status-rejected {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .status-draft {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        .asset-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            background: white;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            background: #f8f9fa;
+            border-color: #2196f3;
+            color: #1976d2;
+        }
+        
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #999;
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        .empty-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .empty-description {
+            font-size: 1rem;
+            margin-bottom: 30px;
+        }
+        
+        .empty-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .empty-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        /* 创建表单样式 */
+        .create-form {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #2196f3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+        
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .form-select {
+            cursor: pointer;
+            background-color: white;
+        }
+        
+        .image-upload-area {
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+        
+        .image-upload-area:hover {
+            border-color: #2196f3;
+            background: #e3f2fd;
+        }
+        
+        .image-upload-area.has-image {
+            border-style: solid;
+            border-color: #2196f3;
+            padding: 20px;
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .upload-hint {
+            font-size: 0.85rem;
+            color: #999;
+        }
+        
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .btn-primary {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        .btn-secondary {
+            padding: 12px 30px;
+            background: white;
+            color: #666;
+            border: 2px solid #dee2e6;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            border-color: #2196f3;
+            color: #1976d2;
+            background: #f8f9fa;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* AI生成区域样式 */
+        .ai-generation-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            color: white;
+        }
+        
+        .ai-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .ai-section-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        
+        .ai-toggle-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 8px 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .ai-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .ai-content {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            color: #333;
+        }
+        
+        .ai-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .ai-generate-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .ai-generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .ai-loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .loading-spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #e0e0e0;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .ai-results {
+            margin-top: 20px;
+        }
+        
+        .ai-results h4 {
+            margin: 0 0 15px 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .ai-results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .ai-result-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+        }
+        
+        .ai-result-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+        
+        .ai-result-item.selected {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
+        
+        .ai-result-item img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+        
+        .ai-result-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            padding: 15px;
+            color: white;
+            font-size: 0.85rem;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+                padding: 0;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+                padding: 20px 0;
+            }
+            
+            .nav-menu {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                padding: 0 20px;
+            }
+            
+            .nav-item {
+                margin-bottom: 0;
+                position: relative;
+            }
+            
+            .sub-nav-menu {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                background-color: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                padding: 10px;
+                min-width: 150px;
+                z-index: 1000;
+                margin-top: 5px;
+            }
+            
+            .main-content {
+                padding: 30px 20px;
+            }
+            
+            .assets-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 20px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px 15px;
+            }
+            
+            .page-title {
+                font-size: 1.5rem;
+            }
+            
+            .asset-type-tabs {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .asset-type-tab {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+            
+            .filter-tabs {
+                gap: 10px;
+            }
+            
+            .filter-tab {
+                padding: 6px 16px;
+                font-size: 0.8rem;
+            }
+            
+            .assets-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 15px 10px;
+            }
+            
+            .page-title {
+                font-size: 1.3rem;
+            }
+            
+            .asset-content {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧导航栏 -->
+        <div class="sidebar">
+            <h2>AIGC导航</h2>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">首页</a>
+                    <ul class="sub-nav-menu">
+                        <li class="sub-nav-item">
+                            <a href="#" class="sub-nav-link" data-type="character">角色</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="#" class="sub-nav-link" data-type="prop">道具</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="#" class="sub-nav-link" data-type="scenic">景点</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="#" class="sub-nav-link" data-type="video">短剧</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="ai-apps.html" class="nav-link">AI应用</a>
+                </li>
+                <li class="nav-item">
+                    <a href="lora-train.html" class="nav-link">Lora训练</a>
+                </li>
+                <li class="nav-item">
+                    <a href="profile.html" class="nav-link">个人中心</a>
+                </li>
+                <li class="nav-item">
+                    <a href="my-assets.html" class="nav-link active">我的资产</a>
+                    <ul class="sub-nav-menu" style="display: block;">
+                        <li class="sub-nav-item">
+                            <a href="my-assets-character.html" class="sub-nav-link">我的角色</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="my-assets-prop.html" class="sub-nav-link active">我的道具</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="my-assets-scenic.html" class="sub-nav-link">我的景点</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="my-assets-video.html" class="sub-nav-link">我的短剧</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="my-assets-app.html" class="sub-nav-link">我的应用</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="my-assets-model.html" class="sub-nav-link">我的模型</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">我的道具</h1>
+                <p class="page-description">管理您的AI道具资产</p>
+            </div>
+            
+            <!-- 资产类型导航 -->
+            <div class="asset-type-nav">
+                <div class="asset-type-tabs">
+                    <button class="asset-type-tab" data-tab="create" id="createTab">创建道具</button>
+                    <button class="asset-type-tab active" data-tab="my-assets" id="myAssetsTab">我的道具</button>
+                    <button class="asset-type-tab" data-tab="collections">我的收藏</button>
+                    <button class="asset-type-tab" data-tab="drafts">草稿箱</button>
+                </div>
+            </div>
+            
+            <!-- 资产状态筛选 -->
+            <div class="asset-status-filter" id="assetStatusFilter">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">全部</button>
+                    <button class="filter-tab" data-filter="public">已公开</button>
+                    <button class="filter-tab" data-filter="private">仅自己可见</button>
+                    <button class="filter-tab" data-filter="pending">审核中</button>
+                    <button class="filter-tab" data-filter="rejected">审核未通过</button>
+                </div>
+            </div>
+            
+            <!-- 创建道具表单 -->
+            <div class="create-form hidden" id="createForm">
+                <h2 style="text-align: center; margin-bottom: 30px; color: #2c3e50;">创建新道具</h2>
+                
+                <!-- AI生成区域 -->
+                <div class="ai-generation-section">
+                    <div class="ai-section-header">
+                        <h3>🤖 AI智能生成</h3>
+                        <button class="ai-toggle-btn" onclick="toggleAIGeneration()">展开AI生成</button>
+                    </div>
+                    <div class="ai-content hidden" id="aiContent">
+                        <div class="form-group">
+                            <label class="form-label">AI生成提示词</label>
+                            <textarea class="form-textarea" id="aiPrompt" placeholder="请描述您想要创建的道具，例如：一把散发着蓝色光芒的魔法剑，剑身上刻有古老的符文"></textarea>
+                        </div>
+                        <div class="ai-options">
+                            <div class="form-group">
+                                <label class="form-label">生成风格</label>
+                                <select class="form-select" id="aiStyle">
+                                    <option value="">默认风格</option>
+                                    <option value="fantasy">奇幻风格</option>
+                                    <option value="scifi">科幻风格</option>
+                                    <option value="medieval">中世纪风格</option>
+                                    <option value="modern">现代风格</option>
+                                    <option value="minimalist">简约风格</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">生成数量</label>
+                                <select class="form-select" id="aiCount">
+                                    <option value="1">1个</option>
+                                    <option value="2">2个</option>
+                                    <option value="3">3个</option>
+                                    <option value="4">4个</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button class="btn-primary ai-generate-btn" onclick="generateWithAI()">
+                            <span>✨</span>
+                            <span>AI生成道具</span>
+                        </button>
+                        <div class="ai-loading hidden" id="aiLoading">
+                            <div class="loading-spinner"></div>
+                            <span>AI正在生成中，请稍候...</span>
+                        </div>
+                        <div class="ai-results hidden" id="aiResults">
+                            <h4>生成结果</h4>
+                            <div class="ai-results-grid" id="aiResultsGrid">
+                                <!-- AI生成结果将在这里显示 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">道具名称 *</label>
+                    <input type="text" class="form-input" id="propName" placeholder="请输入道具名称，如：魔法剑">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">道具描述 *</label>
+                    <textarea class="form-textarea" id="propDescription" placeholder="请描述道具的功能、用途、特效等..."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">道具类型</label>
+                    <select class="form-select" id="propType">
+                        <option value="">请选择道具类型</option>
+                        <option value="weapon">武器</option>
+                        <option value="armor">防具</option>
+                        <option value="accessory">饰品</option>
+                        <option value="consumable">消耗品</option>
+                        <option value="material">材料</option>
+                        <option value="tool">工具</option>
+                        <option value="treasure">宝藏</option>
+                        <option value="other">其他</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">稀有度</label>
+                    <select class="form-select" id="propRarity">
+                        <option value="">请选择稀有度</option>
+                        <option value="common">普通</option>
+                        <option value="uncommon">稀有</option>
+                        <option value="rare">史诗</option>
+                        <option value="epic">传说</option>
+                        <option value="legendary">神话</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">道具图片</label>
+                    <div class="image-upload-area" id="imageUploadArea" onclick="document.getElementById('propImage').click()">
+                        <div class="upload-content">
+                            <div class="upload-icon">📷</div>
+                            <div class="upload-text">点击上传道具图片</div>
+                            <div class="upload-hint">支持 JPG、PNG 格式，建议尺寸 4:3</div>
+                        </div>
+                        <img class="preview-image hidden" id="previewImage" alt="预览">
+                    </div>
+                    <input type="file" class="hidden" id="propImage" accept="image/*" onchange="handleImageUpload(this)">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">标签（用逗号分隔）</label>
+                    <input type="text" class="form-input" id="propTags" placeholder="例如：武器, 魔法, 传说, 攻击">
+                </div>
+                
+                <div class="form-actions">
+                    <button class="btn-secondary" onclick="cancelCreate()">取消</button>
+                    <button class="btn-primary" onclick="saveDraft()">保存草稿</button>
+                    <button class="btn-primary" onclick="publishProp()">立即发布</button>
+                </div>
+            </div>
+            
+            <!-- 资产卡片容器 -->
+            <div class="assets-grid" id="assetsGrid">
+                <!-- 资产卡片将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 模拟道具数据
+        const mockAssets = [
+            {
+                id: 1,
+                title: "魔法剑",
+                description: "传说中的魔法剑，拥有强大的魔法力量",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=magical%20sword%20with%20glowing%20runes%20and%20mystical%20aura%20fantasy%20weapon&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-03-01"
+            },
+            {
+                id: 2,
+                title: "古代盾牌",
+                description: "古代战士使用的盾牌，坚固耐用",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=ancient%20shield%20with%20intricate%20carvings%20and%20battle%20worn%20appearance&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-02-28"
+            },
+            {
+                id: 3,
+                title: "魔法药水",
+                description: "神秘的魔法药水，可以恢复生命值",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=magical%20potion%20bottle%20with%20glowing%20liquid%20and%20mystical%20aura&image_size=landscape_4_3",
+                status: "private",
+                created: "2026-02-25"
+            },
+            {
+                id: 4,
+                title: "古代盔甲",
+                description: "古代战士的盔甲，提供强大的防御",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=ancient%20armor%20set%20with%20intricate%20designs%20and%20battle%20worn%20appearance&image_size=landscape_4_3",
+                status: "pending",
+                created: "2026-02-20"
+            },
+            {
+                id: 5,
+                title: "魔法戒指",
+                description: "神秘的魔法戒指，拥有特殊能力",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=magical%20ring%20with%20glowing%20gemstone%20and%20mystical%20runes&image_size=landscape_4_3",
+                status: "rejected",
+                created: "2026-02-15"
+            },
+            {
+                id: 6,
+                title: "古代弓箭",
+                description: "古代猎人使用的弓箭，精准有力",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=ancient%20bow%20and%20arrows%20with%20intricate%20carvings%20and%20battle%20worn%20appearance&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-02-10"
+            },
+            {
+                id: 7,
+                title: "魔法法杖",
+                description: "强大的魔法法杖，可以施展各种魔法",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=powerful%20magical%20staff%20with%20glowing%20crystal%20and%20mystical%20aura&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-02-05"
+            },
+            {
+                id: 8,
+                title: "古代宝箱",
+                description: "神秘的古代宝箱，可能藏有宝藏",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=ancient%20treasure%20chest%20with%20intricate%20carvings%20and%20mysterious%20aura&image_size=landscape_4_3",
+                status: "private",
+                created: "2026-02-01"
+            },
+            {
+                id: 9,
+                title: "魔法剑",
+                description: "带有魔法光芒的剑，适合奇幻主题",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=magical%20sword%20with%20glowing%20energy%20and%20runestones&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-01-28"
+            },
+            {
+                id: 10,
+                title: "科技盾牌",
+                description: "未来科技感的防御盾牌",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=future%20tech%20shield%20with%20energy%20barrier%20and%20digital%20display&image_size=landscape_4_3",
+                status: "private",
+                created: "2026-01-25"
+            }
+        ];
+        
+        // 模拟收藏数据
+        const mockCollections = [
+            {
+                id: 101,
+                title: "魔法剑",
+                description: "传说中的魔法剑，拥有强大的魔法力量",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=magical%20sword%20with%20glowing%20runes%20and%20mystical%20aura%20fantasy%20weapon&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-03-01"
+            },
+            {
+                id: 102,
+                title: "古代盾牌",
+                description: "古代战士使用的盾牌，坚固耐用",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=ancient%20shield%20with%20intricate%20carvings%20and%20battle%20worn%20appearance&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-02-28"
+            }
+        ];
+        
+        // 模拟草稿数据
+        const mockDrafts = [
+            {
+                id: 201,
+                title: "未完成的道具设计",
+                description: "正在设计中的道具，尚未完成",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=unfinished%20prop%20design%20sketch%20and%20draft&image_size=landscape_4_3",
+                status: "draft",
+                created: "2026-03-05"
+            },
+            {
+                id: 202,
+                title: "道具概念草稿",
+                description: "道具概念设计的初步草稿",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=prop%20concept%20art%20draft%20sketch&image_size=landscape_4_3",
+                status: "draft",
+                created: "2026-03-03"
+            }
+        ];
+        
+        let currentTab = 'my-assets';
+        let currentFilter = 'all';
+        
+        // 渲染资产
+        function renderAssets() {
+            const assetsGrid = document.getElementById('assetsGrid');
+            
+            // 获取当前数据
+            let assets = [];
+            if (currentTab === 'my-assets') {
+                assets = mockAssets;
+            } else if (currentTab === 'collections') {
+                assets = mockCollections;
+            } else if (currentTab === 'drafts') {
+                assets = mockDrafts;
+            }
+            
+            // 根据状态筛选
+            if (currentFilter !== 'all') {
+                assets = assets.filter(asset => asset.status === currentFilter);
+            }
+            
+            // 如果没有数据，显示空状态
+            if (assets.length === 0) {
+                assetsGrid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <h3 class="empty-title">暂无${currentTab === 'my-assets' ? '道具' : currentTab === 'collections' ? '收藏' : '草稿'}</h3>
+                        <p class="empty-description">${currentTab === 'my-assets' ? '您还没有创建任何道具，点击"创建道具"开始创作吧！' : currentTab === 'collections' ? '您还没有收藏任何道具，去发现更多精彩内容吧！' : '您还没有保存的草稿'}</p>
+                        ${currentTab === 'my-assets' ? '<button class="empty-btn" onclick="createNewAsset()">创建道具</button>' : ''}
+                    </div>
+                `;
+                return;
+            }
+            
+            // 渲染资产卡片
+            assetsGrid.innerHTML = assets.map(asset => `
+                <div class="asset-card">
+                    <img src="${asset.image}" alt="${asset.title}" class="asset-image" onclick="viewDetail(${asset.id}, '${currentTab === 'collections' ? 'collection' : 'my'}')" style="cursor: pointer;">
+                    <div class="asset-content">
+                        <h3 class="asset-title" onclick="viewDetail(${asset.id}, '${currentTab === 'collections' ? 'collection' : 'my'}')" style="cursor: pointer;">${asset.title}</h3>
+                        <p class="asset-description">${asset.description}</p>
+                        <div class="asset-meta">
+                            <span class="asset-status status-${asset.status}">${getStatusText(asset.status)}</span>
+                            <span>${asset.created}</span>
+                        </div>
+                        <div class="asset-actions">
+                            ${currentTab === 'my-assets' ? `
+                                ${(asset.status === 'private' || asset.status === 'rejected' || asset.status === 'pending' || asset.status === 'draft') ? `
+                                    <button class="action-btn" onclick="event.stopPropagation(); editAsset(${asset.id})">编辑</button>
+                                ` : ''}
+                                <button class="action-btn" onclick="event.stopPropagation(); viewDetail(${asset.id}, 'my')">预览</button>
+                                ${asset.status === 'public' ? `
+                                    <button class="action-btn" onclick="event.stopPropagation(); setAssetPrivate(${asset.id})">私有</button>
+                                ` : ''}
+                                ${asset.status === 'private' ? `
+                                    <button class="action-btn" onclick="event.stopPropagation(); setAssetPublic(${asset.id})">公开</button>
+                                ` : ''}
+                                ${(asset.status === 'pending' || asset.status === 'rejected') ? `
+                                    <button class="action-btn" onclick="event.stopPropagation(); deleteAsset(${asset.id})">删除</button>
+                                ` : ''}
+                                ${asset.status === 'rejected' ? `
+                                    <button class="action-btn" onclick="event.stopPropagation(); publishAsset(${asset.id})">发布</button>
+                                ` : ''}
+                            ` : currentTab === 'collections' ? `
+                                <button class="action-btn" onclick="event.stopPropagation(); viewDetail(${asset.id}, 'collection')">预览</button>
+                                <button class="action-btn" onclick="event.stopPropagation(); cancelCollection(${asset.id})">取消收藏</button>
+                            ` : `
+                                <button class="action-btn" onclick="event.stopPropagation(); editAsset(${asset.id})">编辑</button>
+                                <button class="action-btn" onclick="event.stopPropagation(); viewDetail(${asset.id}, 'my')">预览</button>
+                                <button class="action-btn" onclick="event.stopPropagation(); publishAsset(${asset.id})">发布</button>
+                                <button class="action-btn" onclick="event.stopPropagation(); deleteAsset(${asset.id})">删除</button>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 获取状态文本
+        function getStatusText(status) {
+            const statusTexts = {
+                public: '已公开',
+                private: '仅自己可见',
+                pending: '审核中',
+                rejected: '审核未通过',
+                draft: '待发布'
+            };
+            return statusTexts[status] || status;
+        }
+        
+        // 创建新资产
+        function createNewAsset() {
+            showCreateForm();
+        }
+        
+        // 显示创建表单
+        function showCreateForm() {
+            document.getElementById('createForm').classList.remove('hidden');
+            document.getElementById('assetsGrid').classList.add('hidden');
+            document.getElementById('assetStatusFilter').classList.add('hidden');
+        }
+        
+        // 隐藏创建表单
+        function hideCreateForm() {
+            document.getElementById('createForm').classList.add('hidden');
+            document.getElementById('assetsGrid').classList.remove('hidden');
+            if (currentTab === 'my-assets') {
+                document.getElementById('assetStatusFilter').classList.remove('hidden');
+            }
+            resetCreateForm();
+        }
+        
+        // 重置创建表单
+        function resetCreateForm() {
+            document.getElementById('propName').value = '';
+            document.getElementById('propDescription').value = '';
+            document.getElementById('propType').value = '';
+            document.getElementById('propRarity').value = '';
+            document.getElementById('propTags').value = '';
+            document.getElementById('previewImage').classList.add('hidden');
+            document.getElementById('previewImage').src = '';
+            document.getElementById('imageUploadArea').classList.remove('has-image');
+            document.querySelector('.upload-content').classList.remove('hidden');
+        }
+        
+        // 处理图片上传
+        function handleImageUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewImage = document.getElementById('previewImage');
+                    previewImage.src = e.target.result;
+                    previewImage.classList.remove('hidden');
+                    document.getElementById('imageUploadArea').classList.add('has-image');
+                    document.querySelector('.upload-content').classList.add('hidden');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        // 获取表单数据
+        function getFormData() {
+            return {
+                title: document.getElementById('propName').value.trim(),
+                description: document.getElementById('propDescription').value.trim(),
+                type: document.getElementById('propType').value,
+                rarity: document.getElementById('propRarity').value,
+                tags: document.getElementById('propTags').value.trim(),
+                image: document.getElementById('previewImage').src || 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=default%20prop%20placeholder&image_size=landscape_4_3'
+            };
+        }
+        
+        // 验证表单
+        function validateForm() {
+            const data = getFormData();
+            if (!data.title) {
+                alert('请输入道具名称');
+                return false;
+            }
+            if (!data.description) {
+                alert('请输入道具描述');
+                return false;
+            }
+            return true;
+        }
+        
+        // 取消创建
+        function cancelCreate() {
+            if (confirm('确定要取消创建吗？未保存的内容将丢失。')) {
+                hideCreateForm();
+                document.querySelectorAll('.asset-type-tab').forEach(t => t.classList.remove('active'));
+                document.getElementById('myAssetsTab').classList.add('active');
+                currentTab = 'my-assets';
+                toggleFilterSection();
+                renderAssets();
+            }
+        }
+        
+        // 保存草稿
+        function saveDraft() {
+            const data = getFormData();
+            if (!data.title) {
+                alert('请输入道具名称');
+                return;
+            }
+            
+            const newDraft = {
+                id: Date.now(),
+                title: data.title,
+                description: data.description,
+                image: data.image,
+                status: 'draft',
+                created: new Date().toISOString().split('T')[0],
+                type: data.type,
+                rarity: data.rarity,
+                tags: data.tags
+            };
+            
+            mockDrafts.unshift(newDraft);
+            alert('草稿已保存！');
+            hideCreateForm();
+            
+            document.querySelectorAll('.asset-type-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector('[data-tab="drafts"]').classList.add('active');
+            currentTab = 'drafts';
+            toggleFilterSection();
+            renderAssets();
+        }
+        
+        // 发布道具
+        function publishProp() {
+            if (!validateForm()) return;
+            
+            const data = getFormData();
+            const newProp = {
+                id: Date.now(),
+                title: data.title,
+                description: data.description,
+                image: data.image,
+                status: 'pending',
+                created: new Date().toISOString().split('T')[0],
+                type: data.type,
+                rarity: data.rarity,
+                tags: data.tags
+            };
+            
+            mockAssets.unshift(newProp);
+            alert('道具已提交审核！');
+            hideCreateForm();
+            
+            document.querySelectorAll('.asset-type-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('myAssetsTab').classList.add('active');
+            currentTab = 'my-assets';
+            toggleFilterSection();
+            renderAssets();
+        }
+        
+        // 编辑资产
+        function editAsset(id) {
+            // 跳转到创建页面并传递数据
+            window.location.href = `create-prop.html?id=${id}&type=edit&dataType=${currentTab === 'drafts' ? 'drafts' : 'my'}`;
+        }
+        
+        // 预览资产
+        function previewAsset(id) {
+            alert(`预览道具 ID: ${id}`);
+        }
+        
+        // 删除资产
+        function deleteAsset(id) {
+            if (confirm('确定要删除此道具吗？')) {
+                alert(`删除道具 ID: ${id}`);
+                renderAssets();
+            }
+        }
+        
+        // 设置资产为公开
+        function setAssetPublic(id) {
+            if (confirm('确定要将此道具公开吗？')) {
+                alert(`道具 ID: ${id} 已公开`);
+                renderAssets();
+            }
+        }
+        
+        // 设置资产为私有
+        function setAssetPrivate(id) {
+            if (confirm('确定要将此道具设为仅自己可见吗？')) {
+                alert(`道具 ID: ${id} 已设为仅自己可见`);
+                renderAssets();
+            }
+        }
+        
+        // 发布资产（从草稿箱发布）
+        function publishAsset(id) {
+            if (confirm('确定要发布此道具吗？发布后道具将进入审核流程。')) {
+                alert(`道具 ID: ${id} 已发布，等待审核`);
+                renderAssets();
+            }
+        }
+        
+        // 取消收藏
+        function cancelCollection(id) {
+            if (confirm('确定要取消收藏此道具吗？')) {
+                alert(`已取消收藏道具 ID: ${id}`);
+                renderAssets();
+            }
+        }
+        
+        // 查看详情
+        function viewDetail(id, type) {
+            window.location.href = `prop-detail.html?id=${id}&type=${type}&source=prop`;
+        }
+        
+        // 绑定事件
+        function bindEvents() {
+            // 资产类型标签事件
+            const assetTypeTabs = document.querySelectorAll('.asset-type-tab');
+            assetTypeTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabValue = tab.getAttribute('data-tab');
+                    
+                    // 如果是"创建道具"tab，显示创建表单
+                    if (tabValue === 'create') {
+                        assetTypeTabs.forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        showCreateForm();
+                        return;
+                    }
+                    
+                    // 隐藏创建表单
+                    hideCreateForm();
+                    
+                    assetTypeTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentTab = tabValue;
+                    
+                    // 控制筛选区域的显示/隐藏
+                    toggleFilterSection();
+                    
+                    renderAssets();
+                });
+            });
+            
+            // 筛选标签事件
+            const filterTabs = document.querySelectorAll('.filter-tab');
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentFilter = tab.getAttribute('data-filter');
+                    renderAssets();
+                });
+            });
+        }
+        
+        // 控制筛选区域的显示/隐藏
+        function toggleFilterSection() {
+            const filterSection = document.getElementById('assetStatusFilter');
+            // 只在"我的道具"标签下显示筛选区域
+            if (currentTab === 'my-assets') {
+                filterSection.style.display = 'block';
+            } else {
+                filterSection.style.display = 'none';
+            }
+        }
+        
+        // 切换AI生成区域
+        function toggleAIGeneration() {
+            const aiContent = document.getElementById('aiContent');
+            const toggleBtn = document.querySelector('.ai-toggle-btn');
+            
+            if (aiContent.classList.contains('hidden')) {
+                aiContent.classList.remove('hidden');
+                toggleBtn.textContent = '收起AI生成';
+            } else {
+                aiContent.classList.add('hidden');
+                toggleBtn.textContent = '展开AI生成';
+            }
+        }
+        
+        // 使用AI生成道具
+        function generateWithAI() {
+            const prompt = document.getElementById('aiPrompt').value.trim();
+            const style = document.getElementById('aiStyle').value;
+            const count = parseInt(document.getElementById('aiCount').value);
+            
+            if (!prompt) {
+                alert('请输入AI生成提示词');
+                return;
+            }
+            
+            // 显示加载状态
+            document.getElementById('aiLoading').classList.remove('hidden');
+            document.getElementById('aiResults').classList.add('hidden');
+            document.querySelector('.ai-generate-btn').disabled = true;
+            
+            // 模拟AI生成过程
+            setTimeout(() => {
+                // 生成模拟结果
+                const results = [];
+                const stylePrompts = {
+                    'fantasy': 'fantasy style',
+                    'scifi': 'sci-fi style',
+                    'medieval': 'medieval style',
+                    'modern': 'modern style',
+                    'minimalist': 'minimalist style'
+                };
+                
+                for (let i = 0; i < count; i++) {
+                    const styleSuffix = style ? stylePrompts[style] : '';
+                    const encodedPrompt = encodeURIComponent(`${prompt} ${styleSuffix} item design, ${i + 1}`);
+                    results.push({
+                        id: i + 1,
+                        image: `https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=${encodedPrompt}&image_size=landscape_4_3`,
+                        prompt: prompt,
+                        style: style || '默认'
+                    });
+                }
+                
+                // 显示生成结果
+                displayAIResults(results);
+                
+                // 隐藏加载状态
+                document.getElementById('aiLoading').classList.add('hidden');
+                document.querySelector('.ai-generate-btn').disabled = false;
+            }, 3000);
+        }
+        
+        // 显示AI生成结果
+        function displayAIResults(results) {
+            const resultsGrid = document.getElementById('aiResultsGrid');
+            resultsGrid.innerHTML = results.map(result => `
+                <div class="ai-result-item" onclick="selectAIResult(this, '${result.image}')">
+                    <img src="${result.image}" alt="AI生成的道具">
+                    <div class="ai-result-overlay">
+                        <span>点击选择</span>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('aiResults').classList.remove('hidden');
+        }
+        
+        // 选择AI生成的结果
+        function selectAIResult(element, imageUrl) {
+            // 移除其他选中状态
+            document.querySelectorAll('.ai-result-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // 添加选中状态
+            element.classList.add('selected');
+            
+            // 应用到表单
+            applyAIResult(imageUrl);
+        }
+        
+        // 应用AI生成的结果到表单
+        function applyAIResult(imageUrl) {
+            const previewImage = document.getElementById('previewImage');
+            previewImage.src = imageUrl;
+            previewImage.classList.remove('hidden');
+            document.getElementById('imageUploadArea').classList.add('has-image');
+            document.querySelector('.upload-content').classList.add('hidden');
+            
+            // 自动填充一些信息
+            const prompt = document.getElementById('aiPrompt').value;
+            if (prompt && !document.getElementById('propName').value) {
+                document.getElementById('propName').value = prompt.substring(0, 20);
+            }
+            if (prompt && !document.getElementById('propDescription').value) {
+                document.getElementById('propDescription').value = prompt;
+            }
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            initNavMenu();
+            renderAssets();
+            bindEvents();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的模型 - AIGC创作平台</title>
+    <link rel="stylesheet" href="/css/hexo-common.css">
+    <link rel="stylesheet" href="/css/hexo-full-screen.css">
+    <link rel="stylesheet" href="/css/hidden-div.css">
+    <script src="common.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            color: #333;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            display: flex;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+            min-height: 100vh;
+        }
+        
+        /* 左侧导航栏 */
+        .sidebar {
+            width: 250px;
+            max-height: 800px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            padding: 30px 20px;
+            margin-right: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .sidebar h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: 2px;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 12px;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 12px 20px;
+            color: #4a5568;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(33, 150, 243, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .nav-link:hover::before {
+            left: 100%;
+        }
+        
+        .nav-link:hover {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            transform: translateX(8px);
+        }
+        
+        .nav-link.active {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+        }
+        
+        .nav-link.active:hover {
+            transform: translateX(0);
+        }
+        
+        /* 二级导航菜单 */
+        .sub-nav-menu {
+            list-style: none;
+            margin-top: 8px;
+            margin-left: 20px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+            border:1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .sub-nav-item {
+            margin-bottom: 6px;
+        }
+        
+        .sub-nav-link {
+            display: block;
+            padding: 8px 15px;
+            color: #666;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .sub-nav-link:hover {
+            background-color: #f0f0f0;
+            color: #1976d2;
+        }
+        
+        .sub-nav-link.active {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            font-weight: 600;
+        }
+        
+        /* 主内容区域 */
+        .main-content {
+            flex:1;
+            padding: 30px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            backdrop-filter: blur(10px);
+            border:1px solid rgba(0,0,0,0.05);
+        }
+        
+        .page-header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .page-description {
+            font-size: 1rem;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+        
+        /* 资产类型导航 */
+        .asset-type-nav {
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 15px;
+        }
+        
+        .asset-type-tabs {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        
+        .asset-type-tab {
+            padding: 12px 30px;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .asset-type-tab:hover {
+            color: #1976d2;
+        }
+        
+        .asset-type-tab.active {
+            color: #1976d2;
+            border-bottom-color: #1976d2;
+        }
+        
+        /* 资产状态筛选 */
+        .asset-status-filter {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border:1px solid #e9ecef;
+        }
+        
+        .filter-tabs {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-tab {
+            padding: 8px 20px;
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-tab:hover {
+            border-color: #2196f3;
+            color: #1976d2;
+        }
+        
+        .filter-tab.active {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: white;
+            border-color: #2196f3;
+        }
+        
+        /* 资产卡片容器 */
+        .assets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        /* 资产卡片 */
+        .asset-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .asset-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .asset-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+        }
+        
+        .asset-content {
+            padding: 20px;
+        }
+        
+        .asset-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .asset-description {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .asset-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: #999;
+        }
+        
+        .asset-status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status-public {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+        
+        .status-private {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        .status-pending {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .status-rejected {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .status-draft {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        /* 资产操作按钮 */
+        .asset-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            background: white;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            background: #f8f9fa;
+            border-color: #2196f3;
+            color: #1976d2;
+        }
+        
+        /* 创建资产按钮 */
+        .create-asset-btn {
+            display: block;
+            width: 200px;
+            margin: 0 auto 30px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #4caf50, #388e3c);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .create-asset-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        .empty-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .empty-description {
+            font-size: 1rem;
+            margin-bottom: 30px;
+        }
+        
+        .empty-btn {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .empty-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+        }
+        
+        /* 创建表单 */
+        .create-form {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .create-form h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 8px;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #2196f3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+        
+        .submit-btn,
+        .cancel-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .submit-btn {
+            background: linear-gradient(135deg, #4caf50, #388e3c);
+            color: white;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        .cancel-btn {
+            background: #f5f5f5;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+        
+        .cancel-btn:hover {
+            background: #e0e0e0;
+            border-color: #999;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+                padding: 30px 20px;
+            }
+            
+            .sidebar {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 30px;
+            }
+            
+            .nav-menu {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .nav-item {
+                margin-bottom: 0;
+                position: relative;
+            }
+            
+            .sub-nav-menu {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                background-color: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                padding: 10px;
+                min-width: 150px;
+                z-index: 1000;
+                margin-top: 5px;
+            }
+            
+            .sub-nav-item {
+                margin-bottom: 5px;
+            }
+            
+            .sub-nav-link {
+                padding: 6px 10px;
+                font-size: 0.85rem;
+            }
+            
+            .main-content {
+                padding: 25px;
+            }
+            
+            .assets-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 20px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px 15px;
+            }
+            
+            .page-title {
+                font-size: 1.8rem;
+            }
+            
+            .asset-type-tabs {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .asset-type-tab {
+                padding: 10px 20px;
+                font-size: 1rem;
+            }
+            
+            .assets-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px 10px;
+            }
+            
+            .main-content {
+                padding: 15px 10px;
+            }
+            
+            .page-title {
+                font-size: 1.5rem;
+            }
+            
+            .asset-content {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧导航栏 -->
+        <div class="sidebar">
+            <h2>AIGC导航</h2>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">首页</a>
+                    <ul class="sub-nav-menu">
+                        <li class="sub-nav-item">
+                            <a href="index.html" class="sub-nav-link" data-type="character">角色</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="index.html" class="sub-nav-link" data-type="prop">道具</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="index.html" class="sub-nav-link" data-type="scenic">景点</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="index.html" class="sub-nav-link" data-type="video">短剧</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a href="ai-apps.html" class="nav-link">AI应用</a>
+                </li>
+                <li class="nav-item">
+                    <a href="lora-train.html" class="nav-link">Lora训练</a>
+                </li>
+                <li class="nav-item">
+                    <a href="profile.html" class="nav-link">个人中心</a>
+                </li>
+                <li class="nav-item">
+                    <a href="my-assets.html" class="nav-link active">我的资产</a>
+                    <ul class="sub-nav-menu" style="display: block;">
+                        <li class="sub-nav-item">
+                            <a href="my-assets-character.html" class="sub-nav-link">我的角色</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="my-assets-prop.html" class="sub-nav-link">我的道具</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="my-assets-scenic.html" class="sub-nav-link">我的景点</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="my-assets-video.html" class="sub-nav-link">我的短剧</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="my-assets-app.html" class="sub-nav-link">我的应用</a>
+                        </li>
+                        <li class="sub-nav-item">
+                            <a href="my-assets-model.html" class="sub-nav-link active">我的模型</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">我的模型</h1>
+                <p class="page-description">管理您的AI模型资产</p>
+            </div>
+            
+            <!-- 资产类型导航 -->
+            <div class="asset-type-nav">
+                <div class="asset-type-tabs">
+                    <button class="asset-type-tab" data-tab="create">创建模型</button>
+                    <button class="asset-type-tab active" data-tab="my-assets">我的模型</button>
+                    <button class="asset-type-tab" data-tab="collections">我的收藏</button>
+                    <button class="asset-type-tab" data-tab="drafts">草稿箱</button>
+                </div>
+            </div>
+            
+            <!-- 资产状态筛选 -->
+            <div class="asset-status-filter">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-filter="all">全部</button>
+                    <button class="filter-tab" data-filter="public">已公开</button>
+                    <button class="filter-tab" data-filter="private">仅自己可见</button>
+                    <button class="filter-tab" data-filter="pending">审核中</button>
+                    <button class="filter-tab" data-filter="rejected">审核未通过</button>
+                </div>
+            </div>
+            
+            <!-- 资产卡片容器 -->
+            <div class="assets-grid" id="assetsGrid">
+                <!-- 资产卡片将通过JavaScript动态生成 -->
+            </div>
+            
+            <!-- 创建模型表单 -->
+            <div id="createForm" style="display: none;">
+                <div class="create-form">
+                    <h3>创建模型</h3>
+                    <form onsubmit="submitCreateForm(event)">
+                        <div class="form-group">
+                            <label for="modelName">模型名称</label>
+                            <input type="text" id="modelName" required placeholder="请输入模型名称">
+                        </div>
+                        <div class="form-group">
+                            <label for="modelDescription">模型描述</label>
+                            <textarea id="modelDescription" required placeholder="请输入模型描述" rows="4"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="modelType">模型类型</label>
+                            <select id="modelType" required>
+                                <option value="text-to-image">文生图</option>
+                                <option value="image-to-image">图生图</option>
+                                <option value="text-to-video">文生视频</option>
+                                <option value="image-to-video">图生视频</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="modelImage">模型预览图</label>
+                            <input type="file" id="modelImage" accept="image/*">
+                        </div>
+                        <div class="form-group">
+                            <label for="modelFile">模型文件</label>
+                            <input type="file" id="modelFile" accept=".pt,.pth,.ckpt">
+                        </div>
+                        <div class="form-group">
+                            <label for="modelParams">模型参数</label>
+                            <textarea id="modelParams" required placeholder="请输入模型参数" rows="4"></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="submit-btn">创建</button>
+                            <button type="button" class="cancel-btn" onclick="switchTab('my-assets')">取消</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 模拟模型数据
+        const mockAssets = [
+            {
+                id: 1,
+                title: "通用文生图模型",
+                description: "适用于多种场景的通用文生图模型，支持多种风格",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20model%20interface%20for%20text%20to%20image%20generation&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-03-01"
+            },
+            {
+                id: 2,
+                title: "人物肖像模型",
+                description: "专门用于生成高质量人物肖像的模型",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20model%20for%20portrait%20generation%20interface&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-02-28"
+            },
+            {
+                id: 3,
+                title: "科幻风格模型",
+                description: "专注于科幻风格的图像生成模型",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20model%20for%20sci-fi%20style%20generation&image_size=landscape_4_3",
+                status: "private",
+                created: "2026-02-25"
+            },
+            {
+                id: 4,
+                title: "动漫风格模型",
+                description: "生成动漫风格图像的专用模型",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20model%20for%20anime%20style%20generation&image_size=landscape_4_3",
+                status: "pending",
+                created: "2026-02-20"
+            },
+            {
+                id: 5,
+                title: "写实风格模型",
+                description: "生成写实风格图像的模型",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20model%20for%20realistic%20image%20generation&image_size=landscape_4_3",
+                status: "rejected",
+                created: "2026-02-15"
+            },
+            {
+                id: 6,
+                title: "风景摄影模型",
+                description: "专注于风景摄影风格的图像生成",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20model%20for%20landscape%20photography&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-02-10"
+            },
+            {
+                id: 7,
+                title: "艺术风格模型",
+                description: "生成各种艺术风格的图像模型",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20model%20for%20artistic%20style%20generation&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-02-05"
+            },
+            {
+                id: 8,
+                title: "商业广告模型",
+                description: "专门用于商业广告图像生成的模型",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20model%20for%20commercial%20advertising&image_size=landscape_4_3",
+                status: "private",
+                created: "2026-02-01"
+            },
+            {
+                id: 9,
+                title: "建筑设计模型",
+                description: "生成建筑设计和室内设计图像的模型",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20model%20for%20architectural%20design&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-01-28"
+            },
+            {
+                id: 10,
+                title: "产品设计模型",
+                description: "生成产品设计和工业设计图像的模型",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20model%20for%20product%20design&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-01-25"
+            },
+            {
+                id: 11,
+                title: "动物形象模型",
+                description: "生成各种动物形象的模型",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20model%20for%20animal%20image%20generation&image_size=landscape_4_3",
+                status: "pending",
+                created: "2026-01-20"
+            },
+            {
+                id: 12,
+                title: "抽象艺术模型",
+                description: "生成抽象艺术风格图像的模型",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20model%20for%20abstract%20art%20generation&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-01-15"
+            }
+        ];
+        
+        // 模拟收藏数据
+        const mockCollections = [
+            {
+                id: 101,
+                title: "通用文生图模型",
+                description: "适用于多种场景的通用文生图模型，支持多种风格",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20model%20interface%20for%20text%20to%20image%20generation&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-03-01"
+            },
+            {
+                id: 102,
+                title: "人物肖像模型",
+                description: "专门用于生成高质量人物肖像的模型",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20model%20for%20portrait%20generation%20interface&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-02-28"
+            },
+            {
+                id: 103,
+                title: "艺术风格模型",
+                description: "生成各种艺术风格的图像模型",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20model%20for%20artistic%20style%20generation&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-02-05"
+            },
+            {
+                id: 104,
+                title: "建筑设计模型",
+                description: "生成建筑设计和室内设计图像的模型",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20model%20for%20architectural%20design&image_size=landscape_4_3",
+                status: "public",
+                created: "2026-01-28"
+            }
+        ];
+        
+        // 模拟草稿数据
+        const mockDrafts = [
+            {
+                id: 201,
+                title: "未完成的模型设计",
+                description: "正在设计中的模型，尚未完成",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=unfinished%20AI%20model%20design%20draft&image_size=landscape_4_3",
+                status: "draft",
+                created: "2026-03-05"
+            },
+            {
+                id: 202,
+                title: "模型概念草稿",
+                description: "模型概念设计的初步草稿",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20model%20concept%20draft&image_size=landscape_4_3",
+                status: "draft",
+                created: "2026-03-03"
+            },
+            {
+                id: 203,
+                title: "风景摄影模型",
+                description: "风景摄影风格模型的设计草案",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=landscape%20photography%20model%20concept%20draft&image_size=landscape_4_3",
+                status: "draft",
+                created: "2026-03-01"
+            },
+            {
+                id: 204,
+                title: "商业广告模型",
+                description: "商业广告风格模型的设计草案",
+                image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=commercial%20advertising%20model%20concept%20draft&image_size=landscape_4_3",
+                status: "draft",
+                created: "2026-02-28"
+            }
+        ];
+        
+        let currentTab = 'my-assets';
+        let currentFilter = 'all';
+        
+        // 渲染资产
+        function renderAssets() {
+            const assetsGrid = document.getElementById('assetsGrid');
+            
+            // 获取当前数据
+            let assets = [];
+            if (currentTab === 'my-assets') {
+                assets = mockAssets;
+            } else if (currentTab === 'collections') {
+                assets = mockCollections;
+            } else if (currentTab === 'drafts') {
+                assets = mockDrafts;
+            }
+            
+            // 根据状态筛选
+            if (currentFilter !== 'all') {
+                assets = assets.filter(asset => asset.status === currentFilter);
+            }
+            
+            // 如果没有数据，显示空状态
+            if (assets.length === 0) {
+                const tabNames = {
+                    'my-assets': '模型',
+                    'collections': '收藏',
+                    'drafts': '草稿'
+                };
+                const tabName = tabNames[currentTab] || '模型';
+                
+                assetsGrid.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <h3 class="empty-title">暂无${tabName}</h3>
+                        <p class="empty-description">${currentTab === 'my-assets' ? '您还没有创建任何模型，点击"创建模型"开始创作吧！' : currentTab === 'collections' ? '您还没有收藏任何模型，去发现更多精彩内容吧！' : '您还没有保存的草稿'}</p>
+                        ${currentTab === 'my-assets' ? '<button class="empty-btn" onclick="createNewAsset()">创建模型</button>' : ''}
+                    </div>
+                `;
+                return;
+            }
+            
+            // 渲染资产卡片
+            assetsGrid.innerHTML = assets.map(asset => `
+                <div class="asset-card">
+                    <img src="${asset.image}" alt="${asset.title}" class="asset-image">
+                    <div class="asset-content">
+                        <h3 class="asset-title">${asset.title}</h3>
+                        <p class="asset-description">${asset.description}</p>
+                        <div class="asset-meta">
+                            <span class="asset-status status-${asset.status}">${getStatusText(asset.status)}</span>
+                            <span>${asset.created}</span>
+                        </div>
+                        <div class="asset-actions">
+                            ${currentTab === 'my-assets' ? `
+                                ${(asset.status === 'private' || asset.status === 'rejected' || asset.status === 'pending' || asset.status === 'draft') ? `
+                                    <button class="action-btn" onclick="editAsset(${asset.id})">编辑</button>
+                                ` : ''}
+                                <button class="action-btn" onclick="previewAsset(${asset.id})">预览</button>
+                                ${asset.status === 'public' ? `
+                                    <button class="action-btn" onclick="setAssetPrivate(${asset.id})">私有</button>
+                                ` : ''}
+                                ${asset.status === 'private' ? `
+                                    <button class="action-btn" onclick="setAssetPublic(${asset.id})">公开</button>
+                                ` : ''}
+                                ${(asset.status === 'pending' || asset.status === 'rejected') ? `
+                                    <button class="action-btn" onclick="deleteAsset(${asset.id})">删除</button>
+                                ` : ''}
+                                ${asset.status === 'rejected' ? `
+                                    <button class="action-btn" onclick="publishAsset(${asset.id})">发布</button>
+                                ` : ''}
+                            ` : currentTab === 'collections' ? `
+                                <button class="action-btn" onclick="previewAsset(${asset.id})">预览</button>
+                                <button class="action-btn" onclick="cancelCollection(${asset.id})">取消收藏</button>
+                            ` : currentTab === 'drafts' ? `
+                                <button class="action-btn" onclick="editAsset(${asset.id})">编辑</button>
+                                <button class="action-btn" onclick="previewAsset(${asset.id})">预览</button>
+                                <button class="action-btn" onclick="publishAsset(${asset.id})">发布</button>
+                                <button class="action-btn" onclick="deleteAsset(${asset.id})">删除</button>
+                            ` : ``}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 获取状态文本
+        function getStatusText(status) {
+            const statusTexts = {
+                public: '已公开',
+                private: '仅自己可见',
+                pending: '审核中',
+                rejected: '审核未通过',
+                draft: '待发布'
+            };
+            return statusTexts[status] || status;
+        }
+        
+        // 创建新资产
+        function createNewAsset() {
+            alert('创建新模型');
+        }
+        
+        // 编辑资产
+        function editAsset(id) {
+            window.location.href = `create-model.html?id=${id}&type=edit&dataType=${currentTab === 'drafts' ? 'drafts' : 'my'}`;
+        }
+        
+        // 预览资产
+        function previewAsset(id) {
+            window.location.href = `model-detail.html?id=${id}&type=${currentTab === 'drafts' ? 'drafts' : 'my'}`;
+        }
+        
+        // 删除资产
+        function deleteAsset(id) {
+            if (confirm('确定要删除此模型吗？')) {
+                alert(`删除模型 ID: ${id}`);
+                renderAssets();
+            }
+        }
+        
+        // 设置资产为公开
+        function setAssetPublic(id) {
+            if (confirm('确定要将此模型公开吗？')) {
+                alert(`模型 ID: ${id} 已公开`);
+                renderAssets();
+            }
+        }
+        
+        // 设置资产为私有
+        function setAssetPrivate(id) {
+            if (confirm('确定要将此模型设为仅自己可见吗？')) {
+                alert(`模型 ID: ${id} 已设为仅自己可见`);
+                renderAssets();
+            }
+        }
+        
+        // 发布资产
+        function publishAsset(id) {
+            if (confirm('确定要发布此模型吗？')) {
+                alert(`模型 ID: ${id} 已发布`);
+                renderAssets();
+            }
+        }
+        
+        // 取消收藏
+        function cancelCollection(id) {
+            if (confirm('确定要取消收藏此模型吗？')) {
+                alert(`模型 ID: ${id} 已取消收藏`);
+                renderAssets();
+            }
+        }
+        
+        // 绑定事件
+        function bindEvents() {
+            // 筛选标签点击事件
+            const filterTabs = document.querySelectorAll('.filter-tab');
+            filterTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    filterTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentFilter = tab.getAttribute('data-filter');
+                    renderAssets();
+                });
+            });
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            initNavMenu();
+            bindTabEvents();
+            renderAssets();
+            bindEvents();
+        });
+        
+        // 绑定Tab事件
+        function bindTabEvents() {
+            const tabs = document.querySelectorAll('.asset-type-tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.dataset.tab;
+                    switchTab(tabId);
+                });
+            });
+        }
+        
+        // 切换Tab
+        function switchTab(tabId) {
+            // 更新Tab状态
+            document.querySelectorAll('.asset-type-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+            
+            // 隐藏所有内容
+            document.getElementById('assetsGrid').style.display = 'none';
+            document.querySelector('.asset-status-filter').style.display = 'none';
+            document.getElementById('createForm').style.display = 'none';
+            
+            // 显示对应内容
+            currentTab = tabId;
+            switch(tabId) {
+                case 'my-assets':
+                    document.getElementById('assetsGrid').style.display = 'grid';
+                    document.querySelector('.asset-status-filter').style.display = 'block';
+                    renderAssets();
+                    break;
+                case 'create':
+                    document.getElementById('createForm').style.display = 'block';
+                    break;
+                case 'collections':
+                    document.getElementById('assetsGrid').style.display = 'grid';
+                    document.querySelector('.asset-status-filter').style.display = 'none';
+                    renderAssets();
+                    break;
+                case 'drafts':
+                    document.getElementById('assetsGrid').style.display = 'grid';
+                    document.querySelector('.asset-status-filter').style.display = 'none';
+                    renderAssets();
+                    break;
+            }
+        }
+        
+        // 提交创建表单
+        function submitCreateForm(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('modelName').value;
+            const description = document.getElementById('modelDescription').value;
+            const type = document.getElementById('modelType').value;
+            
+            // 模拟创建成功
+            alert('模型创建成功！');
+            
+            // 清空表单
+            document.getElementById('modelName').value = '';
+            document.getElementById('modelDescription').value = '';
+            document.getElementById('modelType').value = 'text-to-image';
+            document.getElementById('modelImage').value = '';
+            
+            // 切换到我的模型tab
+            switchTab('my-assets');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创建应用 - AIGC创作平台</title>
+    <script src="../static/js/common.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            color: #333;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: #f8f9fa;
+            color: #495057;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-decoration: none;
+        }
+        
+        .back-link i {
+            margin-right: 8px;
+        }
+        
+        .create-form {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            padding: 40px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .create-form h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2196f3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+        
+        .image-upload {
+            border: 2px dashed #e9ecef;
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .image-upload:hover {
+            border-color: #2196f3;
+            background-color: rgba(33, 150, 243, 0.05);
+        }
+        
+        .image-upload input {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .image-upload i {
+            font-size: 2.5rem;
+            color: #adb5bd;
+            margin-bottom: 15px;
+        }
+        
+        .image-upload p {
+            color: #6c757d;
+        }
+        
+        .preview-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .tag-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .remove-tag {
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: #fff;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid #2196f3;
+            color: #2196f3;
+        }
+        
+        .btn-outline:hover {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        .label-with-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .btn-ai-generate {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-ai-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+        }
+        
+        .btn-ai-generate i {
+            font-size: 1rem;
+        }
+        
+        /* 模态框样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background: #fff;
+            border-radius: 18px;
+            padding: 40px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            color: #dc3545;
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .modal-footer .btn {
+            padding: 10px 24px;
+        }
+        
+        .ai-prompt {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .ai-prompt:focus {
+            outline: none;
+            border-color: #2196f3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .create-form {
+                padding: 25px;
+            }
+            
+            .form-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="my-assets-app.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回我的应用</a>
+        
+        <div class="create-form">
+            <h2>应用信息</h2>
+            
+            <div class="form-group">
+                <label for="appName">应用名称</label>
+                <input type="text" id="appName" placeholder="请输入应用名称">
+            </div>
+            
+            <div class="form-group">
+                <label for="appDescription">应用描述</label>
+                <textarea id="appDescription" placeholder="请输入应用描述"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <div class="label-with-button">
+                    <label>应用图标</label>
+                    <button class="btn-ai-generate" onclick="openAIModal()">
+                        <i class="fas fa-magic"></i> AI 生成
+                    </button>
+                </div>
+                <div class="image-upload" onclick="document.getElementById('appImage').click()">
+                    <input type="file" id="appImage" accept="image/*">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>点击上传图片或拖拽图片到此处</p>
+                    <img id="previewImage" class="preview-image hidden" src="" alt="预览图片">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="appType">应用类型</label>
+                <select id="appType">
+                    <option value="productivity">生产力</option>
+                    <option value="creative">创意工具</option>
+                    <option value="education">教育</option>
+                    <option value="entertainment">娱乐</option>
+                    <option value="utilities">实用工具</option>
+                    <option value="other">其他</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="appRarity">稀有度</label>
+                <select id="appRarity">
+                    <option value="common">普通</option>
+                    <option value="uncommon">优秀</option>
+                    <option value="rare">稀有</option>
+                    <option value="epic">史诗</option>
+                    <option value="legendary">传说</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="appFeatures">功能特点</label>
+                <textarea id="appFeatures" placeholder="请输入应用的功能特点，每行一个"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="appUsage">使用方法</label>
+                <textarea id="appUsage" placeholder="请输入应用的使用方法，每行一个步骤"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="appTags">标签</label>
+                <input type="text" id="appTags" placeholder="请输入标签，用逗号分隔">
+                <div class="tag-input" id="tagInput"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="appPoints">使用积分</label>
+                <input type="number" id="appPoints" min="0" placeholder="请输入使用该应用需要消耗的积分">
+            </div>
+            
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="goBack()">取消</button>
+                <button class="btn btn-primary" onclick="saveDraft()">保存草稿</button>
+                <button class="btn btn-primary" onclick="publishApp()">发布</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI 生成弹框 -->
+    <div class="modal-overlay" id="aiModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">AI 生成图片</h3>
+                <button class="modal-close" onclick="closeAIModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="aiPrompt">生成提示</label>
+                    <textarea class="ai-prompt" id="aiPrompt" placeholder="请输入生成提示，例如：现代风格的应用图标，蓝色调，简约设计"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAIModal()">取消</button>
+                <button class="btn btn-primary" onclick="generateWithAI()">生成</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 获取URL参数
+        function getUrlParams() {
+            const params = {};
+            const search = window.location.search;
+            if (search) {
+                const pairs = search.substring(1).split('&');
+                pairs.forEach(pair => {
+                    const [key, value] = pair.split('=');
+                    params[decodeURIComponent(key)] = decodeURIComponent(value || '');
+                });
+            }
+            return params;
+        }
+        
+        // 模拟应用数据
+        const mockApps = {
+            my: [
+                {
+                    id: 1,
+                    title: "智能写作助手",
+                    description: "智能写作助手是一款基于AI的写作工具，可以帮助用户生成高质量的文章、报告、邮件等内容。它支持多种写作风格和格式，能够根据用户的输入提供智能建议和修改意见，大幅提高写作效率。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=smart%20writing%20assistant%20app%20interface%20modern%20design&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-03-01",
+                    type: "productivity",
+                    rarity: "rare",
+                    features: "- 智能内容生成\n- 多种写作风格支持\n- 实时语法检查\n- 内容优化建议\n- 多种格式导出",
+                    usage: "1. 输入写作主题或关键词\n2. 选择写作风格和格式\n3. 点击生成按钮\n4. 编辑和优化生成的内容\n5. 导出为所需格式",
+                    tags: ["写作", "AI", "生产力"],
+                    points: 15,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 2,
+                    title: "AI图像生成器",
+                    description: "AI图像生成器是一款强大的图像创建工具，用户可以通过文本描述生成各种风格的图像。它支持多种艺术风格，能够根据用户的创意需求生成高质量的视觉内容。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20image%20generator%20app%20interface%20creative%20design&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-28",
+                    type: "creative",
+                    rarity: "epic",
+                    features: "- 文本到图像生成\n- 多种艺术风格\n- 高分辨率输出\n- 批量生成\n- 图像编辑功能",
+                    usage: "1. 输入详细的图像描述\n2. 选择艺术风格\n3. 设置参数\n4. 生成图像\n5. 下载或编辑",
+                    tags: ["图像生成", "AI", "创意"],
+                    points: 20,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 3,
+                    title: "AI对话助手",
+                    description: "AI对话助手是一款智能聊天工具，可以与用户进行自然语言对话。它能够理解上下文，提供有用的信息和建议，适用于客户服务、教育辅导、娱乐对话等多种场景。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20chatbot%20assistant%20interface%20modern%20design&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-25",
+                    type: "productivity",
+                    rarity: "rare",
+                    features: "- 自然语言理解\n- 上下文记忆\n- 多轮对话\n- 知识问答\n- 情感分析",
+                    usage: "1. 打开应用\n2. 输入您的问题或话题\n3. 与AI进行对话\n4. 获取信息和建议",
+                    tags: ["对话", "AI", "助手"],
+                    points: 18,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 4,
+                    title: "代码生成工具",
+                    description: "代码生成工具是一款基于AI的编程辅助工具，可以根据描述自动生成代码。它支持多种编程语言，能够帮助开发者提高编码效率，减少重复性工作。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20code%20generator%20interface%20programming%20IDE&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-20",
+                    type: "development",
+                    rarity: "epic",
+                    features: "- 多语言支持\n- 代码补全\n- 错误检测\n- 代码优化\n- 文档生成",
+                    usage: "1. 描述您需要的功能\n2. 选择编程语言\n3. 生成代码\n4. 复制或编辑代码",
+                    tags: ["编程", "代码", "开发"],
+                    points: 22,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 5,
+                    title: "语音转文字",
+                    description: "语音转文字工具可以将语音内容转换为文本，支持多种语言和方言。它识别准确率高，适用于会议记录、采访整理、笔记制作等场景。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=voice%20to%20text%20app%20interface%20audio%20waveform&image_size=landscape_4_3",
+                    status: "private",
+                    created: "2026-02-15",
+                    type: "productivity",
+                    rarity: "common",
+                    features: "- 多语言识别\n- 实时转写\n- 标点自动添加\n- 说话人识别\n- 导出多种格式",
+                    usage: "1. 上传音频文件或录音\n2. 选择语言\n3. 开始转写\n4. 编辑和导出文本",
+                    tags: ["语音", "转写", "效率"],
+                    points: 12,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 6,
+                    title: "数据分析助手",
+                    description: "数据分析助手可以帮助用户快速分析数据，生成图表和报告。它支持多种数据源，能够自动发现数据中的模式和趋势。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=data%20analysis%20dashboard%20charts%20graphs&image_size=landscape_4_3",
+                    status: "pending",
+                    created: "2026-02-10",
+                    type: "analytics",
+                    rarity: "rare",
+                    features: "- 数据导入\n- 自动分析\n- 图表生成\n- 趋势预测\n- 报告导出",
+                    usage: "1. 导入数据文件\n2. 选择分析类型\n3. 查看分析结果\n4. 生成报告",
+                    tags: ["数据", "分析", "图表"],
+                    points: 16,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                }
+            ],
+            collection: [
+                {
+                    id: 301,
+                    title: "智能翻译助手",
+                    description: "智能翻译助手支持多种语言之间的即时翻译，翻译准确自然，支持文本、语音和图片翻译。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=translation%20app%20interface%20multilingual&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-05",
+                    type: "productivity",
+                    rarity: "common",
+                    features: "- 多语言支持\n- 实时翻译\n- 语音翻译\n- 图片翻译\n- 离线模式",
+                    usage: "1. 选择源语言和目标语言\n2. 输入或说出内容\n3. 获取翻译结果",
+                    tags: ["翻译", "语言", "工具"],
+                    points: 10,
+                    author: {
+                        name: "张三",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=zhangsan"
+                    }
+                },
+                {
+                    id: 302,
+                    title: "AI音乐创作",
+                    description: "AI音乐创作工具可以根据用户的喜好和风格生成原创音乐，支持多种音乐类型和乐器。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=AI%20music%20creation%20app%20interface%20piano%20notes&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-01-28",
+                    type: "creative",
+                    rarity: "epic",
+                    features: "- 多种音乐风格\n- 智能作曲\n- 乐器选择\n- 旋律编辑\n- 音频导出",
+                    usage: "1. 选择音乐风格\n2. 设置参数\n3. 生成音乐\n4. 编辑和导出",
+                    tags: ["音乐", "创作", "AI"],
+                    points: 25,
+                    author: {
+                        name: "李四",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=lisi"
+                    }
+                }
+            ],
+            drafts: [
+                {
+                    id: 201,
+                    title: "未完成的应用",
+                    description: "正在开发中的应用，尚未完成",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=unfinished%20app%20development%20interface%20wireframe&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-03-05",
+                    type: "productivity",
+                    rarity: "common",
+                    features: "",
+                    usage: "",
+                    tags: ["未完成", "开发", "草稿"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 202,
+                    title: "应用原型设计",
+                    description: "新应用的概念设计草稿",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=app%20prototype%20design%20sketch%20wireframe&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-03-03",
+                    type: "creative",
+                    rarity: "common",
+                    features: "- 概念功能1\n- 概念功能2",
+                    usage: "使用说明待完善",
+                    tags: ["草稿", "设计", "原型"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 203,
+                    title: "工具类应用构思",
+                    description: "一个实用工具类应用的初步构思",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=utility%20app%20concept%20design%20sketch&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-02-28",
+                    type: "productivity",
+                    rarity: "common",
+                    features: "",
+                    usage: "",
+                    tags: ["构思", "工具", "草稿"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                }
+            ]
+        };
+        
+        // 页面加载时初始化
+        function init() {
+            const params = getUrlParams();
+            if (params.type === 'edit' && params.id) {
+                loadDraftData(params.id, params.dataType);
+                document.querySelector('.create-form h2').textContent = '编辑应用';
+            }
+            
+            // 图片上传预览
+            document.getElementById('appImage').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const previewImage = document.getElementById('previewImage');
+                        previewImage.src = e.target.result;
+                        previewImage.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // 标签输入处理
+            document.getElementById('appTags').addEventListener('keypress', function(e) {
+                if (e.key === ',') {
+                    e.preventDefault();
+                    addTag(this.value.trim());
+                    this.value = '';
+                }
+            });
+        }
+        
+        // 加载草稿数据
+        function loadDraftData(id, dataType) {
+            const apps = mockApps[dataType] || [];
+            const draft = apps.find(a => a.id == id);
+            
+            if (draft) {
+                // 填充表单
+                document.getElementById('appName').value = draft.title || '';
+                document.getElementById('appDescription').value = draft.description || '';
+                document.getElementById('appType').value = draft.type || 'productivity';
+                document.getElementById('appRarity').value = draft.rarity || 'common';
+                document.getElementById('appFeatures').value = draft.features || '';
+                document.getElementById('appUsage').value = draft.usage || '';
+                document.getElementById('appPoints').value = draft.points || 0;
+                
+                // 设置标签
+                if (draft.tags && draft.tags.length > 0) {
+                    document.getElementById('appTags').value = draft.tags.join(', ');
+                    draft.tags.forEach(tag => addTag(tag));
+                }
+                
+                // 设置预览图片
+                if (draft.image) {
+                    const previewImage = document.getElementById('previewImage');
+                    previewImage.src = draft.image;
+                    previewImage.classList.remove('hidden');
+                }
+            } else {
+                console.log('未找到应用数据:', id, dataType);
+            }
+        }
+        
+        // 添加标签
+        function addTag(tagText) {
+            if (!tagText) return;
+            
+            const tagInput = document.getElementById('tagInput');
+            const tagElement = document.createElement('div');
+            tagElement.className = 'tag';
+            tagElement.innerHTML = `${tagText}<span class="remove-tag" onclick="removeTag(this)">×</span>`;
+            tagInput.appendChild(tagElement);
+        }
+        
+        // 移除标签
+        function removeTag(element) {
+            element.parentElement.remove();
+        }
+        
+        // 保存草稿
+        function saveDraft() {
+            const appData = collectFormData();
+            appData.status = 'draft';
+            
+            // 模拟保存操作
+            alert('草稿已保存');
+            window.location.href = 'my-assets-app.html';
+        }
+        
+        // 发布应用
+        function publishApp() {
+            const appData = collectFormData();
+            appData.status = 'public';
+            
+            // 模拟发布操作
+            if (confirm('确定要发布这个应用吗？')) {
+                alert('应用已提交审核！');
+                window.location.href = 'my-assets-app.html';
+            }
+        }
+        
+        // 收集表单数据
+        function collectFormData() {
+            const tags = [];
+            document.querySelectorAll('.tag').forEach(tag => {
+                tags.push(tag.textContent.replace('×', '').trim());
+            });
+            
+            return {
+                title: document.getElementById('appName').value,
+                description: document.getElementById('appDescription').value,
+                type: document.getElementById('appType').value,
+                rarity: document.getElementById('appRarity').value,
+                features: document.getElementById('appFeatures').value,
+                usage: document.getElementById('appUsage').value,
+                tags: tags,
+                points: parseInt(document.getElementById('appPoints').value) || 0,
+                image: document.getElementById('previewImage').src
+            };
+        }
+        
+        // AI生成相关函数
+        function openAIModal() {
+            document.getElementById('aiModal').classList.add('active');
+        }
+        
+        function closeAIModal() {
+            document.getElementById('aiModal').classList.remove('active');
+        }
+        
+        function generateWithAI() {
+            const prompt = document.getElementById('aiPrompt').value;
+            if (!prompt) {
+                alert('请输入生成提示');
+                return;
+            }
+            
+            // 模拟 AI 生成过程
+            alert('AI 生成中，请稍候...');
+            
+            // 模拟生成结果
+            setTimeout(() => {
+                document.getElementById('previewImage').src = `https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(prompt)}&image_size=landscape_4_3`;
+                document.getElementById('previewImage').classList.remove('hidden');
+                closeAIModal();
+            }, 2000);
+        }
+        
+        // 返回上一页
+        function goBack() {
+            window.history.back();
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模型详情 - AIGC创作平台</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* 详情页样式 - 与character-detail.html保持一致 */
+        .detail-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .detail-header {
+            margin-bottom: 40px;
+        }
+        
+        .detail-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: inline-block;
+            margin-right: 15px;
+        }
+        
+        .detail-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .detail-author {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .author-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .detail-meta {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+        }
+        
+        .meta-item i {
+            color: #2196f3;
+        }
+        
+        .detail-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .detail-main {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .detail-sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 18px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .detail-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        
+        .detail-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .detail-section {
+            margin-bottom: 30px;
+        }
+        
+        .detail-section h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+        
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: #fff;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid #2196f3;
+            color: #2196f3;
+        }
+        
+        .btn-outline:hover {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: #f8f9fa;
+            color: #495057;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-decoration: none;
+        }
+        
+        .back-link i {
+            margin-right: 8px;
+        }
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .status-badge.public {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .status-badge.private {
+            background: #f3e5f5;
+            color: #4a148c;
+        }
+        
+        .status-badge.pending {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        .status-badge.rejected {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .stat-label {
+            color: #666;
+        }
+        
+        .stat-value {
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .action-buttons {
+            margin-top: 30px;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #4caf50, #388e3c);
+            color: #fff;
+        }
+        
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: #fff;
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
+        }
+        
+        .btn-like {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-like:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        }
+        
+        .btn-share {
+            background: linear-gradient(135deg, #9c27b0, #7b1fa2);
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-share:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4);
+        }
+        
+        .btn-apply {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: #fff;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-apply:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+        }
+        
+        .social-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        @media (max-width: 768px) {
+            .detail-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .detail-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .detail-author {
+                margin-top: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="detail-container">
+        <a href="my-assets-model.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回我的模型</a>
+        <div class="detail-author">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=myself" alt="作者头像" class="author-avatar">
+            <span>我自己</span>
+        </div>
+        <div class="detail-header">
+            <h1 id="detailTitle">风格迁移模型</h1>
+            <span id="detailStatusBadge" class="status-badge">公开</span>
+        </div>
+        
+        <div class="detail-meta">
+            <div class="meta-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span id="detailCreated">2026-03-01</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-tag"></i>
+                <span id="detailType"> style</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-star"></i>
+                <span id="detailRarity"> rare</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-coins"></i>
+                <span id="detailPoints">20 积分</span>
+            </div>
+        </div>
+        
+        <div class="detail-content">
+            <div class="detail-main">
+                <img id="detailImage" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=style%20transfer%20AI%20model%20interface%20modern%20design&image_size=landscape_4_3" alt="模型图片" class="detail-image">
+                
+                <div class="detail-section">
+                    <h3>模型描述</h3>
+                    <p id="detailDescription" class="detail-description">
+                        风格迁移模型是一款基于深度学习的AI模型，可以将一张图片的风格应用到另一张图片上。它支持多种艺术风格，能够产生高质量的风格迁移效果，适用于创意设计、艺术创作等场景。
+                    </p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>技术参数</h3>
+                    <p id="detailParams">
+                        - 模型类型: 深度学习模型<br>
+                        - 训练数据: 10万+艺术作品<br>
+                        - 推理时间: 1-3秒/张<br>
+                        - 支持分辨率: 最高4K<br>
+                        - 支持风格数: 50+种
+                    </p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>使用方法</h3>
+                    <p id="detailUsage">
+                        1. 上传目标图片<br>
+                        2. 选择风格参考图片或预设风格<br>
+                        3. 调整风格强度参数<br>
+                        4. 点击生成按钮<br>
+                        5. 下载生成结果
+                    </p>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>标签</h3>
+                    <div id="detailTags" class="tag-list">
+                        <span class="tag">风格迁移</span>
+                        <span class="tag">AI</span>
+                        <span class="tag">图像处理</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-sidebar">
+                <div class="detail-section">
+                    <h3>模型信息</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">状态</span>
+                        <span id="detailStatus" class="stat-value">公开</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">创建时间</span>
+                        <span id="detailCreatedSidebar">2026-03-01</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">使用积分</span>
+                        <span id="detailPointsSidebar">20</span>
+                    </div>
+                </div>
+                
+                <div class="social-buttons">
+                    <button class="btn btn-like" onclick="likeModel()">
+                        <i class="fas fa-heart"></i> 点赞
+                    </button>
+                    <button class="btn btn-share" onclick="shareModel()">
+                        <i class="fas fa-share-alt"></i> 分享
+                    </button>
+                </div>
+                
+                <div class="action-buttons" id="actionButtons">
+                    <!-- 按钮将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="static/js/common.js"></script>
+    <script>
+        // 获取URL参数
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                id: params.get('id'),
+                type: params.get('type') || 'my',
+                source: params.get('source') || 'model'
+            };
+        }
+        
+        // 模拟模型数据
+        const mockModels = {
+            my: [
+                {
+                    id: 1,
+                    title: "风格迁移模型",
+                    description: "风格迁移模型是一款基于深度学习的AI模型，可以将一张图片的风格应用到另一张图片上。它支持多种艺术风格，能够产生高质量的风格迁移效果，适用于创意设计、艺术创作等场景。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=style%20transfer%20AI%20model%20interface%20modern%20design&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-03-01",
+                    type: "style",
+                    rarity: "rare",
+                    params: "- 模型类型: 深度学习模型\n- 训练数据: 10万+艺术作品\n- 推理时间: 1-3秒/张\n- 支持分辨率: 最高4K\n- 支持风格数: 50+种",
+                    usage: "1. 上传目标图片\n2. 选择风格参考图片或预设风格\n3. 调整风格强度参数\n4. 点击生成按钮\n5. 下载生成结果",
+                    tags: ["风格迁移", "AI", "图像处理"],
+                    points: 20,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 2,
+                    title: "超分辨率模型",
+                    description: "超分辨率模型可以将低分辨率图片放大到高分辨率，同时保持图片质量。它基于先进的深度学习技术，能够智能填充细节，适用于图像处理、视频增强等场景。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=super%20resolution%20AI%20model%20interface%20modern%20design&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-28",
+                    type: "enhancement",
+                    rarity: "epic",
+                    params: "- 模型类型: 深度学习模型\n- 训练数据: 50万+高分辨率图片\n- 推理时间: 2-5秒/张\n- 支持放大倍数: 2x-4x\n- 支持分辨率: 最高8K",
+                    usage: "1. 上传低分辨率图片\n2. 选择放大倍数\n3. 点击生成按钮\n4. 下载高分辨率结果",
+                    tags: ["超分辨率", "AI", "图像处理"],
+                    points: 25,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 3,
+                    title: "图像修复模型",
+                    description: "图像修复模型可以自动修复图片中的瑕疵、划痕和缺失部分。它基于生成对抗网络技术，能够智能推断缺失内容，适用于老照片修复、图像编辑等场景。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=image%20inpainting%20restoration%20AI%20model%20interface&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-25",
+                    type: "enhancement",
+                    rarity: "rare",
+                    params: "- 模型类型: GAN生成对抗网络\n- 训练数据: 20万+修复样本\n- 推理时间: 3-6秒/张\n- 支持瑕疵类型: 划痕、污渍、缺失\n- 修复精度: 像素级",
+                    usage: "1. 上传需要修复的图片\n2. 标记需要修复的区域\n3. 点击修复按钮\n4. 查看修复结果\n5. 下载修复后的图片",
+                    tags: ["图像修复", "GAN", "老照片"],
+                    points: 22,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 4,
+                    title: "人像美化模型",
+                    description: "人像美化模型可以自动优化人像照片，包括皮肤平滑、美白、瘦脸等功能。它基于深度学习技术，能够自然美化人像，适用于摄影后期、社交媒体等场景。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=portrait%20beautification%20AI%20model%20interface&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-20",
+                    type: "enhancement",
+                    rarity: "epic",
+                    params: "- 模型类型: 深度学习模型\n- 训练数据: 30万+人像照片\n- 推理时间: 1-2秒/张\n- 支持功能: 磨皮、美白、瘦脸\n- 自然度: 95%+",
+                    usage: "1. 上传人像照片\n2. 选择美化强度\n3. 调整具体参数\n4. 预览效果\n5. 导出美化后的照片",
+                    tags: ["人像美化", "摄影", "后期"],
+                    points: 18,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 5,
+                    title: "背景移除模型",
+                    description: "背景移除模型可以自动识别并移除图片背景，保留前景主体。它基于实例分割技术，边缘处理精细，适用于电商产品图、证件照制作等场景。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=background%20removal%20AI%20model%20interface&image_size=landscape_4_3",
+                    status: "private",
+                    created: "2026-02-15",
+                    type: "segmentation",
+                    rarity: "common",
+                    params: "- 模型类型: 实例分割模型\n- 训练数据: 15万+分割样本\n- 推理时间: 0.5-1秒/张\n- 边缘精度: 像素级\n- 支持格式: PNG透明背景",
+                    usage: "1. 上传图片\n2. 自动识别主体\n3. 移除背景\n4. 可选替换背景\n5. 下载透明背景图片",
+                    tags: ["背景移除", "分割", "电商"],
+                    points: 15,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 6,
+                    title: "色彩增强模型",
+                    description: "色彩增强模型可以自动优化图片的色彩表现，提升饱和度、对比度和色彩平衡。它基于色彩科学和深度学习，能够智能分析并优化图片色彩。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=color%20enhancement%20AI%20model%20interface&image_size=landscape_4_3",
+                    status: "pending",
+                    created: "2026-02-10",
+                    type: "enhancement",
+                    rarity: "rare",
+                    params: "- 模型类型: 深度学习模型\n- 训练数据: 25万+色彩样本\n- 推理时间: 1-2秒/张\n- 支持调整: 饱和度、对比度、色调\n- 智能模式: 自动优化",
+                    usage: "1. 上传图片\n2. 选择增强模式\n3. 调整参数\n4. 预览效果\n5. 导出优化后的图片",
+                    tags: ["色彩增强", "调色", "优化"],
+                    points: 16,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                }
+            ],
+            collection: [
+                {
+                    id: 301,
+                    title: "动漫风格模型",
+                    description: "动漫风格模型可以将照片转换为动漫风格，支持多种动漫画风，效果自然生动。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=anime%20style%20conversion%20AI%20model&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-05",
+                    type: "style",
+                    rarity: "epic",
+                    params: "- 模型类型: 风格迁移模型\n- 训练数据: 8万+动漫图片\n- 推理时间: 2-4秒/张\n- 支持风格: 日系、美漫、国漫\n- 输出质量: 高清",
+                    usage: "1. 上传照片\n2. 选择动漫风格\n3. 调整强度\n4. 生成动漫效果",
+                    tags: ["动漫", "风格转换", "二次元"],
+                    points: 24,
+                    author: {
+                        name: "王五",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=wangwu"
+                    }
+                },
+                {
+                    id: 302,
+                    title: "素描转换模型",
+                    description: "素描转换模型可以将照片转换为手绘素描效果，线条流畅自然，艺术感强。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=sketch%20conversion%20AI%20model%20pencil%20drawing&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-01-28",
+                    type: "style",
+                    rarity: "rare",
+                    params: "- 模型类型: 风格迁移模型\n- 训练数据: 5万+素描作品\n- 推理时间: 1-3秒/张\n- 线条风格: 铅笔、炭笔、钢笔\n- 细节保留: 高",
+                    usage: "1. 上传照片\n2. 选择素描风格\n3. 调整线条粗细\n4. 生成素描效果",
+                    tags: ["素描", "手绘", "艺术"],
+                    points: 19,
+                    author: {
+                        name: "赵六",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=zhaoliu"
+                    }
+                }
+            ],
+            drafts: [
+                {
+                    id: 201,
+                    title: "未完成的模型",
+                    description: "正在训练中的模型，尚未完成",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=unfinished%20AI%20model%20training%20interface&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-03-05",
+                    type: "style",
+                    rarity: "common",
+                    params: "",
+                    usage: "",
+                    tags: ["未完成", "训练", "草稿"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 202,
+                    title: "新模型构思",
+                    description: "一个全新模型的概念设计",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=new%20AI%20model%20concept%20design&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-03-03",
+                    type: "enhancement",
+                    rarity: "common",
+                    params: "- 模型类型: 待定\n- 训练数据: 收集中",
+                    usage: "使用说明待完善",
+                    tags: ["构思", "新模型", "草稿"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 203,
+                    title: "实验性模型",
+                    description: "实验性模型原型",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=experimental%20AI%20model%20prototype&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-02-28",
+                    type: "experimental",
+                    rarity: "common",
+                    params: "",
+                    usage: "",
+                    tags: ["实验", "原型", "草稿"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                }
+            ]
+        };
+        
+        let currentModel = null;
+        let isLiked = false;
+        
+        // 初始化页面
+        function init() {
+            const params = getUrlParams();
+            const model = findModel(params.id, params.type);
+            
+            if (!model) {
+                alert('模型不存在');
+                goBack();
+                return;
+            }
+            
+            currentModel = model;
+            renderModelDetail(model, params.type);
+        }
+        
+        // 查找模型
+        function findModel(id, type) {
+            const models = mockModels[type] || [];
+            return models.find(p => p.id == id);
+        }
+        
+        // 渲染模型详情
+        function renderModelDetail(model, type) {
+            // 设置标题
+            document.getElementById('detailTitle').textContent = model.title;
+            
+            // 设置图片
+            document.getElementById('detailImage').src = model.image;
+            
+            // 设置描述
+            document.getElementById('detailDescription').textContent = model.description;
+            
+            // 设置元数据
+            document.getElementById('detailCreated').textContent = model.created;
+            document.getElementById('detailCreatedSidebar').textContent = model.created;
+            document.getElementById('detailType').textContent = model.type;
+            document.getElementById('detailRarity').textContent = model.rarity;
+            document.getElementById('detailPoints').textContent = model.points + ' 积分';
+            document.getElementById('detailPointsSidebar').textContent = model.points;
+            document.getElementById('detailStatus').textContent = model.status === 'public' ? '公开' : model.status === 'private' ? '私有' : model.status === 'pending' ? '审核中' : model.status === 'rejected' ? '已拒绝' : model.status;
+            
+            // 设置技术参数
+            document.getElementById('detailParams').innerHTML = model.params;
+            
+            // 设置使用方法
+            document.getElementById('detailUsage').innerHTML = model.usage;
+            
+            // 设置标签
+            const tagsContainer = document.getElementById('detailTags');
+            tagsContainer.innerHTML = '';
+            if (model.tags && model.tags.length > 0) {
+                model.tags.forEach(tag => {
+                    const tagElement = document.createElement('span');
+                    tagElement.className = 'tag';
+                    tagElement.textContent = tag;
+                    tagsContainer.appendChild(tagElement);
+                });
+            }
+            
+            // 渲染操作按钮
+            renderActionButtons(model, type);
+        }
+        
+        // 渲染操作按钮
+        function renderActionButtons(model, type) {
+            const actionButtons = document.getElementById('actionButtons');
+            let buttonsHtml = '';
+            
+            // 如果是收藏别人的作品
+            if (type === 'collection') {
+                buttonsHtml = `
+                    <button class="btn btn-apply" onclick="applyModel()">
+                        <i class="fas fa-magic"></i> 一键应用
+                    </button>
+                    <button class="btn btn-outline" onclick="cancelCollection()">
+                        <i class="fas fa-heart-broken"></i> 取消收藏
+                    </button>
+                `;
+            } else {
+                // 根据状态显示不同的按钮
+                switch (model.status) {
+                    case 'public':
+                        buttonsHtml = `
+                            <button class="btn btn-apply" onclick="applyModel()">
+                                <i class="fas fa-magic"></i> 一键应用
+                            </button>
+                            <button class="btn btn-secondary" onclick="setPrivate()">
+                                <i class="fas fa-lock"></i> 设为私有
+                            </button>
+                        `;
+                        break;
+                    case 'private':
+                        buttonsHtml = `
+                            <button class="btn btn-apply" onclick="applyModel()">
+                                <i class="fas fa-magic"></i> 一键应用
+                            </button>
+                            <button class="btn btn-success" onclick="setPublic()">
+                                <i class="fas fa-globe"></i> 设为公开
+                            </button>
+                            <button class="btn btn-primary" onclick="editModel()">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                        `;
+                        break;
+                    case 'pending':
+                        buttonsHtml = `
+                            <button class="btn btn-apply" onclick="applyModel()">
+                                <i class="fas fa-magic"></i> 一键应用
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteModel()">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        `;
+                        break;
+                    case 'rejected':
+                        buttonsHtml = `
+                            <button class="btn btn-apply" onclick="applyModel()">
+                                <i class="fas fa-magic"></i> 一键应用
+                            </button>
+                            <button class="btn btn-primary" onclick="editModel()">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteModel()">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                            <button class="btn btn-success" onclick="publishModel()">
+                                <i class="fas fa-paper-plane"></i> 发布
+                            </button>
+                        `;
+                        break;
+                    default:
+                        buttonsHtml = `
+                            <button class="btn btn-apply" onclick="applyModel()">
+                                <i class="fas fa-magic"></i> 一键应用
+                            </button>
+                        `;
+                }
+            }
+            
+            actionButtons.innerHTML = buttonsHtml;
+        }
+        
+        // 编辑模型
+        function editModel() {
+            // 将当前模型数据序列化为URL参数
+            const params = new URLSearchParams();
+            params.append('id', currentModel.id);
+            params.append('type', 'edit');
+            params.append('dataType', getUrlParams().type);
+            
+            // 跳转到创建页面并传递数据
+            window.location.href = `create-model.html?${params.toString()}`;
+        }
+        
+        // 点赞模型
+        function likeModel() {
+            isLiked = !isLiked;
+            const likeBtn = document.querySelector('.btn-like');
+            if (isLiked) {
+                likeBtn.innerHTML = '<i class="fas fa-heart"></i> 已点赞';
+                likeBtn.style.background = 'linear-gradient(135deg, #e91e63, #c2185b)';
+            } else {
+                likeBtn.innerHTML = '<i class="fas fa-heart"></i> 点赞';
+                likeBtn.style.background = 'linear-gradient(135deg, #ff6b6b, #ee5a5a)';
+            }
+        }
+        
+        // 分享模型
+        function shareModel() {
+            const shareUrl = window.location.href;
+            if (navigator.share) {
+                navigator.share({
+                    title: currentModel.title,
+                    text: currentModel.description,
+                    url: shareUrl
+                }).catch(err => console.log('分享失败', err));
+            } else {
+                // 复制链接到剪贴板
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    alert('链接已复制到剪贴板！');
+                }).catch(err => {
+                    alert('分享链接: ' + shareUrl);
+                });
+            }
+        }
+        
+        // 一键应用
+        function applyModel() {
+            alert('正在启动模型: ' + currentModel.title);
+        }
+        
+        // 设为私有
+        function setPrivate() {
+            if (confirm('确定要将此模型设为私有吗？')) {
+                alert('模型已设为私有');
+                location.reload();
+            }
+        }
+        
+        // 设为公开
+        function setPublic() {
+            if (confirm('确定要将此模型设为公开吗？')) {
+                alert('模型已设为公开');
+                location.reload();
+            }
+        }
+        
+        // 删除模型
+        function deleteModel() {
+            if (confirm('确定要删除此模型吗？此操作不可恢复！')) {
+                alert('模型已删除');
+                window.location.href = 'my-assets-model.html';
+            }
+        }
+        
+        // 取消收藏
+        function cancelCollection() {
+            if (confirm('确定要取消收藏吗？')) {
+                alert('已取消收藏');
+                window.location.href = 'my-assets-model.html';
+            }
+        }
+        
+        // 预览模型
+        function previewModel() {
+            alert('预览模型效果');
+        }
+        
+        // 发布模型
+        function publishModel() {
+            if (confirm('确定要发布这个模型吗？')) {
+                alert('模型已提交审核！');
+            }
+        }
+        
+        // 返回上一页
+        function goBack() {
+            window.history.back();
+        }
+        
+        // 初始化页面
+        init();
+    </script>
+</body>
+</html>

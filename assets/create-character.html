@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创建角色 - AI 创作平台</title>
+    <script src="../static/js/common.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            color: #333;
+            min-height: 100vh;
+            line-height: 1.6;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .page-header {
+            margin-bottom: 30px;
+            padding: 25px 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .page-description {
+            color: #718096;
+            font-size: 1.1rem;
+        }
+        
+        .create-form {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #2196f3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+        
+        .form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .form-group select {
+            cursor: pointer;
+            background-color: white;
+        }
+        
+        .image-upload {
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .image-upload:hover {
+            border-color: #2196f3;
+            background-color: #f8f9fa;
+        }
+        
+        .image-upload input {
+            display: none;
+        }
+        
+        .image-upload i {
+            font-size: 48px;
+            color: #ccc;
+            margin-bottom: 10px;
+        }
+        
+        .image-upload p {
+            margin: 0;
+            color: #666;
+        }
+        
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            margin-top: 10px;
+            border-radius: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .tag-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .tag {
+            background: #e9ecef;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .tag .remove-tag {
+            margin-left: 8px;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .tag .remove-tag:hover {
+            color: #dc3545;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: #fff;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 2px solid #2196f3;
+            color: #2196f3;
+        }
+        
+        .btn-outline:hover {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+        }
+        
+        .ai-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .ai-section h3 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .ai-prompt {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 120px;
+            font-family: inherit;
+        }
+        
+        .ai-prompt:focus {
+            outline: none;
+            border-color: #2196f3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: #f8f9fa;
+            color: #495057;
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-decoration: none;
+        }
+        
+        .back-link i {
+            margin-right: 8px;
+        }
+        
+        .label-with-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .btn-ai-generate {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-ai-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-ai-generate i {
+            font-size: 1rem;
+        }
+        
+        /* 弹框样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+        
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .modal-close:hover {
+            color: #dc3545;
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .modal-footer .btn {
+            padding: 10px 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="my-assets-character.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回我的角色</a>
+        
+        <div class="create-form">
+            <h2>角色信息</h2>
+            
+            <div class="form-group">
+                <label for="characterName">角色名称</label>
+                <input type="text" id="characterName" placeholder="请输入角色名称">
+            </div>
+            
+            <div class="form-group">
+                <label for="characterDescription">角色描述</label>
+                <textarea id="characterDescription" placeholder="请输入角色描述"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <div class="label-with-button">
+                    <label>角色图片</label>
+                    <button class="btn-ai-generate" onclick="openAIModal()">
+                        <i class="fas fa-magic"></i> AI 生成
+                    </button>
+                </div>
+                <div class="image-upload" onclick="document.getElementById('characterImage').click()">
+                    <input type="file" id="characterImage" accept="image/*">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>点击上传图片或拖拽图片到此处</p>
+                    <img id="previewImage" class="preview-image hidden" src="" alt="预览图片">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="characterType">角色类型</label>
+                <select id="characterType">
+                    <option value="cyberpunk">赛博朋克</option>
+                    <option value="wuxia">武侠古风</option>
+                    <option value="fantasy">奇幻魔法</option>
+                    <option value="modern">现代都市</option>
+                    <option value="scifi">科幻未来</option>
+                    <option value="historical">历史古装</option>
+                    <option value="anime">动漫风格</option>
+                    <option value="realistic">写实风格</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="characterGender">性别</label>
+                <select id="characterGender">
+                    <option value="male">男性</option>
+                    <option value="female">女性</option>
+                    <option value="other">其他</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="characterAge">年龄</label>
+                <select id="characterAge">
+                    <option value="child">儿童</option>
+                    <option value="young">青年</option>
+                    <option value="middle">中年</option>
+                    <option value="old">老年</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="characterStyle">风格</label>
+                <input type="text" id="characterStyle" placeholder="请输入角色风格">
+            </div>
+            
+            <div class="form-group">
+                <label for="characterTags">标签</label>
+                <input type="text" id="characterTags" placeholder="请输入标签，用逗号分隔">
+                <div class="tag-input" id="tagInput"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="characterPoints">使用积分</label>
+                <input type="number" id="characterPoints" min="0" placeholder="请输入使用该角色需要消耗的积分">
+            </div>
+            
+            <div class="form-actions">
+                <button class="btn btn-secondary" onclick="goBack()">取消</button>
+                <button class="btn btn-primary" onclick="saveDraft()">保存草稿</button>
+                <button class="btn btn-primary" onclick="publishCharacter()">发布</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI 生成弹框 -->
+    <div class="modal-overlay" id="aiModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">AI 生成图片</h3>
+                <button class="modal-close" onclick="closeAIModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="aiPrompt">生成提示</label>
+                    <textarea class="ai-prompt" id="aiPrompt" placeholder="请输入生成提示，例如：一个穿着未来科技服装的女性角色，蓝色头发，赛博朋克风格"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeAIModal()">取消</button>
+                <button class="btn btn-primary" onclick="generateWithAI()">生成</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 获取URL参数
+        function getUrlParams() {
+            const params = {};
+            const search = window.location.search;
+            if (search) {
+                const pairs = search.substring(1).split('&');
+                pairs.forEach(pair => {
+                    const [key, value] = pair.split('=');
+                    params[decodeURIComponent(key)] = decodeURIComponent(value || '');
+                });
+            }
+            return params;
+        }
+        
+        // 模拟角色数据
+        const mockCharacters = {
+            my: [
+                {
+                    id: 1,
+                    title: "赛博朋克风格女性角色",
+                    description: "未来科技感十足的女性角色设计，适合科幻主题",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=futuristic%20cyberpunk%20female%20character%20with%20neon%20lights%20and%20high-tech%20gear&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-03-01",
+                    type: "cyberpunk",
+                    gender: "female",
+                    age: "young",
+                    style: "科幻",
+                    tags: ["赛博朋克", "女性", "科幻"],
+                    points: 15,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 2,
+                    title: "古代武侠男性角色",
+                    description: "传统武侠风格的男性角色，身着古装，手持长剑",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=ancient%20chinese%20wuxia%20warrior%20male%20character%20with%20sword%20and%20traditional%20clothing&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-28",
+                    type: "wuxia",
+                    gender: "male",
+                    age: "young",
+                    style: "武侠",
+                    tags: ["武侠", "男性", "古代"],
+                    points: 12,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 3,
+                    title: "魔法少女角色",
+                    description: "可爱的魔法少女角色，拥有魔法棒和翅膀",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=cute%20magical%20girl%20character%20with%20magic%20wand%20and%20wings%20anime%20style&image_size=landscape_4_3",
+                    status: "private",
+                    created: "2026-02-25",
+                    type: "fantasy",
+                    gender: "female",
+                    age: "child",
+                    style: "动漫",
+                    tags: ["魔法", "少女", "动漫"],
+                    points: 10,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 4,
+                    title: "机甲战士角色",
+                    description: "高科技机甲战士，装备先进的武器系统",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=mecha%20warrior%20character%20with%20advanced%20weapon%20systems%20and%20robotic%20armor&image_size=landscape_4_3",
+                    status: "pending",
+                    created: "2026-02-20",
+                    type: "cyberpunk",
+                    gender: "male",
+                    age: "young",
+                    style: "科幻",
+                    tags: ["机甲", "战士", "科幻"],
+                    points: 20,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 5,
+                    title: "精灵公主角色",
+                    description: "优雅的精灵公主，拥有尖耳朵和魔法能力",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=elegant%20elf%20princess%20character%20with%20pointed%20ears%20and%20magical%20abilities%20fantasy%20style&image_size=landscape_4_3",
+                    status: "rejected",
+                    created: "2026-02-15",
+                    type: "fantasy",
+                    gender: "female",
+                    age: "young",
+                    style: "奇幻",
+                    tags: ["精灵", "公主", "奇幻"],
+                    points: 18,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 6,
+                    title: "现代都市男性角色",
+                    description: "时尚的现代都市男性，适合现代都市题材",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=modern%20urban%20male%20character%20with%20fashionable%20clothing%20and%20city%20background&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-10",
+                    type: "modern",
+                    gender: "male",
+                    age: "young",
+                    style: "现代",
+                    tags: ["现代", "男性", "都市"],
+                    points: 8,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                }
+            ],
+            collection: [],
+            drafts: [
+                {
+                    id: 201,
+                    title: "未完成的角色设计",
+                    description: "正在设计中的角色，尚未完成",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=unfinished%20character%20design%20sketch%20and%20draft&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-03-05",
+                    type: "cyberpunk",
+                    gender: "female",
+                    age: "young",
+                    style: "科幻",
+                    tags: ["未完成", "设计", "草稿"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
+                    id: 202,
+                    title: "角色概念草稿",
+                    description: "角色概念设计的初步草稿",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=character%20concept%20art%20draft%20sketch&image_size=landscape_4_3",
+                    status: "draft",
+                    created: "2026-03-03",
+                    type: "fantasy",
+                    gender: "male",
+                    age: "middle",
+                    style: "奇幻",
+                    tags: ["概念", "草稿", "设计"],
+                    points: 0,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                }
+            ]
+        };
+        
+        // 页面加载时初始化
+        function init() {
+            const params = getUrlParams();
+            if (params.type === 'edit' && params.id) {
+                loadDraftData(params.id, params.dataType);
+                document.getElementById('pageTitle').textContent = '编辑角色';
+                document.getElementById('pageDescription').textContent = '编辑您的AI角色资产';
+            }
+            
+            // 图片上传预览
+            document.getElementById('characterImage').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const previewImage = document.getElementById('previewImage');
+                        previewImage.src = e.target.result;
+                        previewImage.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // 标签输入处理
+            document.getElementById('characterTags').addEventListener('keypress', function(e) {
+                if (e.key === ',') {
+                    e.preventDefault();
+                    addTag(this.value.trim());
+                    this.value = '';
+                }
+            });
+        }
+        
+        // 加载草稿数据
+        function loadDraftData(id, dataType) {
+            const characters = mockCharacters[dataType] || [];
+            const draft = characters.find(c => c.id == id);
+            
+            if (draft) {
+                // 填充表单
+                document.getElementById('characterName').value = draft.title || '';
+                document.getElementById('characterDescription').value = draft.description || '';
+                document.getElementById('characterType').value = draft.type || 'cyberpunk';
+                document.getElementById('characterGender').value = draft.gender || 'male';
+                document.getElementById('characterAge').value = draft.age || 'young';
+                document.getElementById('characterStyle').value = draft.style || '';
+                document.getElementById('characterPoints').value = draft.points || 0;
+                
+                // 设置标签
+                if (draft.tags && draft.tags.length > 0) {
+                    document.getElementById('characterTags').value = draft.tags.join(', ');
+                    draft.tags.forEach(tag => addTag(tag));
+                }
+                
+                // 设置预览图片
+                if (draft.image) {
+                    const previewImage = document.getElementById('previewImage');
+                    previewImage.src = draft.image;
+                    previewImage.classList.remove('hidden');
+                }
+            } else {
+                console.log('未找到角色数据:', id, dataType);
+            }
+        }
+        
+        // 添加标签
+        function addTag(tagText) {
+            if (!tagText) return;
+            
+            const tagInput = document.getElementById('tagInput');
+            const tagElement = document.createElement('div');
+            tagElement.className = 'tag';
+            tagElement.innerHTML = `${tagText}<span class="remove-tag" onclick="removeTag(this)">×</span>`;
+            tagInput.appendChild(tagElement);
+        }
+        
+        // 移除标签
+        function removeTag(element) {
+            element.parentElement.remove();
+        }
+        
+        // 保存草稿
+        function saveDraft() {
+            const characterData = collectFormData();
+            characterData.status = 'draft';
+            
+            // 模拟保存操作
+            alert('草稿已保存');
+            window.location.href = 'my-assets-character.html';
+        }
+        
+        // 发布角色
+        function publishCharacter() {
+            const characterData = collectFormData();
+            characterData.status = 'public';
+            
+            // 模拟发布操作
+            alert('角色已发布');
+            window.location.href = 'my-assets-character.html';
+        }
+        
+        // 收集表单数据
+        function collectFormData() {
+            const tags = Array.from(document.querySelectorAll('.tag')).map(tag => tag.textContent.replace('×', '').trim());
+            
+            return {
+                title: document.getElementById('characterName').value,
+                description: document.getElementById('characterDescription').value,
+                image: document.getElementById('previewImage').src || '',
+                type: document.getElementById('characterType').value,
+                gender: document.getElementById('characterGender').value,
+                age: document.getElementById('characterAge').value,
+                style: document.getElementById('characterStyle').value,
+                tags: tags,
+                points: parseInt(document.getElementById('characterPoints').value) || 0
+            };
+        }
+        
+        // 打开 AI 生成弹框
+        function openAIModal() {
+            document.getElementById('aiModal').classList.add('active');
+        }
+        
+        // 关闭 AI 生成弹框
+        function closeAIModal() {
+            document.getElementById('aiModal').classList.remove('active');
+        }
+        
+        // 使用 AI 生成
+        function generateWithAI() {
+            const prompt = document.getElementById('aiPrompt').value;
+            if (!prompt) {
+                alert('请输入生成提示');
+                return;
+            }
+            
+            // 模拟 AI 生成过程
+            alert('AI 生成中，请稍候...');
+            
+            // 模拟生成结果
+            setTimeout(() => {
+                document.getElementById('previewImage').src = `https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(prompt)}&image_size=landscape_4_3`;
+                document.getElementById('previewImage').classList.remove('hidden');
+                closeAIModal();
+            }, 2000);
+        }
+        
+        // 返回上一页
+        function goBack() {
+            window.history.back();
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            init();
+        });
+    </script>
+</body>
+</html>

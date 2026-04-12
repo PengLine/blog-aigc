@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>短剧详情 - AIGC创作平台</title>
-    <link rel="stylesheet" href="style.css">
+    <title>模型详情 - AIGC创作平台</title>
+    <link rel="stylesheet" href="../style.css">
     <style>
         /* 详情页样式 - 与character-detail.html保持一致 */
         .detail-container {
@@ -91,13 +91,12 @@
             border: 1px solid rgba(0,0,0,0.05);
         }
         
-        .detail-video {
+        .detail-image {
             width: 100%;
             height: 400px;
             object-fit: cover;
             border-radius: 12px;
             margin-bottom: 30px;
-            background-color: #000;
         }
         
         .detail-description {
@@ -203,7 +202,32 @@
         .back-link i {
             margin-right: 8px;
         }
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
         
+        .status-badge.public {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .status-badge.private {
+            background: #f3e5f5;
+            color: #4a148c;
+        }
+        
+        .status-badge.pending {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        
+        .status-badge.rejected {
+            background: #ffebee;
+            color: #c62828;
+        }
         .stat-item {
             display: flex;
             justify-content: space-between;
@@ -307,14 +331,14 @@
 </head>
 <body>
     <div class="detail-container">
-        <a href="my-assets-video.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回我的短剧</a>
-        
+        <a href="my-assets-model.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回我的模型</a>
+        <div class="detail-author">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=myself" alt="作者头像" class="author-avatar">
+            <span>我自己</span>
+        </div>
         <div class="detail-header">
-            <h1 id="detailTitle">星际探险</h1>
-            <div class="detail-author">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=myself" alt="作者头像" class="author-avatar">
-                <span>我自己</span>
-            </div>
+            <h1 id="detailTitle">风格迁移模型</h1>
+            <span id="detailStatusBadge" class="status-badge">公开</span>
         </div>
         
         <div class="detail-meta">
@@ -324,68 +348,64 @@
             </div>
             <div class="meta-item">
                 <i class="fas fa-tag"></i>
-                <span id="detailType"> sci-fi</span>
+                <span id="detailType"> style</span>
             </div>
             <div class="meta-item">
                 <i class="fas fa-star"></i>
-                <span id="detailRarity"> epic</span>
+                <span id="detailRarity"> rare</span>
             </div>
             <div class="meta-item">
                 <i class="fas fa-coins"></i>
-                <span id="detailPoints">25 积分</span>
+                <span id="detailPoints">20 积分</span>
             </div>
         </div>
         
         <div class="detail-content">
             <div class="detail-main">
-                <video id="detailVideo" class="detail-video" controls poster="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=space%20adventure%20scene%20sci-fi%20cinematic&image_size=landscape_4_3">
-                    <source src="#" type="video/mp4">
-                    您的浏览器不支持视频播放。
-                </video>
+                <img id="detailImage" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=style%20transfer%20AI%20model%20interface%20modern%20design&image_size=landscape_4_3" alt="模型图片" class="detail-image">
                 
                 <div class="detail-section">
-                    <h3>剧情简介</h3>
+                    <h3>模型描述</h3>
                     <p id="detailDescription" class="detail-description">
-                        《星际探险》讲述了一群宇航员在遥远的未来探索未知星球的故事。他们在太空中遭遇了各种挑战和危险，同时也发现了宇宙中令人惊叹的奥秘。这是一部充满科幻元素和人性探索的短剧，展现了人类对未知世界的好奇和勇气。
+                        风格迁移模型是一款基于深度学习的AI模型，可以将一张图片的风格应用到另一张图片上。它支持多种艺术风格，能够产生高质量的风格迁移效果，适用于创意设计、艺术创作等场景。
                     </p>
                 </div>
                 
                 <div class="detail-section">
-                    <h3>剧集信息</h3>
-                    <p id="detailEpisodes">
-                        - 集数：5集<br>
-                        - 每集时长：10-15分钟<br>
-                        - 总时长：约60分钟<br>
-                        - 语言：中文<br>
-                        - 字幕：中文、英文
+                    <h3>技术参数</h3>
+                    <p id="detailParams">
+                        - 模型类型: 深度学习模型<br>
+                        - 训练数据: 10万+艺术作品<br>
+                        - 推理时间: 1-3秒/张<br>
+                        - 支持分辨率: 最高4K<br>
+                        - 支持风格数: 50+种
                     </p>
                 </div>
                 
                 <div class="detail-section">
-                    <h3>角色列表</h3>
-                    <p id="detailCharacters">
-                        - 队长 李明：经验丰富的宇航员，带领团队探索未知星球<br>
-                        - 科学家 张华：负责研究星球上的生命迹象<br>
-                        - 工程师 王芳：维护飞船和设备的专家<br>
-                        - 医生 刘强：团队的医疗保障<br>
-                        - 机器人助手 K-9：智能机器人，协助团队完成任务
+                    <h3>使用方法</h3>
+                    <p id="detailUsage">
+                        1. 上传目标图片<br>
+                        2. 选择风格参考图片或预设风格<br>
+                        3. 调整风格强度参数<br>
+                        4. 点击生成按钮<br>
+                        5. 下载生成结果
                     </p>
                 </div>
                 
                 <div class="detail-section">
                     <h3>标签</h3>
                     <div id="detailTags" class="tag-list">
-                        <span class="tag">科幻</span>
-                        <span class="tag">探险</span>
-                        <span class="tag">太空</span>
-                        <span class="tag">冒险</span>
+                        <span class="tag">风格迁移</span>
+                        <span class="tag">AI</span>
+                        <span class="tag">图像处理</span>
                     </div>
                 </div>
             </div>
             
             <div class="detail-sidebar">
                 <div class="detail-section">
-                    <h3>短剧信息</h3>
+                    <h3>模型信息</h3>
                     <div class="stat-item">
                         <span class="stat-label">状态</span>
                         <span id="detailStatus" class="stat-value">公开</span>
@@ -396,15 +416,15 @@
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">使用积分</span>
-                        <span id="detailPointsSidebar">25</span>
+                        <span id="detailPointsSidebar">20</span>
                     </div>
                 </div>
                 
                 <div class="social-buttons">
-                    <button class="btn btn-like" onclick="likeVideo()">
+                    <button class="btn btn-like" onclick="likeModel()">
                         <i class="fas fa-heart"></i> 点赞
                     </button>
-                    <button class="btn btn-share" onclick="shareVideo()">
+                    <button class="btn btn-share" onclick="shareModel()">
                         <i class="fas fa-share-alt"></i> 分享
                     </button>
                 </div>
@@ -416,7 +436,7 @@
         </div>
     </div>
     
-    <script src="static/js/common.js"></script>
+    <script src="../static/js/common.js"></script>
     <script>
         // 获取URL参数
         function getUrlParams() {
@@ -424,45 +444,25 @@
             return {
                 id: params.get('id'),
                 type: params.get('type') || 'my',
-                source: params.get('source') || 'video'
+                source: params.get('source') || 'model'
             };
         }
         
-        // 模拟短剧数据
-        const mockVideos = {
+        // 模拟模型数据
+        const mockModels = {
             my: [
                 {
                     id: 1,
-                    title: "星际探险",
-                    description: "《星际探险》讲述了一群宇航员在遥远的未来探索未知星球的故事。他们在太空中遭遇了各种挑战和危险，同时也发现了宇宙中令人惊叹的奥秘。这是一部充满科幻元素和人性探索的短剧，展现了人类对未知世界的好奇和勇气。",
-                    video: "#",
-                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=space%20adventure%20scene%20sci-fi%20cinematic&image_size=landscape_4_3",
+                    title: "风格迁移模型",
+                    description: "风格迁移模型是一款基于深度学习的AI模型，可以将一张图片的风格应用到另一张图片上。它支持多种艺术风格，能够产生高质量的风格迁移效果，适用于创意设计、艺术创作等场景。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=style%20transfer%20AI%20model%20interface%20modern%20design&image_size=landscape_4_3",
                     status: "public",
                     created: "2026-03-01",
-                    type: "sci-fi",
-                    rarity: "epic",
-                    episodes: "- 集数：5集\n- 每集时长：10-15分钟\n- 总时长：约60分钟\n- 语言：中文\n- 字幕：中文、英文",
-                    characters: "- 队长 李明：经验丰富的宇航员，带领团队探索未知星球\n- 科学家 张华：负责研究星球上的生命迹象\n- 工程师 王芳：维护飞船和设备的专家\n- 医生 刘强：团队的医疗保障\n- 机器人助手 K-9：智能机器人，协助团队完成任务",
-                    tags: ["科幻", "探险", "太空", "冒险"],
-                    points: 25,
-                    author: {
-                        name: "我自己",
-                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
-                    }
-                },
-                {
-                    id: 2,
-                    title: "魔法学院",
-                    description: "《魔法学院》讲述了一群年轻魔法师在魔法学院学习和成长的故事。他们面临各种挑战和考验，同时也发现了自己的魔法潜能。这是一部充满奇幻元素和青春成长的短剧，展现了友谊和勇气的力量。",
-                    video: "#",
-                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=magic%20academy%20fantasy%20scene%20cinematic&image_size=landscape_4_3",
-                    status: "public",
-                    created: "2026-02-28",
-                    type: "fantasy",
+                    type: "style",
                     rarity: "rare",
-                    episodes: "- 集数：4集\n- 每集时长：12-18分钟\n- 总时长：约60分钟\n- 语言：中文\n- 字幕：中文、英文",
-                    characters: "- 主角 小雨：普通女孩，发现自己有魔法天赋\n- 导师 梅林：魔法学院的资深教授\n- 同学 小明：小雨的好友，擅长变形术\n- 同学 小花：小雨的室友，擅长元素魔法\n- 反派 黑暗巫师：试图破坏魔法学院",
-                    tags: ["奇幻", "魔法", "青春", "成长"],
+                    params: "- 模型类型: 深度学习模型\n- 训练数据: 10万+艺术作品\n- 推理时间: 1-3秒/张\n- 支持分辨率: 最高4K\n- 支持风格数: 50+种",
+                    usage: "1. 上传目标图片\n2. 选择风格参考图片或预设风格\n3. 调整风格强度参数\n4. 点击生成按钮\n5. 下载生成结果",
+                    tags: ["风格迁移", "AI", "图像处理"],
                     points: 20,
                     author: {
                         name: "我自己",
@@ -470,19 +470,36 @@
                     }
                 },
                 {
+                    id: 2,
+                    title: "超分辨率模型",
+                    description: "超分辨率模型可以将低分辨率图片放大到高分辨率，同时保持图片质量。它基于先进的深度学习技术，能够智能填充细节，适用于图像处理、视频增强等场景。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=super%20resolution%20AI%20model%20interface%20modern%20design&image_size=landscape_4_3",
+                    status: "public",
+                    created: "2026-02-28",
+                    type: "enhancement",
+                    rarity: "epic",
+                    params: "- 模型类型: 深度学习模型\n- 训练数据: 50万+高分辨率图片\n- 推理时间: 2-5秒/张\n- 支持放大倍数: 2x-4x\n- 支持分辨率: 最高8K",
+                    usage: "1. 上传低分辨率图片\n2. 选择放大倍数\n3. 点击生成按钮\n4. 下载高分辨率结果",
+                    tags: ["超分辨率", "AI", "图像处理"],
+                    points: 25,
+                    author: {
+                        name: "我自己",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
+                    }
+                },
+                {
                     id: 3,
-                    title: "都市爱情",
-                    description: "《都市爱情》讲述了一对年轻人在繁华都市中相遇、相知、相爱的故事。他们面对工作压力、家庭矛盾和生活挑战，最终携手走向幸福。这是一部温馨浪漫的爱情短剧，展现了现代都市人的情感世界。",
-                    video: "#",
-                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=urban%20romance%20city%20love%20story%20cinematic&image_size=landscape_4_3",
+                    title: "图像修复模型",
+                    description: "图像修复模型可以自动修复图片中的瑕疵、划痕和缺失部分。它基于生成对抗网络技术，能够智能推断缺失内容，适用于老照片修复、图像编辑等场景。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=image%20inpainting%20restoration%20AI%20model%20interface&image_size=landscape_4_3",
                     status: "public",
                     created: "2026-02-25",
-                    type: "romance",
+                    type: "enhancement",
                     rarity: "rare",
-                    episodes: "- 集数：6集\n- 每集时长：8-12分钟\n- 总时长：约60分钟\n- 语言：中文\n- 字幕：中文、英文",
-                    characters: "- 男主角 陈浩：年轻有为的职场精英\n- 女主角 林晓：温柔善良的设计师\n- 闺蜜 小美：林晓的好友，经常出谋划策\n- 同事 大伟：陈浩的竞争对手，后来成为朋友\n- 父母：关心子女婚姻大事的长辈",
-                    tags: ["爱情", "都市", "浪漫", "现代"],
-                    points: 18,
+                    params: "- 模型类型: GAN生成对抗网络\n- 训练数据: 20万+修复样本\n- 推理时间: 3-6秒/张\n- 支持瑕疵类型: 划痕、污渍、缺失\n- 修复精度: 像素级",
+                    usage: "1. 上传需要修复的图片\n2. 标记需要修复的区域\n3. 点击修复按钮\n4. 查看修复结果\n5. 下载修复后的图片",
+                    tags: ["图像修复", "GAN", "老照片"],
+                    points: 22,
                     author: {
                         name: "我自己",
                         avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
@@ -490,18 +507,17 @@
                 },
                 {
                     id: 4,
-                    title: "悬疑推理",
-                    description: "《悬疑推理》讲述了一位天才侦探破解一系列离奇案件的故事。每个案件都充满谜团和反转，观众可以跟随侦探一起推理，体验解谜的乐趣。这是一部烧脑的悬疑短剧，展现了逻辑推理的魅力。",
-                    video: "#",
-                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=mystery%20detective%20investigation%20crime%20scene%20cinematic&image_size=landscape_4_3",
+                    title: "人像美化模型",
+                    description: "人像美化模型可以自动优化人像照片，包括皮肤平滑、美白、瘦脸等功能。它基于深度学习技术，能够自然美化人像，适用于摄影后期、社交媒体等场景。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=portrait%20beautification%20AI%20model%20interface&image_size=landscape_4_3",
                     status: "public",
                     created: "2026-02-20",
-                    type: "mystery",
+                    type: "enhancement",
                     rarity: "epic",
-                    episodes: "- 集数：5集\n- 每集时长：15-20分钟\n- 总时长：约85分钟\n- 语言：中文\n- 字幕：中文、英文",
-                    characters: "- 侦探 秦风：智商超群的天才侦探\n- 助手 小雨：秦风的得力助手，观察力敏锐\n- 警官 老李：经验丰富的老警察\n- 法医 王博士：专业的法医鉴定专家\n- 神秘人 X：幕后黑手，身份成谜",
-                    tags: ["悬疑", "推理", "侦探", "烧脑"],
-                    points: 28,
+                    params: "- 模型类型: 深度学习模型\n- 训练数据: 30万+人像照片\n- 推理时间: 1-2秒/张\n- 支持功能: 磨皮、美白、瘦脸\n- 自然度: 95%+",
+                    usage: "1. 上传人像照片\n2. 选择美化强度\n3. 调整具体参数\n4. 预览效果\n5. 导出美化后的照片",
+                    tags: ["人像美化", "摄影", "后期"],
+                    points: 18,
                     author: {
                         name: "我自己",
                         avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
@@ -509,18 +525,17 @@
                 },
                 {
                     id: 5,
-                    title: "古装武侠",
-                    description: "《古装武侠》讲述了一位少年侠客在江湖中成长的故事。他历经磨难，习得绝世武功，最终成为一代大侠，维护江湖正义。这是一部热血沸腾的武侠短剧，展现了中华武术的博大精深。",
-                    video: "#",
-                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=ancient%20wuxia%20martial%20arts%20sword%20fighting%20cinematic&image_size=landscape_4_3",
+                    title: "背景移除模型",
+                    description: "背景移除模型可以自动识别并移除图片背景，保留前景主体。它基于实例分割技术，边缘处理精细，适用于电商产品图、证件照制作等场景。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=background%20removal%20AI%20model%20interface&image_size=landscape_4_3",
                     status: "private",
                     created: "2026-02-15",
-                    type: "wuxia",
-                    rarity: "legendary",
-                    episodes: "- 集数：8集\n- 每集时长：12-15分钟\n- 总时长：约100分钟\n- 语言：中文\n- 字幕：中文、英文",
-                    characters: "- 主角 李逍遥：少年侠客，正义感强\n- 师父 张三丰：武林泰斗，传授绝世武功\n- 女主角 赵灵儿：温柔善良的医女\n- 反派 魔教教主：野心勃勃，企图称霸武林\n- 好友 段誉：大理王子，精通六脉神剑",
-                    tags: ["武侠", "古装", "江湖", "功夫"],
-                    points: 35,
+                    type: "segmentation",
+                    rarity: "common",
+                    params: "- 模型类型: 实例分割模型\n- 训练数据: 15万+分割样本\n- 推理时间: 0.5-1秒/张\n- 边缘精度: 像素级\n- 支持格式: PNG透明背景",
+                    usage: "1. 上传图片\n2. 自动识别主体\n3. 移除背景\n4. 可选替换背景\n5. 下载透明背景图片",
+                    tags: ["背景移除", "分割", "电商"],
+                    points: 15,
                     author: {
                         name: "我自己",
                         avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
@@ -528,18 +543,17 @@
                 },
                 {
                     id: 6,
-                    title: "搞笑日常",
-                    description: "《搞笑日常》讲述了一群室友的搞笑日常生活。他们性格各异，经常发生各种有趣的故事，让人捧腹大笑。这是一部轻松幽默的喜剧短剧，展现了年轻人的生活状态。",
-                    video: "#",
-                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=comedy%20roommates%20funny%20daily%20life%20sitcom&image_size=landscape_4_3",
+                    title: "色彩增强模型",
+                    description: "色彩增强模型可以自动优化图片的色彩表现，提升饱和度、对比度和色彩平衡。它基于色彩科学和深度学习，能够智能分析并优化图片色彩。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=color%20enhancement%20AI%20model%20interface&image_size=landscape_4_3",
                     status: "pending",
                     created: "2026-02-10",
-                    type: "comedy",
-                    rarity: "common",
-                    episodes: "- 集数：10集\n- 每集时长：5-8分钟\n- 总时长：约65分钟\n- 语言：中文\n- 字幕：中文",
-                    characters: "- 小明：宅男程序员，技术宅\n- 小强：运动达人，四肢发达\n- 小美：时尚女孩，爱美爱购物\n- 大智：学霸，经常语出惊人\n- 房东阿姨：爱唠叨但心地善良",
-                    tags: ["喜剧", "搞笑", "日常", "轻松"],
-                    points: 15,
+                    type: "enhancement",
+                    rarity: "rare",
+                    params: "- 模型类型: 深度学习模型\n- 训练数据: 25万+色彩样本\n- 推理时间: 1-2秒/张\n- 支持调整: 饱和度、对比度、色调\n- 智能模式: 自动优化",
+                    usage: "1. 上传图片\n2. 选择增强模式\n3. 调整参数\n4. 预览效果\n5. 导出优化后的图片",
+                    tags: ["色彩增强", "调色", "优化"],
+                    points: 16,
                     author: {
                         name: "我自己",
                         avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=myself"
@@ -549,57 +563,54 @@
             collection: [
                 {
                     id: 301,
-                    title: "历史传奇",
-                    description: "《历史传奇》讲述了历史上著名人物的故事，通过精彩的剧情再现历史场景，让观众了解历史、感受历史。",
-                    video: "#",
-                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=historical%20drama%20ancient%20china%20epic%20scene&image_size=landscape_4_3",
+                    title: "动漫风格模型",
+                    description: "动漫风格模型可以将照片转换为动漫风格，支持多种动漫画风，效果自然生动。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=anime%20style%20conversion%20AI%20model&image_size=landscape_4_3",
                     status: "public",
                     created: "2026-02-05",
-                    type: "history",
+                    type: "style",
                     rarity: "epic",
-                    episodes: "- 集数：6集\n- 每集时长：20-25分钟\n- 总时长：约130分钟\n- 语言：中文\n- 字幕：中文、英文",
-                    characters: "- 历史人物A：著名将领\n- 历史人物B：智慧谋士\n- 历史人物C：美丽公主",
-                    tags: ["历史", "传奇", "古装", "史诗"],
-                    points: 26,
+                    params: "- 模型类型: 风格迁移模型\n- 训练数据: 8万+动漫图片\n- 推理时间: 2-4秒/张\n- 支持风格: 日系、美漫、国漫\n- 输出质量: 高清",
+                    usage: "1. 上传照片\n2. 选择动漫风格\n3. 调整强度\n4. 生成动漫效果",
+                    tags: ["动漫", "风格转换", "二次元"],
+                    points: 24,
                     author: {
-                        name: "创作者C",
-                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=creatorC"
+                        name: "王五",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=wangwu"
                     }
                 },
                 {
                     id: 302,
-                    title: "恐怖惊悚",
-                    description: "《恐怖惊悚》讲述了一系列离奇恐怖的事件，氛围紧张刺激，适合喜欢恐怖片的观众。",
-                    video: "#",
-                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=horror%20thriller%20dark%20atmosphere%20scary%20scene&image_size=landscape_4_3",
+                    title: "素描转换模型",
+                    description: "素描转换模型可以将照片转换为手绘素描效果，线条流畅自然，艺术感强。",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=sketch%20conversion%20AI%20model%20pencil%20drawing&image_size=landscape_4_3",
                     status: "public",
                     created: "2026-01-28",
-                    type: "horror",
+                    type: "style",
                     rarity: "rare",
-                    episodes: "- 集数：4集\n- 每集时长：10-12分钟\n- 总时长：约45分钟\n- 语言：中文\n- 字幕：中文",
-                    characters: "- 主角：勇敢的年轻人\n- 神秘人：身份不明\n- 受害者：遭遇不幸的人",
-                    tags: ["恐怖", "惊悚", "悬疑", "刺激"],
-                    points: 22,
+                    params: "- 模型类型: 风格迁移模型\n- 训练数据: 5万+素描作品\n- 推理时间: 1-3秒/张\n- 线条风格: 铅笔、炭笔、钢笔\n- 细节保留: 高",
+                    usage: "1. 上传照片\n2. 选择素描风格\n3. 调整线条粗细\n4. 生成素描效果",
+                    tags: ["素描", "手绘", "艺术"],
+                    points: 19,
                     author: {
-                        name: "导演D",
-                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=directorD"
+                        name: "赵六",
+                        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=zhaoliu"
                     }
                 }
             ],
             drafts: [
                 {
                     id: 201,
-                    title: "未完成的短剧",
-                    description: "正在制作中的短剧，尚未完成",
-                    video: "#",
-                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=unfinished%20video%20production%20concept%20storyboard&image_size=landscape_4_3",
+                    title: "未完成的模型",
+                    description: "正在训练中的模型，尚未完成",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=unfinished%20AI%20model%20training%20interface&image_size=landscape_4_3",
                     status: "draft",
                     created: "2026-03-05",
-                    type: "sci-fi",
+                    type: "style",
                     rarity: "common",
-                    episodes: "",
-                    characters: "",
-                    tags: ["未完成", "制作", "草稿"],
+                    params: "",
+                    usage: "",
+                    tags: ["未完成", "训练", "草稿"],
                     points: 0,
                     author: {
                         name: "我自己",
@@ -608,17 +619,16 @@
                 },
                 {
                     id: 202,
-                    title: "短剧创意构思",
-                    description: "一个新短剧的创意构思",
-                    video: "#",
-                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=video%20concept%20creative%20idea%20storyboard&image_size=landscape_4_3",
+                    title: "新模型构思",
+                    description: "一个全新模型的概念设计",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=new%20AI%20model%20concept%20design&image_size=landscape_4_3",
                     status: "draft",
                     created: "2026-03-03",
-                    type: "drama",
+                    type: "enhancement",
                     rarity: "common",
-                    episodes: "- 集数：待定",
-                    characters: "- 主角：待设定\n- 配角：待设定",
-                    tags: ["构思", "创意", "草稿"],
+                    params: "- 模型类型: 待定\n- 训练数据: 收集中",
+                    usage: "使用说明待完善",
+                    tags: ["构思", "新模型", "草稿"],
                     points: 0,
                     author: {
                         name: "我自己",
@@ -627,17 +637,16 @@
                 },
                 {
                     id: 203,
-                    title: "剧本初稿",
-                    description: "正在编写的剧本初稿",
-                    video: "#",
-                    poster: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=script%20writing%20draft%20document%20paper&image_size=landscape_4_3",
+                    title: "实验性模型",
+                    description: "实验性模型原型",
+                    image: "https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=experimental%20AI%20model%20prototype&image_size=landscape_4_3",
                     status: "draft",
                     created: "2026-02-28",
-                    type: "romance",
+                    type: "experimental",
                     rarity: "common",
-                    episodes: "",
-                    characters: "",
-                    tags: ["剧本", "初稿", "草稿"],
+                    params: "",
+                    usage: "",
+                    tags: ["实验", "原型", "草稿"],
                     points: 0,
                     author: {
                         name: "我自己",
@@ -647,62 +656,61 @@
             ]
         };
         
-        let currentVideo = null;
+        let currentModel = null;
+        let isLiked = false;
         
         // 初始化页面
         function init() {
             const params = getUrlParams();
-            const video = findVideo(params.id, params.type);
+            const model = findModel(params.id, params.type);
             
-            if (!video) {
-                alert('短剧不存在');
+            if (!model) {
+                alert('模型不存在');
                 goBack();
                 return;
             }
             
-            currentVideo = video;
-            renderVideoDetail(video, params.type);
+            currentModel = model;
+            renderModelDetail(model, params.type);
         }
         
-        // 查找短剧
-        function findVideo(id, type) {
-            const videos = mockVideos[type] || [];
-            return videos.find(v => v.id == id);
+        // 查找模型
+        function findModel(id, type) {
+            const models = mockModels[type] || [];
+            return models.find(p => p.id == id);
         }
         
-        // 渲染短剧详情
-        function renderVideoDetail(video, type) {
+        // 渲染模型详情
+        function renderModelDetail(model, type) {
             // 设置标题
-            document.getElementById('detailTitle').textContent = video.title;
+            document.getElementById('detailTitle').textContent = model.title;
             
-            // 设置视频
-            const videoElement = document.getElementById('detailVideo');
-            videoElement.src = video.video;
-            videoElement.poster = video.poster;
+            // 设置图片
+            document.getElementById('detailImage').src = model.image;
             
             // 设置描述
-            document.getElementById('detailDescription').textContent = video.description;
+            document.getElementById('detailDescription').textContent = model.description;
             
             // 设置元数据
-            document.getElementById('detailCreated').textContent = video.created;
-            document.getElementById('detailCreatedSidebar').textContent = video.created;
-            document.getElementById('detailType').textContent = video.type;
-            document.getElementById('detailRarity').textContent = video.rarity;
-            document.getElementById('detailPoints').textContent = video.points + ' 积分';
-            document.getElementById('detailPointsSidebar').textContent = video.points;
-            document.getElementById('detailStatus').textContent = video.status === 'public' ? '公开' : video.status === 'private' ? '私有' : video.status === 'pending' ? '审核中' : video.status === 'rejected' ? '已拒绝' : video.status;
+            document.getElementById('detailCreated').textContent = model.created;
+            document.getElementById('detailCreatedSidebar').textContent = model.created;
+            document.getElementById('detailType').textContent = model.type;
+            document.getElementById('detailRarity').textContent = model.rarity;
+            document.getElementById('detailPoints').textContent = model.points + ' 积分';
+            document.getElementById('detailPointsSidebar').textContent = model.points;
+            document.getElementById('detailStatus').textContent = model.status === 'public' ? '公开' : model.status === 'private' ? '私有' : model.status === 'pending' ? '审核中' : model.status === 'rejected' ? '已拒绝' : model.status;
             
-            // 设置剧集信息
-            document.getElementById('detailEpisodes').innerHTML = video.episodes;
+            // 设置技术参数
+            document.getElementById('detailParams').innerHTML = model.params;
             
-            // 设置角色列表
-            document.getElementById('detailCharacters').innerHTML = video.characters;
+            // 设置使用方法
+            document.getElementById('detailUsage').innerHTML = model.usage;
             
             // 设置标签
             const tagsContainer = document.getElementById('detailTags');
             tagsContainer.innerHTML = '';
-            if (video.tags && video.tags.length > 0) {
-                video.tags.forEach(tag => {
+            if (model.tags && model.tags.length > 0) {
+                model.tags.forEach(tag => {
                     const tagElement = document.createElement('span');
                     tagElement.className = 'tag';
                     tagElement.textContent = tag;
@@ -711,18 +719,18 @@
             }
             
             // 渲染操作按钮
-            renderActionButtons(video, type);
+            renderActionButtons(model, type);
         }
         
         // 渲染操作按钮
-        function renderActionButtons(video, type) {
+        function renderActionButtons(model, type) {
             const actionButtons = document.getElementById('actionButtons');
             let buttonsHtml = '';
             
             // 如果是收藏别人的作品
             if (type === 'collection') {
                 buttonsHtml = `
-                    <button class="btn btn-apply" onclick="applyVideo()">
+                    <button class="btn btn-apply" onclick="applyModel()">
                         <i class="fas fa-magic"></i> 一键应用
                     </button>
                     <button class="btn btn-outline" onclick="cancelCollection()">
@@ -731,10 +739,10 @@
                 `;
             } else {
                 // 根据状态显示不同的按钮
-                switch (video.status) {
+                switch (model.status) {
                     case 'public':
                         buttonsHtml = `
-                            <button class="btn btn-apply" onclick="applyVideo()">
+                            <button class="btn btn-apply" onclick="applyModel()">
                                 <i class="fas fa-magic"></i> 一键应用
                             </button>
                             <button class="btn btn-secondary" onclick="setPrivate()">
@@ -744,46 +752,46 @@
                         break;
                     case 'private':
                         buttonsHtml = `
-                            <button class="btn btn-apply" onclick="applyVideo()">
+                            <button class="btn btn-apply" onclick="applyModel()">
                                 <i class="fas fa-magic"></i> 一键应用
                             </button>
                             <button class="btn btn-success" onclick="setPublic()">
                                 <i class="fas fa-globe"></i> 设为公开
                             </button>
-                            <button class="btn btn-primary" onclick="editVideo()">
+                            <button class="btn btn-primary" onclick="editModel()">
                                 <i class="fas fa-edit"></i> 编辑
                             </button>
                         `;
                         break;
                     case 'pending':
                         buttonsHtml = `
-                            <button class="btn btn-apply" onclick="applyVideo()">
+                            <button class="btn btn-apply" onclick="applyModel()">
                                 <i class="fas fa-magic"></i> 一键应用
                             </button>
-                            <button class="btn btn-danger" onclick="deleteVideo()">
+                            <button class="btn btn-danger" onclick="deleteModel()">
                                 <i class="fas fa-trash"></i> 删除
                             </button>
                         `;
                         break;
                     case 'rejected':
                         buttonsHtml = `
-                            <button class="btn btn-apply" onclick="applyVideo()">
+                            <button class="btn btn-apply" onclick="applyModel()">
                                 <i class="fas fa-magic"></i> 一键应用
                             </button>
-                            <button class="btn btn-primary" onclick="editVideo()">
+                            <button class="btn btn-primary" onclick="editModel()">
                                 <i class="fas fa-edit"></i> 编辑
                             </button>
-                            <button class="btn btn-danger" onclick="deleteVideo()">
+                            <button class="btn btn-danger" onclick="deleteModel()">
                                 <i class="fas fa-trash"></i> 删除
                             </button>
-                            <button class="btn btn-success" onclick="publishVideo()">
+                            <button class="btn btn-success" onclick="publishModel()">
                                 <i class="fas fa-paper-plane"></i> 发布
                             </button>
                         `;
                         break;
                     default:
                         buttonsHtml = `
-                            <button class="btn btn-apply" onclick="applyVideo()">
+                            <button class="btn btn-apply" onclick="applyModel()">
                                 <i class="fas fa-magic"></i> 一键应用
                             </button>
                         `;
@@ -793,20 +801,20 @@
             actionButtons.innerHTML = buttonsHtml;
         }
         
-        // 编辑短剧
-        function editVideo() {
-            // 将当前短剧数据序列化为URL参数
+        // 编辑模型
+        function editModel() {
+            // 将当前模型数据序列化为URL参数
             const params = new URLSearchParams();
-            params.append('id', currentVideo.id);
+            params.append('id', currentModel.id);
             params.append('type', 'edit');
             params.append('dataType', getUrlParams().type);
             
             // 跳转到创建页面并传递数据
-            window.location.href = `create-video.html?${params.toString()}`;
+            window.location.href = `create-model.html?${params.toString()}`;
         }
         
-        // 点赞短剧
-        function likeVideo() {
+        // 点赞模型
+        function likeModel() {
             isLiked = !isLiked;
             const likeBtn = document.querySelector('.btn-like');
             if (isLiked) {
@@ -818,13 +826,13 @@
             }
         }
         
-        // 分享短剧
-        function shareVideo() {
+        // 分享模型
+        function shareModel() {
             const shareUrl = window.location.href;
             if (navigator.share) {
                 navigator.share({
-                    title: currentVideo.title,
-                    text: currentVideo.description,
+                    title: currentModel.title,
+                    text: currentModel.description,
                     url: shareUrl
                 }).catch(err => console.log('分享失败', err));
             } else {
@@ -838,31 +846,31 @@
         }
         
         // 一键应用
-        function applyVideo() {
-            alert('正在启动短剧: ' + currentVideo.title);
+        function applyModel() {
+            alert('正在启动模型: ' + currentModel.title);
         }
         
         // 设为私有
         function setPrivate() {
-            if (confirm('确定要将此短剧设为私有吗？')) {
-                alert('短剧已设为私有');
+            if (confirm('确定要将此模型设为私有吗？')) {
+                alert('模型已设为私有');
                 location.reload();
             }
         }
         
         // 设为公开
         function setPublic() {
-            if (confirm('确定要将此短剧设为公开吗？')) {
-                alert('短剧已设为公开');
+            if (confirm('确定要将此模型设为公开吗？')) {
+                alert('模型已设为公开');
                 location.reload();
             }
         }
         
-        // 删除短剧
-        function deleteVideo() {
-            if (confirm('确定要删除此短剧吗？此操作不可恢复！')) {
-                alert('短剧已删除');
-                window.location.href = 'my-assets-video.html';
+        // 删除模型
+        function deleteModel() {
+            if (confirm('确定要删除此模型吗？此操作不可恢复！')) {
+                alert('模型已删除');
+                window.location.href = 'my-assets-model.html';
             }
         }
         
@@ -870,19 +878,19 @@
         function cancelCollection() {
             if (confirm('确定要取消收藏吗？')) {
                 alert('已取消收藏');
-                window.location.href = 'my-assets-video.html';
+                window.location.href = 'my-assets-model.html';
             }
         }
         
-        // 预览短剧
-        function previewVideo() {
-            alert('预览短剧效果');
+        // 预览模型
+        function previewModel() {
+            alert('预览模型效果');
         }
         
-        // 发布短剧
-        function publishVideo() {
-            if (confirm('确定要发布这个短剧吗？')) {
-                alert('短剧已提交审核！');
+        // 发布模型
+        function publishModel() {
+            if (confirm('确定要发布这个模型吗？')) {
+                alert('模型已提交审核！');
             }
         }
         

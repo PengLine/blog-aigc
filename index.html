@@ -593,7 +593,7 @@
                     </ul>
                 </li>
                 <li class="nav-item">
-                    <a href="ai-apps.html" class="nav-link">AI应用</a>
+                    <a href="app/ai-apps.html" class="nav-link">AI应用</a>
                 </li>
                 <li class="nav-item">
                     <a href="lora-train.html" class="nav-link">Lora训练</a>
@@ -602,7 +602,10 @@
                     <a href="profile.html" class="nav-link">个人中心</a>
                 </li>
                 <li class="nav-item">
-                    <a href="my-assets.html" class="nav-link">我的资产</a>
+                    <a href="assets/my-assets.html" class="nav-link">我的资产</a>
+                </li>
+                <li class="nav-item">
+                    <a href="https://pengline.cn" class="nav-link">博客</a>
                 </li>
             </ul>
         </div>
@@ -975,7 +978,7 @@
             const card = document.createElement('div');
             card.className = 'card';
             card.style.cursor = 'pointer';
-            card.onclick = () => window.location.href = `detail.html?id=${item.id}`;
+            card.onclick = () => window.location.href = `assets/detail.html?id=${item.id}`;
             
             // 类型名称映射
             const typeNames = {

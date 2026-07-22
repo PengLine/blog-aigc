@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的模型 - AIGC创作平台</title>
     <script src="../static/js/common.js"></script>
@@ -11,7 +13,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
             background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
@@ -19,7 +21,7 @@
             min-height: 100vh;
             line-height: 1.6;
         }
-        
+
         .container {
             display: flex;
             max-width: 1400px;
@@ -27,38 +29,38 @@
             padding: 30px;
             min-height: 100vh;
         }
-        
+
         /* 左侧导航栏 */
         .sidebar {
             width: 250px;
             max-height: 800px;
             background-color: rgba(255, 255, 255, 0.95);
             border-radius: 18px;
-            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
             padding: 30px 20px;
             margin-right: 30px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
-        
+
         .sidebar h2 {
             font-size: 1.5rem;
             font-weight: 700;
             color: #2c3e50;
             margin-bottom: 30px;
             text-align: center;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
             letter-spacing: 2px;
         }
-        
+
         .nav-menu {
             list-style: none;
         }
-        
+
         .nav-item {
             margin-bottom: 12px;
         }
-        
+
         .nav-link {
             display: block;
             padding: 12px 20px;
@@ -71,7 +73,7 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         .nav-link::before {
             content: '';
             position: absolute;
@@ -82,27 +84,27 @@
             background: linear-gradient(90deg, transparent, rgba(33, 150, 243, 0.1), transparent);
             transition: left 0.5s ease;
         }
-        
+
         .nav-link:hover::before {
             left: 100%;
         }
-        
+
         .nav-link:hover {
             background-color: #e3f2fd;
             color: #1976d2;
             transform: translateX(8px);
         }
-        
+
         .nav-link.active {
             background: linear-gradient(135deg, #2196f3, #1976d2);
             color: white;
             box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
         }
-        
+
         .nav-link.active:hover {
             transform: translateX(0);
         }
-        
+
         /* 二级导航菜单 */
         .sub-nav-menu {
             list-style: none;
@@ -111,13 +113,13 @@
             padding: 10px;
             background: rgba(255, 255, 255, 0.5);
             border-radius: 10px;
-            border:1px solid rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
-        
+
         .sub-nav-item {
             margin-bottom: 6px;
         }
-        
+
         .sub-nav-link {
             display: block;
             padding: 8px 15px;
@@ -127,61 +129,61 @@
             font-size: 0.9rem;
             transition: all 0.3s ease;
         }
-        
+
         .sub-nav-link:hover {
             background-color: #f0f0f0;
             color: #1976d2;
         }
-        
+
         .sub-nav-link.active {
             background-color: #e3f2fd;
             color: #1976d2;
             font-weight: 600;
         }
-        
+
         /* 主内容区域 */
         .main-content {
-            flex:1;
+            flex: 1;
             padding: 30px;
             background-color: rgba(255, 255, 255, 0.95);
             border-radius: 18px;
-            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
             backdrop-filter: blur(10px);
-            border:1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
-        
+
         .page-header {
             margin-bottom: 30px;
             text-align: center;
         }
-        
+
         .page-title {
             font-size: 2rem;
             font-weight: 700;
             color: #2c3e50;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
-        
+
         .page-description {
             font-size: 1rem;
             color: #7f8c8d;
             margin-bottom: 20px;
         }
-        
+
         /* 资产类型导航 */
         .asset-type-nav {
             margin-bottom: 30px;
             border-bottom: 2px solid #e9ecef;
             padding-bottom: 15px;
         }
-        
+
         .asset-type-tabs {
             display: flex;
             gap: 20px;
             justify-content: center;
         }
-        
+
         .asset-type-tab {
             padding: 12px 30px;
             background: transparent;
@@ -193,31 +195,31 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .asset-type-tab:hover {
             color: #1976d2;
         }
-        
+
         .asset-type-tab.active {
             color: #1976d2;
             border-bottom-color: #1976d2;
         }
-        
+
         /* 资产状态筛选 */
         .asset-status-filter {
             margin-bottom: 30px;
             padding: 20px;
             background: #f8f9fa;
             border-radius: 10px;
-            border:1px solid #e9ecef;
+            border: 1px solid #e9ecef;
         }
-        
+
         .filter-tabs {
             display: flex;
             gap: 15px;
             flex-wrap: wrap;
         }
-        
+
         .filter-tab {
             padding: 8px 20px;
             background: white;
@@ -228,18 +230,18 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .filter-tab:hover {
             border-color: #2196f3;
             color: #1976d2;
         }
-        
+
         .filter-tab.active {
             background: linear-gradient(135deg, #2196f3, #1976d2);
             color: white;
             border-color: #2196f3;
         }
-        
+
         /* 资产卡片容器 */
         .assets-grid {
             display: grid;
@@ -247,32 +249,32 @@
             gap: 25px;
             margin-bottom: 40px;
         }
-        
+
         /* 资产卡片 */
         .asset-card {
             background: white;
             border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
         }
-        
+
         .asset-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         }
-        
+
         .asset-image {
             width: 100%;
             height: 180px;
             object-fit: cover;
             background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
         }
-        
+
         .asset-content {
             padding: 20px;
         }
-        
+
         .asset-title {
             font-size: 1.1rem;
             font-weight: 600;
@@ -280,14 +282,14 @@
             margin-bottom: 8px;
             line-height: 1.4;
         }
-        
+
         .asset-description {
             font-size: 0.9rem;
             color: #666;
             margin-bottom: 15px;
             line-height: 1.4;
         }
-        
+
         .asset-meta {
             display: flex;
             justify-content: space-between;
@@ -295,46 +297,46 @@
             font-size: 0.8rem;
             color: #999;
         }
-        
+
         .asset-status {
             padding: 4px 12px;
             border-radius: 12px;
             font-size: 0.75rem;
             font-weight: 500;
         }
-        
+
         .status-public {
             background: #e8f5e8;
             color: #2e7d32;
         }
-        
+
         .status-private {
             background: #fff3e0;
             color: #ef6c00;
         }
-        
+
         .status-pending {
             background: #e3f2fd;
             color: #1976d2;
         }
-        
+
         .status-rejected {
             background: #ffebee;
             color: #c62828;
         }
-        
+
         .status-draft {
             background: #f3e5f5;
             color: #7b1fa2;
         }
-        
+
         /* 资产操作按钮 */
         .asset-actions {
             display: flex;
             gap: 8px;
             margin-top: 15px;
         }
-        
+
         .action-btn {
             flex: 1;
             padding: 8px 12px;
@@ -346,13 +348,13 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .action-btn:hover {
             background: #f8f9fa;
             border-color: #2196f3;
             color: #1976d2;
         }
-        
+
         /* 创建资产按钮 */
         .create-asset-btn {
             display: block;
@@ -369,36 +371,36 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
         }
-        
+
         .create-asset-btn:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
         }
-        
+
         /* 空状态 */
         .empty-state {
             text-align: center;
             padding: 60px 20px;
             color: #666;
         }
-        
+
         .empty-icon {
             font-size: 4rem;
             margin-bottom: 20px;
         }
-        
+
         .empty-title {
             font-size: 1.5rem;
             font-weight: 600;
             color: #333;
             margin-bottom: 10px;
         }
-        
+
         .empty-description {
             font-size: 1rem;
             margin-bottom: 30px;
         }
-        
+
         .empty-btn {
             padding: 10px 24px;
             background: linear-gradient(135deg, #2196f3, #1976d2);
@@ -409,20 +411,20 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .empty-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
         }
-        
+
         /* 创建表单 */
         .create-form {
             background: white;
             border-radius: 15px;
             padding: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
-        
+
         .create-form h3 {
             font-size: 1.5rem;
             font-weight: 600;
@@ -430,11 +432,11 @@
             margin-bottom: 25px;
             text-align: center;
         }
-        
+
         .form-group {
             margin-bottom: 20px;
         }
-        
+
         .form-group label {
             display: block;
             font-size: 1rem;
@@ -442,7 +444,7 @@
             color: #555;
             margin-bottom: 8px;
         }
-        
+
         .form-group input,
         .form-group textarea,
         .form-group select {
@@ -453,7 +455,7 @@
             font-size: 1rem;
             transition: border-color 0.3s ease;
         }
-        
+
         .form-group input:focus,
         .form-group textarea:focus,
         .form-group select:focus {
@@ -461,19 +463,19 @@
             border-color: #2196f3;
             box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
         }
-        
+
         .form-group textarea {
             resize: vertical;
             min-height: 100px;
         }
-        
+
         .form-actions {
             display: flex;
             gap: 15px;
             justify-content: flex-end;
             margin-top: 30px;
         }
-        
+
         .submit-btn,
         .cancel-btn {
             padding: 12px 24px;
@@ -484,127 +486,128 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .submit-btn {
             background: linear-gradient(135deg, #4caf50, #388e3c);
             color: white;
         }
-        
+
         .submit-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
         }
-        
+
         .cancel-btn {
             background: #f5f5f5;
             color: #666;
             border: 1px solid #ddd;
         }
-        
+
         .cancel-btn:hover {
             background: #e0e0e0;
             border-color: #999;
         }
-        
+
         /* 响应式设计 */
         @media (max-width: 1024px) {
             .container {
                 flex-direction: column;
                 padding: 30px 20px;
             }
-            
+
             .sidebar {
                 width: 100%;
                 margin-right: 0;
                 margin-bottom: 30px;
             }
-            
+
             .nav-menu {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 10px;
             }
-            
+
             .nav-item {
                 margin-bottom: 0;
                 position: relative;
             }
-            
+
             .sub-nav-menu {
                 position: absolute;
                 top: 100%;
                 left: 0;
                 background-color: white;
                 border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
                 padding: 10px;
                 min-width: 150px;
                 z-index: 1000;
                 margin-top: 5px;
             }
-            
+
             .sub-nav-item {
                 margin-bottom: 5px;
             }
-            
+
             .sub-nav-link {
                 padding: 6px 10px;
                 font-size: 0.85rem;
             }
-            
+
             .main-content {
                 padding: 25px;
             }
-            
+
             .assets-grid {
                 grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
                 gap: 20px;
             }
         }
-        
+
         @media (max-width: 768px) {
             .main-content {
                 padding: 20px 15px;
             }
-            
+
             .page-title {
                 font-size: 1.8rem;
             }
-            
+
             .asset-type-tabs {
                 flex-wrap: wrap;
                 gap: 10px;
             }
-            
+
             .asset-type-tab {
                 padding: 10px 20px;
                 font-size: 1rem;
             }
-            
+
             .assets-grid {
                 grid-template-columns: 1fr;
             }
         }
-        
+
         @media (max-width: 480px) {
             .container {
                 padding: 20px 10px;
             }
-            
+
             .main-content {
                 padding: 15px 10px;
             }
-            
+
             .page-title {
                 font-size: 1.5rem;
             }
-            
+
             .asset-content {
                 padding: 15px;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <!-- 左侧导航栏 -->
@@ -665,14 +668,14 @@
                 </li>
             </ul>
         </div>
-        
+
         <!-- 主内容区域 -->
         <div class="main-content">
             <div class="page-header">
                 <h1 class="page-title">我的模型</h1>
                 <p class="page-description">管理您的AI模型资产</p>
             </div>
-            
+
             <!-- 资产类型导航 -->
             <div class="asset-type-nav">
                 <div class="asset-type-tabs">
@@ -682,7 +685,7 @@
                     <button class="asset-type-tab" data-tab="drafts">草稿箱</button>
                 </div>
             </div>
-            
+
             <!-- 资产状态筛选 -->
             <div class="asset-status-filter">
                 <div class="filter-tabs">
@@ -693,12 +696,12 @@
                     <button class="filter-tab" data-filter="rejected">审核未通过</button>
                 </div>
             </div>
-            
+
             <!-- 资产卡片容器 -->
             <div class="assets-grid" id="assetsGrid">
                 <!-- 资产卡片将通过JavaScript动态生成 -->
             </div>
-            
+
             <!-- 创建模型表单 -->
             <div id="createForm" style="display: none;">
                 <div class="create-form">
@@ -742,7 +745,7 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         // 模拟模型数据
         const mockAssets = [
@@ -843,7 +846,7 @@
                 created: "2026-01-15"
             }
         ];
-        
+
         // 模拟收藏数据
         const mockCollections = [
             {
@@ -879,7 +882,7 @@
                 created: "2026-01-28"
             }
         ];
-        
+
         // 模拟草稿数据
         const mockDrafts = [
             {
@@ -915,14 +918,14 @@
                 created: "2026-02-28"
             }
         ];
-        
+
         let currentTab = 'my-assets';
         let currentFilter = 'all';
-        
+
         // 渲染资产
         function renderAssets() {
             const assetsGrid = document.getElementById('assetsGrid');
-            
+
             // 获取当前数据
             let assets = [];
             if (currentTab === 'my-assets') {
@@ -932,12 +935,12 @@
             } else if (currentTab === 'drafts') {
                 assets = mockDrafts;
             }
-            
+
             // 根据状态筛选
             if (currentFilter !== 'all') {
                 assets = assets.filter(asset => asset.status === currentFilter);
             }
-            
+
             // 如果没有数据，显示空状态
             if (assets.length === 0) {
                 const tabNames = {
@@ -946,7 +949,7 @@
                     'drafts': '草稿'
                 };
                 const tabName = tabNames[currentTab] || '模型';
-                
+
                 assetsGrid.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-icon">📭</div>
@@ -957,7 +960,7 @@
                 `;
                 return;
             }
-            
+
             // 渲染资产卡片
             assetsGrid.innerHTML = assets.map(asset => `
                 <div class="asset-card">
@@ -1001,7 +1004,7 @@
                 </div>
             `).join('');
         }
-        
+
         // 获取状态文本
         function getStatusText(status) {
             const statusTexts = {
@@ -1013,22 +1016,22 @@
             };
             return statusTexts[status] || status;
         }
-        
+
         // 创建新资产
         function createNewAsset() {
             alert('创建新模型');
         }
-        
+
         // 编辑资产
         function editAsset(id) {
             window.location.href = `create-model.html?id=${id}&type=edit&dataType=${currentTab === 'drafts' ? 'drafts' : 'my'}`;
         }
-        
+
         // 预览资产
         function previewAsset(id) {
             window.location.href = `model-detail.html?id=${id}&type=${currentTab === 'drafts' ? 'drafts' : 'my'}`;
         }
-        
+
         // 删除资产
         function deleteAsset(id) {
             if (confirm('确定要删除此模型吗？')) {
@@ -1036,7 +1039,7 @@
                 renderAssets();
             }
         }
-        
+
         // 设置资产为公开
         function setAssetPublic(id) {
             if (confirm('确定要将此模型公开吗？')) {
@@ -1044,7 +1047,7 @@
                 renderAssets();
             }
         }
-        
+
         // 设置资产为私有
         function setAssetPrivate(id) {
             if (confirm('确定要将此模型设为仅自己可见吗？')) {
@@ -1052,7 +1055,7 @@
                 renderAssets();
             }
         }
-        
+
         // 发布资产
         function publishAsset(id) {
             if (confirm('确定要发布此模型吗？')) {
@@ -1060,7 +1063,7 @@
                 renderAssets();
             }
         }
-        
+
         // 取消收藏
         function cancelCollection(id) {
             if (confirm('确定要取消收藏此模型吗？')) {
@@ -1068,7 +1071,7 @@
                 renderAssets();
             }
         }
-        
+
         // 绑定事件
         function bindEvents() {
             // 筛选标签点击事件
@@ -1082,7 +1085,7 @@
                 });
             });
         }
-        
+
         // 页面加载完成后初始化
         window.addEventListener('DOMContentLoaded', () => {
             initNavMenu();
@@ -1090,7 +1093,7 @@
             renderAssets();
             bindEvents();
         });
-        
+
         // 绑定Tab事件
         function bindTabEvents() {
             const tabs = document.querySelectorAll('.asset-type-tab');
@@ -1101,7 +1104,7 @@
                 });
             });
         }
-        
+
         // 切换Tab
         function switchTab(tabId) {
             // 更新Tab状态
@@ -1109,15 +1112,15 @@
                 tab.classList.remove('active');
             });
             document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
-            
+
             // 隐藏所有内容
             document.getElementById('assetsGrid').style.display = 'none';
             document.querySelector('.asset-status-filter').style.display = 'none';
             document.getElementById('createForm').style.display = 'none';
-            
+
             // 显示对应内容
             currentTab = tabId;
-            switch(tabId) {
+            switch (tabId) {
                 case 'my-assets':
                     document.getElementById('assetsGrid').style.display = 'grid';
                     document.querySelector('.asset-status-filter').style.display = 'block';
@@ -1138,27 +1141,28 @@
                     break;
             }
         }
-        
+
         // 提交创建表单
         function submitCreateForm(event) {
             event.preventDefault();
-            
+
             const name = document.getElementById('modelName').value;
             const description = document.getElementById('modelDescription').value;
             const type = document.getElementById('modelType').value;
-            
+
             // 模拟创建成功
             alert('模型创建成功！');
-            
+
             // 清空表单
             document.getElementById('modelName').value = '';
             document.getElementById('modelDescription').value = '';
             document.getElementById('modelType').value = 'text-to-image';
             document.getElementById('modelImage').value = '';
-            
+
             // 切换到我的模型tab
             switchTab('my-assets');
         }
     </script>
 </body>
+
 </html>

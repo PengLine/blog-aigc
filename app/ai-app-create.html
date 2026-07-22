@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>创作AI应用</title>
     <script src="../static/js/common.js"></script>
@@ -11,7 +13,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
             background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
@@ -19,7 +21,7 @@
             min-height: 100vh;
             line-height: 1.6;
         }
-        
+
         .container {
             display: flex;
             max-width: 1400px;
@@ -27,20 +29,20 @@
             padding: 40px 20px;
             min-height: 100vh;
         }
-        
+
         /* 左侧导航栏 */
         .sidebar {
             width: 250px;
             max-height: 800px;
             background-color: rgba(255, 255, 255, 0.95);
             border-radius: 18px;
-            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
             padding: 30px 20px;
             margin-right: 30px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
-        
+
         .sidebar h2 {
             font-size: 1.5rem;
             font-weight: 700;
@@ -48,15 +50,15 @@
             margin-bottom: 30px;
             text-align: center;
         }
-        
+
         .nav-menu {
             list-style: none;
         }
-        
+
         .nav-item {
             margin-bottom: 15px;
         }
-        
+
         .nav-link {
             display: block;
             padding: 12px 16px;
@@ -67,19 +69,19 @@
             font-size: 1rem;
             font-weight: 500;
         }
-        
+
         .nav-link:hover {
             background-color: #e3f2fd;
             color: #2196f3;
             transform: translateX(5px);
         }
-        
+
         .nav-link.active {
             background: linear-gradient(135deg, #2196f3, #1976d2);
             color: white;
             box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
         }
-        
+
         /* 二级导航菜单 */
         .sub-nav-menu {
             list-style: none;
@@ -87,11 +89,11 @@
             margin-left: 20px;
             display: none;
         }
-        
+
         .sub-nav-item {
             margin-bottom: 8px;
         }
-        
+
         .sub-nav-link {
             display: block;
             padding: 8px 12px;
@@ -102,24 +104,24 @@
             font-size: 0.9rem;
             font-weight: 500;
         }
-        
+
         .sub-nav-link:hover {
             background-color: #e8f5e8;
             color: #4caf50;
             transform: translateX(3px);
         }
-        
+
         .sub-nav-link.active {
             background: linear-gradient(135deg, #4caf50, #388e3c);
             color: white;
             box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
         }
-        
+
         /* 主内容区域 */
         .main-content {
             flex: 1;
         }
-        
+
         .back-btn {
             display: inline-flex;
             align-items: center;
@@ -136,26 +138,26 @@
             margin-bottom: 30px;
             cursor: pointer;
         }
-        
+
         .back-btn:hover {
             background-color: #e3f2fd;
             border-color: #2196f3;
             color: #2196f3;
             transform: translateX(-5px);
         }
-        
+
         .create-card {
             background-color: white;
             border-radius: 20px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
             overflow: hidden;
         }
-        
+
         .create-header {
             padding: 35px 40px;
             border-bottom: 1px solid #f0f0f0;
         }
-        
+
         .create-title {
             font-size: 2.2rem;
             font-weight: 700;
@@ -163,11 +165,11 @@
             margin-bottom: 10px;
             line-height: 1.3;
         }
-        
+
         .create-body {
             padding: 40px;
         }
-        
+
         .section-title {
             font-size: 1.4rem;
             font-weight: 600;
@@ -177,7 +179,7 @@
             border-bottom: 3px solid #2196f3;
             display: inline-block;
         }
-        
+
         /* 表单区域 */
         .form-container {
             display: grid;
@@ -185,18 +187,18 @@
             gap: 30px;
             margin-bottom: 40px;
         }
-        
+
         .form-section {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-radius: 15px;
             padding: 30px;
             border: 2px solid #dee2e6;
         }
-        
+
         .form-group {
             margin-bottom: 20px;
         }
-        
+
         .form-label {
             display: block;
             font-size: 0.95rem;
@@ -204,8 +206,10 @@
             color: #495057;
             margin-bottom: 8px;
         }
-        
-        .form-input, .form-textarea, .form-select {
+
+        .form-input,
+        .form-textarea,
+        .form-select {
             width: 100%;
             padding: 12px 16px;
             border: 2px solid #ced4da;
@@ -215,27 +219,29 @@
             transition: all 0.3s ease;
             background-color: white;
         }
-        
-        .form-input:focus, .form-textarea:focus, .form-select:focus {
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
             outline: none;
             border-color: #2196f3;
             box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
         }
-        
+
         .form-textarea {
             min-height: 120px;
             resize: vertical;
         }
-        
+
         /* 参数设置 */
         .param-group {
             margin-top: 30px;
         }
-        
+
         .param-item {
             margin-bottom: 20px;
         }
-        
+
         .param-label {
             display: flex;
             justify-content: space-between;
@@ -245,7 +251,7 @@
             font-weight: 500;
             color: #495057;
         }
-        
+
         .param-value {
             font-weight: 600;
             color: #2196f3;
@@ -254,7 +260,7 @@
             border-radius: 4px;
             font-size: 0.85rem;
         }
-        
+
         .param-slider {
             width: 100%;
             height: 6px;
@@ -263,7 +269,7 @@
             outline: none;
             -webkit-appearance: none;
         }
-        
+
         .param-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
@@ -274,7 +280,7 @@
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
         }
-        
+
         .param-slider::-moz-range-thumb {
             width: 20px;
             height: 20px;
@@ -284,7 +290,7 @@
             border: none;
             box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
         }
-        
+
         /* 工作流区域 */
         .workflow-area {
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
@@ -293,17 +299,17 @@
             border: 2px solid #dee2e6;
             text-align: center;
         }
-        
+
         .workflow-placeholder-icon {
             font-size: 3rem;
             margin-bottom: 20px;
         }
-        
+
         .workflow-placeholder p {
             margin: 10px 0;
             color: #666;
         }
-        
+
         /* 媒体上传 */
         .media-upload {
             border: 2px dashed #ced4da;
@@ -314,22 +320,22 @@
             transition: all 0.3s ease;
             background-color: rgba(255, 255, 255, 0.8);
         }
-        
+
         .media-upload:hover {
             border-color: #2196f3;
             background-color: rgba(33, 150, 243, 0.05);
         }
-        
+
         .media-upload-icon {
             font-size: 2.5rem;
             margin-bottom: 15px;
         }
-        
+
         .media-upload p {
             margin: 5px 0;
             color: #666;
         }
-        
+
         /* 操作按钮 */
         .action-section {
             display: flex;
@@ -338,7 +344,7 @@
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-top: 1px solid #dee2e6;
         }
-        
+
         .action-btn {
             flex: 1;
             padding: 18px 30px;
@@ -353,51 +359,51 @@
             justify-content: center;
             gap: 10px;
         }
-        
+
         .action-btn.primary {
             background: linear-gradient(135deg, #2196f3, #1976d2);
             color: white;
             box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
         }
-        
+
         .action-btn.primary:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(33, 150, 243, 0.5);
         }
-        
+
         .action-btn.secondary {
             background: linear-gradient(135deg, #4caf50, #388e3c);
             color: white;
             box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
         }
-        
+
         .action-btn.secondary:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(76, 175, 80, 0.5);
         }
-        
+
         .action-btn.save {
             background: linear-gradient(135deg, #ff9800, #f57c00);
             color: white;
             box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
         }
-        
+
         .action-btn.save:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(255, 152, 0, 0.5);
         }
-        
+
         .action-btn.publish {
             background: linear-gradient(135deg, #4caf50, #388e3c);
             color: white;
             box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
         }
-        
+
         .action-btn.publish:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(76, 175, 80, 0.5);
         }
-        
+
         /* 更多参数按钮 */
         .more-params-btn {
             width: 100%;
@@ -415,13 +421,13 @@
             justify-content: center;
             gap: 8px;
         }
-        
+
         .more-params-btn:hover {
             border-color: #2196f3;
             background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
             color: #1976d2;
         }
-        
+
         /* 弹框样式 */
         .modal {
             display: none;
@@ -434,13 +440,13 @@
             background-color: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(5px);
         }
-        
+
         .modal.show {
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        
+
         .modal-content {
             background: white;
             border-radius: 20px;
@@ -451,18 +457,19 @@
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             animation: modalSlideIn 0.3s ease;
         }
-        
+
         @keyframes modalSlideIn {
             from {
                 opacity: 0;
                 transform: translateY(-50px) scale(0.9);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0) scale(1);
             }
         }
-        
+
         .modal-header {
             padding: 25px 30px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -471,13 +478,13 @@
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .modal-header h3 {
             margin: 0;
             font-size: 1.3rem;
             font-weight: 600;
         }
-        
+
         .modal-close {
             font-size: 1.8rem;
             cursor: pointer;
@@ -485,17 +492,17 @@
             transition: opacity 0.3s ease;
             line-height: 1;
         }
-        
+
         .modal-close:hover {
             opacity: 1;
         }
-        
+
         .modal-body {
             padding: 30px;
             overflow-y: auto;
             max-height: 50vh;
         }
-        
+
         .modal-footer {
             padding: 20px 30px;
             background: #f8f9fa;
@@ -503,131 +510,132 @@
             display: flex;
             justify-content: flex-end;
         }
-        
+
         .modal-footer .action-btn {
             width: auto;
             padding: 12px 30px;
         }
-        
+
         /* 响应式设计 */
         @media (max-width: 1024px) {
             .container {
                 flex-direction: column;
                 padding: 30px 20px;
             }
-            
+
             .sidebar {
                 width: 100%;
                 margin-right: 0;
                 margin-bottom: 30px;
             }
-            
+
             .nav-menu {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 10px;
             }
-            
+
             .nav-item {
                 margin-bottom: 0;
                 position: relative;
             }
-            
+
             .sub-nav-menu {
                 position: absolute;
                 top: 100%;
                 left: 0;
                 background-color: white;
                 border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
                 padding: 10px;
                 min-width: 150px;
                 z-index: 1000;
                 margin-top: 5px;
             }
-            
+
             .form-container {
                 grid-template-columns: 1fr;
             }
         }
-        
+
         @media (max-width: 768px) {
             .container {
                 padding: 20px 15px;
             }
-            
+
             .create-header {
                 padding: 25px;
             }
-            
+
             .create-title {
                 font-size: 1.8rem;
             }
-            
+
             .create-body {
                 padding: 25px;
             }
-            
+
             .form-section {
                 padding: 20px;
             }
-            
+
             .action-section {
                 flex-direction: column;
                 padding: 25px;
             }
-            
+
             .action-btn {
                 padding: 15px 20px;
                 font-size: 1rem;
             }
         }
-        
+
         @media (max-width: 480px) {
             .container {
                 padding: 15px 10px;
             }
-            
+
             .create-header {
                 padding: 20px;
             }
-            
+
             .create-title {
                 font-size: 1.5rem;
             }
-            
+
             .create-body {
                 padding: 20px;
             }
-            
+
             .section-title {
                 font-size: 1.2rem;
             }
-            
+
             .modal-content {
                 width: 95%;
                 margin: 20px;
                 max-height: 85vh;
             }
-            
+
             .modal-header {
                 padding: 20px;
             }
-            
+
             .modal-header h3 {
                 font-size: 1.1rem;
             }
-            
+
             .modal-body {
                 padding: 20px;
             }
-            
+
             .modal-footer {
                 padding: 15px 20px;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <!-- 左侧导航栏 -->
@@ -666,32 +674,33 @@
                 </li>
             </ul>
         </div>
-        
+
         <!-- 主内容区域 -->
         <div class="main-content">
             <a href="javascript:history.back(-1)" class="back-btn">← 返回</a>
-            
+
             <div class="create-card">
                 <div class="create-header">
                     <h1 class="create-title">创作AI应用</h1>
                 </div>
-                
+
                 <div class="create-body">
                     <div class="form-container">
                         <!-- 左侧：基本信息 -->
                         <div class="form-section">
                             <h3 class="section-title">基本信息</h3>
-                            
+
                             <div class="form-group">
                                 <label class="form-label">应用标题</label>
                                 <input type="text" class="form-input" id="appTitle" placeholder="输入应用标题">
                             </div>
-                            
+
                             <div class="form-group">
                                 <label class="form-label">应用描述</label>
-                                <textarea class="form-textarea" id="appDescription" placeholder="详细描述您的AI应用功能和用途"></textarea>
+                                <textarea class="form-textarea" id="appDescription"
+                                    placeholder="详细描述您的AI应用功能和用途"></textarea>
                             </div>
-                            
+
                             <div class="form-group">
                                 <label class="form-label">应用类型</label>
                                 <select class="form-select" id="appType" onchange="handleAppTypeChange()">
@@ -704,36 +713,40 @@
                                     <option value="remove-bg">抠图</option>
                                 </select>
                             </div>
-                            
+
                             <div class="form-group">
-                            <label class="form-label">默认媒体</label>
-                            <div class="media-upload" onclick="document.getElementById('mediaInput').click()">
-                                <div class="media-upload-icon">📷</div>
-                                <p>点击上传默认图片或视频</p>
-                                <p style="font-size: 0.8rem; color: #999;">支持 JPG、PNG、MP4 格式</p>
-                                <input type="file" id="mediaInput" accept="image/*,video/*" style="display: none;" onchange="handleMediaUpload(this)">
+                                <label class="form-label">默认媒体</label>
+                                <div class="media-upload" onclick="document.getElementById('mediaInput').click()">
+                                    <div class="media-upload-icon">📷</div>
+                                    <p>点击上传默认图片或视频</p>
+                                    <p style="font-size: 0.8rem; color: #999;">支持 JPG、PNG、MP4 格式</p>
+                                    <input type="file" id="mediaInput" accept="image/*,video/*" style="display: none;"
+                                        onchange="handleMediaUpload(this)">
+                                </div>
+                                <div id="mediaPreview" style="margin-top: 15px; display: none;">
+                                    <img id="previewImage" style="width: 100%; border-radius: 10px; display: none;">
+                                    <video id="previewVideo" style="width: 100%; border-radius: 10px; display: none;"
+                                        controls></video>
+                                </div>
                             </div>
-                            <div id="mediaPreview" style="margin-top: 15px; display: none;">
-                                <img id="previewImage" style="width: 100%; border-radius: 10px; display: none;">
-                                <video id="previewVideo" style="width: 100%; border-radius: 10px; display: none;" controls></video>
+
+                            <div class="form-group">
+                                <label class="form-label">版本号</label>
+                                <input type="text" class="form-input" id="appVersion" placeholder="输入版本号，如 v1.0.0"
+                                    value="v1.0.0">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">版本描述</label>
+                                <textarea class="form-textarea" id="versionDescription"
+                                    placeholder="描述当前版本的主要功能和改进"></textarea>
                             </div>
                         </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">版本号</label>
-                            <input type="text" class="form-input" id="appVersion" placeholder="输入版本号，如 v1.0.0" value="v1.0.0">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">版本描述</label>
-                            <textarea class="form-textarea" id="versionDescription" placeholder="描述当前版本的主要功能和改进"></textarea>
-                        </div>
-                    </div>
-                        
+
                         <!-- 右侧：工作流配置和LLM参数 -->
                         <div class="form-section">
                             <h3 class="section-title">工作流配置</h3>
-                            
+
                             <div class="workflow-area">
                                 <div class="workflow-placeholder" id="workflowPlaceholder">
                                     <div class="workflow-placeholder-icon">🔗</div>
@@ -744,7 +757,7 @@
                                     <!-- 工作流列表将通过JavaScript动态生成 -->
                                 </div>
                             </div>
-                            
+
                             <div style="display: flex; gap: 10px; margin-top: 15px;">
                                 <button class="action-btn save" onclick="createWorkflow()">
                                     <span>➕</span> 创建工作流
@@ -753,32 +766,35 @@
                                     <span>📁</span> 导入工作流
                                 </button>
                             </div>
-                            
+
                             <h3 class="section-title" style="margin-top: 40px;">LLM参数设置</h3>
-                            
+
                             <div class="form-group">
                                 <label class="form-label">提示词 (Prompt)</label>
-                                <textarea class="form-textarea" id="prompt" placeholder="输入您的提示词，详细描述您想要生成的内容"></textarea>
+                                <textarea class="form-textarea" id="prompt"
+                                    placeholder="输入您的提示词，详细描述您想要生成的内容"></textarea>
                             </div>
-                            
+
                             <div class="form-group" id="negativePromptGroup">
                                 <label class="form-label">负面提示词 (Negative Prompt)</label>
-                                <textarea class="form-textarea" id="negativePrompt" placeholder="输入您不希望生成的内容"></textarea>
+                                <textarea class="form-textarea" id="negativePrompt"
+                                    placeholder="输入您不希望生成的内容"></textarea>
                             </div>
-                            
+
                             <div class="form-group" id="imageUploadGroup" style="display: none;">
                                 <label class="form-label">输入图片</label>
                                 <div class="media-upload" onclick="document.getElementById('inputImage').click()">
                                     <div class="media-upload-icon">🖼️</div>
                                     <p>点击上传输入图片</p>
                                     <p style="font-size: 0.8rem; color: #999;">支持 JPG、PNG 格式</p>
-                                    <input type="file" id="inputImage" accept="image/*" style="display: none;" onchange="handleInputImageUpload(this)">
+                                    <input type="file" id="inputImage" accept="image/*" style="display: none;"
+                                        onchange="handleInputImageUpload(this)">
                                 </div>
                                 <div id="inputImagePreview" style="margin-top: 15px; display: none;">
                                     <img id="previewInputImage" style="width: 100%; border-radius: 10px;">
                                 </div>
                             </div>
-                            
+
                             <!-- 更多参数按钮 -->
                             <div class="form-group">
                                 <button type="button" class="more-params-btn" onclick="openParamsModal()">
@@ -786,7 +802,7 @@
                                 </button>
                             </div>
                         </div>
-                        
+
                         <!-- 参数设置弹框 -->
                         <div id="paramsModal" class="modal">
                             <div class="modal-content">
@@ -799,117 +815,138 @@
                                         <div class="param-item">
                                             <div class="param-label">
                                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                                    <input type="checkbox" id="tempCheckbox" checked style="width: 16px; height: 16px;">
+                                                    <input type="checkbox" id="tempCheckbox" checked
+                                                        style="width: 16px; height: 16px;">
                                                     <span>干扰强度 (Temperature)</span>
                                                 </div>
                                                 <span class="param-value" id="tempValue">0.7</span>
                                             </div>
-                                            <input type="range" class="param-slider" id="tempSlider" min="0" max="2" step="0.1" value="0.7">
+                                            <input type="range" class="param-slider" id="tempSlider" min="0" max="2"
+                                                step="0.1" value="0.7">
                                         </div>
-                                        
+
                                         <div class="param-item">
                                             <div class="param-label">
                                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                                    <input type="checkbox" id="tokenCheckbox" checked style="width: 16px; height: 16px;">
+                                                    <input type="checkbox" id="tokenCheckbox" checked
+                                                        style="width: 16px; height: 16px;">
                                                     <span>最大令牌数 (Max Tokens)</span>
                                                 </div>
                                                 <span class="param-value" id="tokenValue">2048</span>
                                             </div>
-                                            <input type="range" class="param-slider" id="tokenSlider" min="256" max="4096" step="256" value="2048">
+                                            <input type="range" class="param-slider" id="tokenSlider" min="256"
+                                                max="4096" step="256" value="2048">
                                         </div>
-                                        
+
                                         <div class="param-item">
                                             <div class="param-label">
                                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                                    <input type="checkbox" id="topPCheckbox" checked style="width: 16px; height: 16px;">
+                                                    <input type="checkbox" id="topPCheckbox" checked
+                                                        style="width: 16px; height: 16px;">
                                                     <span>Top P</span>
                                                 </div>
                                                 <span class="param-value" id="topPValue">0.9</span>
                                             </div>
-                                            <input type="range" class="param-slider" id="topPSlider" min="0" max="1" step="0.05" value="0.9">
+                                            <input type="range" class="param-slider" id="topPSlider" min="0" max="1"
+                                                step="0.05" value="0.9">
                                         </div>
-                                        
+
                                         <div class="param-item">
                                             <div class="param-label">
                                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                                    <input type="checkbox" id="freqCheckbox" checked style="width: 16px; height: 16px;">
+                                                    <input type="checkbox" id="freqCheckbox" checked
+                                                        style="width: 16px; height: 16px;">
                                                     <span>重复惩罚 (Frequency Penalty)</span>
                                                 </div>
                                                 <span class="param-value" id="freqValue">0.0</span>
                                             </div>
-                                            <input type="range" class="param-slider" id="freqSlider" min="-2" max="2" step="0.1" value="0">
+                                            <input type="range" class="param-slider" id="freqSlider" min="-2" max="2"
+                                                step="0.1" value="0">
                                         </div>
-                                        
+
                                         <div class="param-item">
                                             <div class="param-label">
                                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                                    <input type="checkbox" id="presenceCheckbox" checked style="width: 16px; height: 16px;">
+                                                    <input type="checkbox" id="presenceCheckbox" checked
+                                                        style="width: 16px; height: 16px;">
                                                     <span>存在惩罚 (Presence Penalty)</span>
                                                 </div>
                                                 <span class="param-value" id="presenceValue">0.0</span>
                                             </div>
-                                            <input type="range" class="param-slider" id="presenceSlider" min="-2" max="2" step="0.1" value="0">
+                                            <input type="range" class="param-slider" id="presenceSlider" min="-2"
+                                                max="2" step="0.1" value="0">
                                         </div>
-                                        
+
                                         <div class="param-item">
                                             <div class="param-label">
                                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                                    <input type="checkbox" id="seedCheckbox" style="width: 16px; height: 16px;">
+                                                    <input type="checkbox" id="seedCheckbox"
+                                                        style="width: 16px; height: 16px;">
                                                     <span>随机种子 (Seed)</span>
                                                 </div>
                                                 <span class="param-value" id="seedValue">-1</span>
                                             </div>
-                                            <input type="range" class="param-slider" id="seedSlider" min="-1" max="999999" step="1" value="-1">
+                                            <input type="range" class="param-slider" id="seedSlider" min="-1"
+                                                max="999999" step="1" value="-1">
                                         </div>
-                                        
+
                                         <div class="param-item">
                                             <div class="param-label">
                                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                                    <input type="checkbox" id="stepsCheckbox" checked style="width: 16px; height: 16px;">
+                                                    <input type="checkbox" id="stepsCheckbox" checked
+                                                        style="width: 16px; height: 16px;">
                                                     <span>采样步数 (Steps)</span>
                                                 </div>
                                                 <span class="param-value" id="stepsValue">20</span>
                                             </div>
-                                            <input type="range" class="param-slider" id="stepsSlider" min="1" max="100" step="1" value="20">
+                                            <input type="range" class="param-slider" id="stepsSlider" min="1" max="100"
+                                                step="1" value="20">
                                         </div>
-                                        
+
                                         <div class="param-item">
                                             <div class="param-label">
                                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                                    <input type="checkbox" id="cfgCheckbox" checked style="width: 16px; height: 16px;">
+                                                    <input type="checkbox" id="cfgCheckbox" checked
+                                                        style="width: 16px; height: 16px;">
                                                     <span>CFG Scale</span>
                                                 </div>
                                                 <span class="param-value" id="cfgValue">7.0</span>
                                             </div>
-                                            <input type="range" class="param-slider" id="cfgSlider" min="1" max="30" step="0.5" value="7">
+                                            <input type="range" class="param-slider" id="cfgSlider" min="1" max="30"
+                                                step="0.5" value="7">
                                         </div>
-                                        
+
                                         <div class="param-item">
                                             <div class="param-label">
                                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                                    <input type="checkbox" id="widthCheckbox" checked style="width: 16px; height: 16px;">
+                                                    <input type="checkbox" id="widthCheckbox" checked
+                                                        style="width: 16px; height: 16px;">
                                                     <span>图片宽度 (Width)</span>
                                                 </div>
                                                 <span class="param-value" id="widthValue">512</span>
                                             </div>
-                                            <input type="range" class="param-slider" id="widthSlider" min="256" max="2048" step="64" value="512">
+                                            <input type="range" class="param-slider" id="widthSlider" min="256"
+                                                max="2048" step="64" value="512">
                                         </div>
-                                        
+
                                         <div class="param-item">
                                             <div class="param-label">
                                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                                    <input type="checkbox" id="heightCheckbox" checked style="width: 16px; height: 16px;">
+                                                    <input type="checkbox" id="heightCheckbox" checked
+                                                        style="width: 16px; height: 16px;">
                                                     <span>图片高度 (Height)</span>
                                                 </div>
                                                 <span class="param-value" id="heightValue">512</span>
                                             </div>
-                                            <input type="range" class="param-slider" id="heightSlider" min="256" max="2048" step="64" value="512">
+                                            <input type="range" class="param-slider" id="heightSlider" min="256"
+                                                max="2048" step="64" value="512">
                                         </div>
-                                        
+
                                         <div class="param-item">
                                             <div class="param-label">
                                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                                    <input type="checkbox" id="samplerCheckbox" style="width: 16px; height: 16px;">
+                                                    <input type="checkbox" id="samplerCheckbox"
+                                                        style="width: 16px; height: 16px;">
                                                     <span>采样器 (Sampler)</span>
                                                 </div>
                                             </div>
@@ -926,13 +963,14 @@
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <button class="action-btn save" onclick="closeParamsModal()" style="background: linear-gradient(135deg, #6c757d, #5a6268);">取消</button>
+                                    <button class="action-btn save" onclick="closeParamsModal()"
+                                        style="background: linear-gradient(135deg, #6c757d, #5a6268);">取消</button>
                                     <button class="action-btn save" onclick="closeParamsModal()">确定</button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="action-section">
                         <button class="action-btn primary" onclick="saveDraft()">
                             <span>💾</span> 保存草稿
@@ -948,7 +986,7 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         // 初始化函数
         function init() {
@@ -956,7 +994,7 @@
             initNavMenu();
             handleAppTypeChange(); // 初始化应用类型对应的控件显示
         }
-        
+
         // 绑定滑块事件
         function bindSliderEvents() {
             const sliders = [
@@ -971,106 +1009,106 @@
                 { id: 'widthSlider', valueId: 'widthValue', checkboxId: 'widthCheckbox' },
                 { id: 'heightSlider', valueId: 'heightValue', checkboxId: 'heightCheckbox' }
             ];
-            
+
             sliders.forEach(slider => {
                 const sliderElement = document.getElementById(slider.id);
                 const valueElement = document.getElementById(slider.valueId);
                 const checkboxElement = document.getElementById(slider.checkboxId);
-                
+
                 // 绑定滑块输入事件
-                sliderElement.addEventListener('input', function() {
+                sliderElement.addEventListener('input', function () {
                     valueElement.textContent = this.value;
                 });
-                
+
                 // 绑定复选框事件
-                checkboxElement.addEventListener('change', function() {
+                checkboxElement.addEventListener('change', function () {
                     const isChecked = this.checked;
                     sliderElement.disabled = !isChecked;
                     valueElement.style.opacity = isChecked ? '1' : '0.5';
                 });
-                
+
                 // 初始化状态
                 sliderElement.disabled = !checkboxElement.checked;
                 valueElement.style.opacity = checkboxElement.checked ? '1' : '0.5';
             });
         }
-        
+
         // 处理媒体上传
         function handleMediaUpload(input) {
             const file = input.files[0];
             if (!file) return;
-            
+
             const preview = document.getElementById('mediaPreview');
             const previewImage = document.getElementById('previewImage');
             const previewVideo = document.getElementById('previewVideo');
-            
+
             preview.style.display = 'block';
-            
+
             if (file.type.startsWith('image/')) {
                 previewImage.style.display = 'block';
                 previewVideo.style.display = 'none';
-                
+
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = function (e) {
                     previewImage.src = e.target.result;
                 };
                 reader.readAsDataURL(file);
             } else if (file.type.startsWith('video/')) {
                 previewImage.style.display = 'none';
                 previewVideo.style.display = 'block';
-                
+
                 const url = URL.createObjectURL(file);
                 previewVideo.src = url;
             }
         }
-        
+
         // 处理输入图片上传
         function handleInputImageUpload(input) {
             const file = input.files[0];
             if (!file) return;
-            
+
             const preview = document.getElementById('inputImagePreview');
             const previewImage = document.getElementById('previewInputImage');
-            
+
             preview.style.display = 'block';
-            
+
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 previewImage.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }
-        
+
         // 处理应用类型变化
         function handleAppTypeChange() {
             const appType = document.getElementById('appType').value;
             const imageUploadGroup = document.getElementById('imageUploadGroup');
-            
+
             // 需要图片上传的类型
             const typesNeedingImage = ['image-to-image', 'image-to-video', '换装', '换脸'];
-            
+
             if (typesNeedingImage.includes(appType)) {
                 imageUploadGroup.style.display = 'block';
             } else {
                 imageUploadGroup.style.display = 'none';
             }
         }
-        
+
         // 创建工作流
         function createWorkflow() {
             window.location.href = 'ai-workflow-execute.html';
         }
-        
+
         // 导入工作流
         function importWorkflow() {
             const input = document.createElement('input');
             input.type = 'file';
             input.accept = '.json';
-            input.onchange = function(e) {
+            input.onchange = function (e) {
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = function(e) {
+                    reader.onload = function (e) {
                         try {
                             const workflow = JSON.parse(e.target.result);
                             alert('工作流导入成功！');
@@ -1084,15 +1122,15 @@
             };
             input.click();
         }
-        
+
         // 显示工作流
         function displayWorkflow(workflow) {
             const placeholder = document.getElementById('workflowPlaceholder');
             const list = document.getElementById('workflowList');
-            
+
             placeholder.style.display = 'none';
             list.style.display = 'block';
-            
+
             list.innerHTML = `
                 <div style="background: rgba(33, 150, 243, 0.1); padding: 15px; border-radius: 10px; border-left: 4px solid #2196f3;">
                     <div style="font-weight: 600; color: #2196f3; margin-bottom: 10px;">✓ 工作流已关联</div>
@@ -1103,7 +1141,7 @@
                 </div>
             `;
         }
-        
+
         // 保存草稿
         function saveDraft() {
             const draft = {
@@ -1127,11 +1165,11 @@
                 sampler: document.getElementById('samplerCheckbox').checked ? document.getElementById('samplerSelect').value : null,
                 savedAt: new Date().toLocaleString()
             };
-            
+
             localStorage.setItem('aiAppDraft', JSON.stringify(draft));
             alert('草稿已保存！');
         }
-        
+
         // 发布应用
         function publishApp() {
             const title = document.getElementById('appTitle').value;
@@ -1140,12 +1178,12 @@
             const version = document.getElementById('appVersion').value;
             const versionDescription = document.getElementById('versionDescription').value;
             const prompt = document.getElementById('prompt').value;
-            
+
             if (!title || !description || !prompt || !version) {
                 alert('请填写应用标题、描述、版本号和提示词！');
                 return;
             }
-            
+
             // 检查是否需要图片上传
             const typesNeedingImage = ['image-to-image', 'image-to-video', '换装', '换脸'];
             if (typesNeedingImage.includes(type)) {
@@ -1155,7 +1193,7 @@
                     return;
                 }
             }
-            
+
             // 收集选中的参数
             const selectedParams = {
                 temperature: document.getElementById('tempCheckbox').checked ? document.getElementById('tempSlider').value : null,
@@ -1170,10 +1208,10 @@
                 height: document.getElementById('heightCheckbox').checked ? document.getElementById('heightSlider').value : null,
                 sampler: document.getElementById('samplerCheckbox').checked ? document.getElementById('samplerSelect').value : null
             };
-            
+
             console.log('发布应用，选中的参数:', selectedParams);
             console.log('版本信息:', { version, versionDescription });
-            
+
             alert('应用发布成功！即将跳转到应用广场...');
             setTimeout(() => {
                 window.location.href = 'ai-apps.html';
@@ -1183,29 +1221,29 @@
         function useApp() {
             alert('应用已使用！');
         }
-        
+
         // 打开参数弹框
         function openParamsModal() {
             const modal = document.getElementById('paramsModal');
             modal.classList.add('show');
             document.body.style.overflow = 'hidden';
         }
-        
+
         // 关闭参数弹框
         function closeParamsModal() {
             const modal = document.getElementById('paramsModal');
             modal.classList.remove('show');
             document.body.style.overflow = '';
         }
-        
+
         // 点击弹框外部关闭
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             const modal = document.getElementById('paramsModal');
             if (e.target === modal) {
                 closeParamsModal();
             }
         });
-        
+
         // 页面加载完成后初始化
         window.addEventListener('DOMContentLoaded', () => {
             initNavMenu();
@@ -1213,4 +1251,5 @@
         });
     </script>
 </body>
+
 </html>

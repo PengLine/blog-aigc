@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>创建短剧 - AIGC创作平台</title>
     <link rel="stylesheet" href="../style.css">
@@ -13,7 +15,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
             background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
@@ -21,13 +23,13 @@
             min-height: 100vh;
             line-height: 1.6;
         }
-        
+
         .container {
             max-width: 800px;
             margin: 0 auto;
             padding: 40px 20px;
         }
-        
+
         .back-link {
             display: inline-flex;
             align-items: center;
@@ -41,27 +43,27 @@
             border: 1px solid #dee2e6;
             transition: all 0.3s ease;
         }
-        
+
         .back-link:hover {
             background: #e9ecef;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             text-decoration: none;
         }
-        
+
         .back-link i {
             margin-right: 8px;
         }
-        
+
         .create-form {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 18px;
-            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
             padding: 40px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
-        
+
         .create-form h2 {
             font-size: 2rem;
             font-weight: 700;
@@ -69,18 +71,18 @@
             margin-bottom: 30px;
             text-align: center;
         }
-        
+
         .form-group {
             margin-bottom: 25px;
         }
-        
+
         .form-group label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
             color: #2c3e50;
         }
-        
+
         .form-group input,
         .form-group select,
         .form-group textarea {
@@ -91,7 +93,7 @@
             font-size: 1rem;
             transition: all 0.3s ease;
         }
-        
+
         .form-group input:focus,
         .form-group select:focus,
         .form-group textarea:focus {
@@ -99,12 +101,12 @@
             border-color: #2196f3;
             box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
         }
-        
+
         .form-group textarea {
             resize: vertical;
             min-height: 120px;
         }
-        
+
         .video-upload {
             border: 2px dashed #e9ecef;
             border-radius: 10px;
@@ -114,12 +116,12 @@
             transition: all 0.3s ease;
             position: relative;
         }
-        
+
         .video-upload:hover {
             border-color: #2196f3;
             background-color: rgba(33, 150, 243, 0.05);
         }
-        
+
         .video-upload input {
             position: absolute;
             top: 0;
@@ -129,17 +131,17 @@
             opacity: 0;
             cursor: pointer;
         }
-        
+
         .video-upload i {
             font-size: 2.5rem;
             color: #adb5bd;
             margin-bottom: 15px;
         }
-        
+
         .video-upload p {
             color: #6c757d;
         }
-        
+
         .preview-video {
             width: 100%;
             height: 300px;
@@ -148,18 +150,18 @@
             margin-top: 20px;
             background-color: #000;
         }
-        
+
         .hidden {
             display: none !important;
         }
-        
+
         .tag-input {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
             margin-top: 10px;
         }
-        
+
         .tag {
             background: #e3f2fd;
             color: #1976d2;
@@ -171,12 +173,12 @@
             align-items: center;
             gap: 8px;
         }
-        
+
         .remove-tag {
             cursor: pointer;
             font-weight: bold;
         }
-        
+
         .form-actions {
             display: flex;
             justify-content: flex-end;
@@ -184,7 +186,7 @@
             margin-top: 40px;
             flex-wrap: wrap;
         }
-        
+
         .btn {
             padding: 12px 30px;
             border: none;
@@ -194,46 +196,46 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .btn-primary {
             background: linear-gradient(135deg, #2196f3, #1976d2);
             color: #fff;
         }
-        
+
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
         }
-        
+
         .btn-secondary {
             background: #6c757d;
             color: #fff;
         }
-        
+
         .btn-secondary:hover {
             background: #5a6268;
             transform: translateY(-2px);
         }
-        
+
         .btn-outline {
             background-color: transparent;
             border: 2px solid #2196f3;
             color: #2196f3;
         }
-        
+
         .btn-outline:hover {
             background: linear-gradient(135deg, #2196f3, #1976d2);
             color: #fff;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
         }
-        
+
         .label-with-button {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .btn-ai-generate {
             padding: 8px 16px;
             background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
@@ -248,16 +250,16 @@
             align-items: center;
             gap: 5px;
         }
-        
+
         .btn-ai-generate:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
         }
-        
+
         .btn-ai-generate i {
             font-size: 1rem;
         }
-        
+
         /* 模态框样式 */
         .modal-overlay {
             position: fixed;
@@ -274,12 +276,12 @@
             visibility: hidden;
             transition: all 0.3s ease;
         }
-        
+
         .modal-overlay.active {
             opacity: 1;
             visibility: visible;
         }
-        
+
         .modal {
             background: #fff;
             border-radius: 18px;
@@ -291,24 +293,24 @@
             transform: translateY(-20px);
             transition: all 0.3s ease;
         }
-        
+
         .modal-overlay.active .modal {
             transform: translateY(0);
         }
-        
+
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
-        
+
         .modal-title {
             font-size: 1.5rem;
             font-weight: 700;
             color: #2c3e50;
         }
-        
+
         .modal-close {
             background: none;
             border: none;
@@ -317,25 +319,25 @@
             cursor: pointer;
             transition: color 0.3s ease;
         }
-        
+
         .modal-close:hover {
             color: #dc3545;
         }
-        
+
         .modal-body {
             margin-bottom: 20px;
         }
-        
+
         .modal-footer {
             display: flex;
             justify-content: flex-end;
             gap: 10px;
         }
-        
+
         .modal-footer .btn {
             padding: 10px 24px;
         }
-        
+
         .ai-prompt {
             width: 100%;
             padding: 12px 16px;
@@ -345,26 +347,26 @@
             min-height: 120px;
             resize: vertical;
         }
-        
+
         .ai-prompt:focus {
             outline: none;
             border-color: #2196f3;
             box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
         }
-        
+
         @media (max-width: 768px) {
             .container {
                 padding: 20px 15px;
             }
-            
+
             .create-form {
                 padding: 25px;
             }
-            
+
             .form-actions {
                 flex-direction: column;
             }
-            
+
             .btn {
                 width: 100%;
                 text-align: center;
@@ -372,23 +374,24 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <a href="my-assets-video.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回我的短剧</a>
-        
+
         <div class="create-form">
             <h2>短剧信息</h2>
-            
+
             <div class="form-group">
                 <label for="videoName">短剧名称</label>
                 <input type="text" id="videoName" placeholder="请输入短剧名称">
             </div>
-            
+
             <div class="form-group">
                 <label for="videoDescription">剧情简介</label>
                 <textarea id="videoDescription" placeholder="请输入剧情简介"></textarea>
             </div>
-            
+
             <div class="form-group">
                 <label for="videoFile">短剧视频</label>
                 <div class="video-upload" onclick="document.getElementById('videoFile').click()">
@@ -398,7 +401,7 @@
                     <video id="previewVideo" class="preview-video hidden" controls></video>
                 </div>
             </div>
-            
+
             <div class="form-group">
                 <div class="label-with-button">
                     <label>视频封面</label>
@@ -413,7 +416,7 @@
                     <img id="previewPoster" class="preview-video hidden" src="" alt="预览封面">
                 </div>
             </div>
-            
+
             <div class="form-group">
                 <label for="videoType">短剧类型</label>
                 <select id="videoType">
@@ -425,7 +428,7 @@
                     <option value="other">其他</option>
                 </select>
             </div>
-            
+
             <div class="form-group">
                 <label for="videoRarity">稀有度</label>
                 <select id="videoRarity">
@@ -436,28 +439,28 @@
                     <option value="legendary">传说</option>
                 </select>
             </div>
-            
+
             <div class="form-group">
                 <label for="videoEpisodes">剧集信息</label>
                 <textarea id="videoEpisodes" placeholder="请输入剧集信息，每行一个"></textarea>
             </div>
-            
+
             <div class="form-group">
                 <label for="videoCharacters">角色列表</label>
                 <textarea id="videoCharacters" placeholder="请输入角色列表，每行一个"></textarea>
             </div>
-            
+
             <div class="form-group">
                 <label for="videoTags">标签</label>
                 <input type="text" id="videoTags" placeholder="请输入标签，用逗号分隔">
                 <div class="tag-input" id="tagInput"></div>
             </div>
-            
+
             <div class="form-group">
                 <label for="videoPoints">使用积分</label>
                 <input type="number" id="videoPoints" min="0" placeholder="请输入使用该短剧需要消耗的积分">
             </div>
-            
+
             <div class="form-actions">
                 <button class="btn btn-secondary" onclick="goBack()">取消</button>
                 <button class="btn btn-primary" onclick="saveDraft()">保存草稿</button>
@@ -465,7 +468,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- AI 生成弹框 -->
     <div class="modal-overlay" id="aiModal">
         <div class="modal">
@@ -485,7 +488,7 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         // 获取URL参数
         function getUrlParams() {
@@ -500,7 +503,7 @@
             }
             return params;
         }
-        
+
         // 模拟短剧数据
         const mockVideos = {
             my: [
@@ -719,7 +722,7 @@
                 }
             ]
         };
-        
+
         // 页面加载时初始化
         function init() {
             const params = getUrlParams();
@@ -727,13 +730,13 @@
                 loadDraftData(params.id, params.dataType);
                 document.querySelector('.create-form h2').textContent = '编辑短剧';
             }
-            
+
             // 视频上传预览
-            document.getElementById('videoFile').addEventListener('change', function(e) {
+            document.getElementById('videoFile').addEventListener('change', function (e) {
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = function(e) {
+                    reader.onload = function (e) {
                         const previewVideo = document.getElementById('previewVideo');
                         previewVideo.src = e.target.result;
                         previewVideo.classList.remove('hidden');
@@ -741,13 +744,13 @@
                     reader.readAsDataURL(file);
                 }
             });
-            
+
             // 封面上传预览
-            document.getElementById('videoPoster').addEventListener('change', function(e) {
+            document.getElementById('videoPoster').addEventListener('change', function (e) {
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = function(e) {
+                    reader.onload = function (e) {
                         const previewPoster = document.getElementById('previewPoster');
                         previewPoster.src = e.target.result;
                         previewPoster.classList.remove('hidden');
@@ -755,9 +758,9 @@
                     reader.readAsDataURL(file);
                 }
             });
-            
+
             // 标签输入处理
-            document.getElementById('videoTags').addEventListener('keypress', function(e) {
+            document.getElementById('videoTags').addEventListener('keypress', function (e) {
                 if (e.key === ',') {
                     e.preventDefault();
                     addTag(this.value.trim());
@@ -765,12 +768,12 @@
                 }
             });
         }
-        
+
         // 加载草稿数据
         function loadDraftData(id, dataType) {
             const videos = mockVideos[dataType] || [];
             const draft = videos.find(v => v.id == id);
-            
+
             if (draft) {
                 // 填充表单
                 document.getElementById('videoName').value = draft.title || '';
@@ -780,20 +783,20 @@
                 document.getElementById('videoEpisodes').value = draft.episodes || '';
                 document.getElementById('videoCharacters').value = draft.characters || '';
                 document.getElementById('videoPoints').value = draft.points || 0;
-                
+
                 // 设置标签
                 if (draft.tags && draft.tags.length > 0) {
                     document.getElementById('videoTags').value = draft.tags.join(', ');
                     draft.tags.forEach(tag => addTag(tag));
                 }
-                
+
                 // 设置预览视频
                 if (draft.video) {
                     const previewVideo = document.getElementById('previewVideo');
                     previewVideo.src = draft.video;
                     previewVideo.classList.remove('hidden');
                 }
-                
+
                 // 设置预览封面
                 if (draft.poster) {
                     const previewPoster = document.getElementById('previewPoster');
@@ -804,52 +807,52 @@
                 console.log('未找到短剧数据:', id, dataType);
             }
         }
-        
+
         // 添加标签
         function addTag(tagText) {
             if (!tagText) return;
-            
+
             const tagInput = document.getElementById('tagInput');
             const tagElement = document.createElement('div');
             tagElement.className = 'tag';
             tagElement.innerHTML = `${tagText}<span class="remove-tag" onclick="removeTag(this)">×</span>`;
             tagInput.appendChild(tagElement);
         }
-        
+
         // 移除标签
         function removeTag(element) {
             element.parentElement.remove();
         }
-        
+
         // 保存草稿
         function saveDraft() {
             const videoData = collectFormData();
             videoData.status = 'draft';
-            
+
             // 模拟保存操作
             alert('草稿已保存');
             window.location.href = 'my-assets-video.html';
         }
-        
+
         // 发布短剧
         function publishVideo() {
             const videoData = collectFormData();
             videoData.status = 'public';
-            
+
             // 模拟发布操作
             if (confirm('确定要发布这个短剧吗？')) {
                 alert('短剧已提交审核！');
                 window.location.href = 'my-assets-video.html';
             }
         }
-        
+
         // 收集表单数据
         function collectFormData() {
             const tags = [];
             document.querySelectorAll('.tag').forEach(tag => {
                 tags.push(tag.textContent.replace('×', '').trim());
             });
-            
+
             return {
                 title: document.getElementById('videoName').value,
                 description: document.getElementById('videoDescription').value,
@@ -863,26 +866,26 @@
                 poster: document.getElementById('previewPoster').src
             };
         }
-        
+
         // AI生成相关函数
         function openAIModal() {
             document.getElementById('aiModal').classList.add('active');
         }
-        
+
         function closeAIModal() {
             document.getElementById('aiModal').classList.remove('active');
         }
-        
+
         function generateWithAI() {
             const prompt = document.getElementById('aiPrompt').value;
             if (!prompt) {
                 alert('请输入生成提示');
                 return;
             }
-            
+
             // 模拟 AI 生成过程
             alert('AI 生成中，请稍候...');
-            
+
             // 模拟生成结果
             setTimeout(() => {
                 document.getElementById('previewPoster').src = `https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(prompt)}&image_size=landscape_4_3`;
@@ -890,16 +893,17 @@
                 closeAIModal();
             }, 2000);
         }
-        
+
         // 返回上一页
         function goBack() {
             window.history.back();
         }
-        
+
         // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             init();
         });
     </script>
 </body>
+
 </html>

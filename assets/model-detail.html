@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>模型详情 - AIGC创作平台</title>
     <link rel="stylesheet" href="../style.css">
@@ -12,11 +14,11 @@
             margin: 0 auto;
             padding: 40px 20px;
         }
-        
+
         .detail-header {
             margin-bottom: 40px;
         }
-        
+
         .detail-header h1 {
             font-size: 2.5rem;
             font-weight: 700;
@@ -25,21 +27,21 @@
             display: inline-block;
             margin-right: 15px;
         }
-        
+
         .detail-header {
             display: flex;
             align-items: center;
             margin-bottom: 20px;
             flex-wrap: wrap;
         }
-        
+
         .detail-author {
             display: flex;
             justify-content: flex-end;
             align-items: center;
             gap: 10px;
         }
-        
+
         .author-avatar {
             width: 40px;
             height: 40px;
@@ -47,50 +49,50 @@
             object-fit: cover;
             border: 2px solid #e0e0e0;
         }
-        
+
         .detail-meta {
             display: flex;
             gap: 20px;
             margin-bottom: 30px;
             flex-wrap: wrap;
         }
-        
+
         .meta-item {
             display: flex;
             align-items: center;
             gap: 8px;
             color: #666;
         }
-        
+
         .meta-item i {
             color: #2196f3;
         }
-        
+
         .detail-content {
             display: grid;
             grid-template-columns: 1fr 300px;
             gap: 40px;
             margin-bottom: 40px;
         }
-        
+
         .detail-main {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 18px;
-            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
             padding: 30px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
-        
+
         .detail-sidebar {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 18px;
-            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
             padding: 30px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
-        
+
         .detail-image {
             width: 100%;
             height: 400px;
@@ -98,32 +100,32 @@
             border-radius: 12px;
             margin-bottom: 30px;
         }
-        
+
         .detail-description {
             font-size: 1.1rem;
             line-height: 1.8;
             color: #333;
             margin-bottom: 30px;
         }
-        
+
         .detail-section {
             margin-bottom: 30px;
         }
-        
+
         .detail-section h3 {
             font-size: 1.5rem;
             font-weight: 700;
             color: #2c3e50;
             margin-bottom: 15px;
         }
-        
+
         .tag-list {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
             margin-bottom: 20px;
         }
-        
+
         .tag {
             background: #e3f2fd;
             color: #1976d2;
@@ -132,7 +134,7 @@
             font-size: 0.9rem;
             font-weight: 500;
         }
-        
+
         .btn {
             padding: 12px 20px;
             border: none;
@@ -144,40 +146,40 @@
             margin-right: 10px;
             margin-bottom: 10px;
         }
-        
+
         .btn-primary {
             background: linear-gradient(135deg, #2196f3, #1976d2);
             color: #fff;
         }
-        
+
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
         }
-        
+
         .btn-secondary {
             background: #6c757d;
             color: #fff;
         }
-        
+
         .btn-secondary:hover {
             background: #5a6268;
             transform: translateY(-2px);
         }
-        
+
         .btn-outline {
             background-color: transparent;
             border: 2px solid #2196f3;
             color: #2196f3;
         }
-        
+
         .btn-outline:hover {
             background: linear-gradient(135deg, #2196f3, #1976d2);
             color: #fff;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
         }
-        
+
         .back-link {
             display: inline-flex;
             align-items: center;
@@ -191,43 +193,45 @@
             border: 1px solid #dee2e6;
             transition: all 0.3s ease;
         }
-        
+
         .back-link:hover {
             background: #e9ecef;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             text-decoration: none;
         }
-        
+
         .back-link i {
             margin-right: 8px;
         }
+
         .status-badge {
             padding: 6px 16px;
             border-radius: 20px;
             font-size: 0.9rem;
             font-weight: 600;
         }
-        
+
         .status-badge.public {
             background: #e8f5e9;
             color: #2e7d32;
         }
-        
+
         .status-badge.private {
             background: #f3e5f5;
             color: #4a148c;
         }
-        
+
         .status-badge.pending {
             background: #fff3e0;
             color: #ef6c00;
         }
-        
+
         .status-badge.rejected {
             background: #ffebee;
             color: #c62828;
         }
+
         .stat-item {
             display: flex;
             justify-content: space-between;
@@ -235,40 +239,40 @@
             padding: 15px 0;
             border-bottom: 1px solid #e9ecef;
         }
-        
+
         .stat-label {
             color: #666;
         }
-        
+
         .stat-value {
             font-weight: 700;
             color: #2c3e50;
         }
-        
+
         .action-buttons {
             margin-top: 30px;
         }
-        
+
         .btn-success {
             background: linear-gradient(135deg, #4caf50, #388e3c);
             color: #fff;
         }
-        
+
         .btn-success:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
         }
-        
+
         .btn-danger {
             background: linear-gradient(135deg, #f44336, #d32f2f);
             color: #fff;
         }
-        
+
         .btn-danger:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
         }
-        
+
         .btn-like {
             background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
             color: #fff;
@@ -276,12 +280,12 @@
             align-items: center;
             gap: 5px;
         }
-        
+
         .btn-like:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
         }
-        
+
         .btn-share {
             background: linear-gradient(135deg, #9c27b0, #7b1fa2);
             color: #fff;
@@ -289,46 +293,47 @@
             align-items: center;
             gap: 5px;
         }
-        
+
         .btn-share:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4);
         }
-        
+
         .btn-apply {
             background: linear-gradient(135deg, #ff9800, #f57c00);
             color: #fff;
             align-items: center;
             gap: 5px;
         }
-        
+
         .btn-apply:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
         }
-        
+
         .social-buttons {
             display: flex;
             gap: 10px;
             margin-bottom: 15px;
         }
-        
+
         @media (max-width: 768px) {
             .detail-content {
                 grid-template-columns: 1fr;
             }
-            
+
             .detail-header {
                 flex-direction: column;
                 align-items: flex-start;
             }
-            
+
             .detail-author {
                 margin-top: 15px;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="detail-container">
         <a href="my-assets-model.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回我的模型</a>
@@ -340,7 +345,7 @@
             <h1 id="detailTitle">风格迁移模型</h1>
             <span id="detailStatusBadge" class="status-badge">公开</span>
         </div>
-        
+
         <div class="detail-meta">
             <div class="meta-item">
                 <i class="fas fa-calendar-alt"></i>
@@ -359,18 +364,20 @@
                 <span id="detailPoints">20 积分</span>
             </div>
         </div>
-        
+
         <div class="detail-content">
             <div class="detail-main">
-                <img id="detailImage" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=style%20transfer%20AI%20model%20interface%20modern%20design&image_size=landscape_4_3" alt="模型图片" class="detail-image">
-                
+                <img id="detailImage"
+                    src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=style%20transfer%20AI%20model%20interface%20modern%20design&image_size=landscape_4_3"
+                    alt="模型图片" class="detail-image">
+
                 <div class="detail-section">
                     <h3>模型描述</h3>
                     <p id="detailDescription" class="detail-description">
                         风格迁移模型是一款基于深度学习的AI模型，可以将一张图片的风格应用到另一张图片上。它支持多种艺术风格，能够产生高质量的风格迁移效果，适用于创意设计、艺术创作等场景。
                     </p>
                 </div>
-                
+
                 <div class="detail-section">
                     <h3>技术参数</h3>
                     <p id="detailParams">
@@ -381,7 +388,7 @@
                         - 支持风格数: 50+种
                     </p>
                 </div>
-                
+
                 <div class="detail-section">
                     <h3>使用方法</h3>
                     <p id="detailUsage">
@@ -392,7 +399,7 @@
                         5. 下载生成结果
                     </p>
                 </div>
-                
+
                 <div class="detail-section">
                     <h3>标签</h3>
                     <div id="detailTags" class="tag-list">
@@ -402,7 +409,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="detail-sidebar">
                 <div class="detail-section">
                     <h3>模型信息</h3>
@@ -419,7 +426,7 @@
                         <span id="detailPointsSidebar">20</span>
                     </div>
                 </div>
-                
+
                 <div class="social-buttons">
                     <button class="btn btn-like" onclick="likeModel()">
                         <i class="fas fa-heart"></i> 点赞
@@ -428,14 +435,14 @@
                         <i class="fas fa-share-alt"></i> 分享
                     </button>
                 </div>
-                
+
                 <div class="action-buttons" id="actionButtons">
                     <!-- 按钮将通过JavaScript动态生成 -->
                 </div>
             </div>
         </div>
     </div>
-    
+
     <script src="../static/js/common.js"></script>
     <script>
         // 获取URL参数
@@ -447,7 +454,7 @@
                 source: params.get('source') || 'model'
             };
         }
-        
+
         // 模拟模型数据
         const mockModels = {
             my: [
@@ -655,42 +662,42 @@
                 }
             ]
         };
-        
+
         let currentModel = null;
         let isLiked = false;
-        
+
         // 初始化页面
         function init() {
             const params = getUrlParams();
             const model = findModel(params.id, params.type);
-            
+
             if (!model) {
                 alert('模型不存在');
                 goBack();
                 return;
             }
-            
+
             currentModel = model;
             renderModelDetail(model, params.type);
         }
-        
+
         // 查找模型
         function findModel(id, type) {
             const models = mockModels[type] || [];
             return models.find(p => p.id == id);
         }
-        
+
         // 渲染模型详情
         function renderModelDetail(model, type) {
             // 设置标题
             document.getElementById('detailTitle').textContent = model.title;
-            
+
             // 设置图片
             document.getElementById('detailImage').src = model.image;
-            
+
             // 设置描述
             document.getElementById('detailDescription').textContent = model.description;
-            
+
             // 设置元数据
             document.getElementById('detailCreated').textContent = model.created;
             document.getElementById('detailCreatedSidebar').textContent = model.created;
@@ -699,13 +706,13 @@
             document.getElementById('detailPoints').textContent = model.points + ' 积分';
             document.getElementById('detailPointsSidebar').textContent = model.points;
             document.getElementById('detailStatus').textContent = model.status === 'public' ? '公开' : model.status === 'private' ? '私有' : model.status === 'pending' ? '审核中' : model.status === 'rejected' ? '已拒绝' : model.status;
-            
+
             // 设置技术参数
             document.getElementById('detailParams').innerHTML = model.params;
-            
+
             // 设置使用方法
             document.getElementById('detailUsage').innerHTML = model.usage;
-            
+
             // 设置标签
             const tagsContainer = document.getElementById('detailTags');
             tagsContainer.innerHTML = '';
@@ -717,16 +724,16 @@
                     tagsContainer.appendChild(tagElement);
                 });
             }
-            
+
             // 渲染操作按钮
             renderActionButtons(model, type);
         }
-        
+
         // 渲染操作按钮
         function renderActionButtons(model, type) {
             const actionButtons = document.getElementById('actionButtons');
             let buttonsHtml = '';
-            
+
             // 如果是收藏别人的作品
             if (type === 'collection') {
                 buttonsHtml = `
@@ -797,10 +804,10 @@
                         `;
                 }
             }
-            
+
             actionButtons.innerHTML = buttonsHtml;
         }
-        
+
         // 编辑模型
         function editModel() {
             // 将当前模型数据序列化为URL参数
@@ -808,11 +815,11 @@
             params.append('id', currentModel.id);
             params.append('type', 'edit');
             params.append('dataType', getUrlParams().type);
-            
+
             // 跳转到创建页面并传递数据
             window.location.href = `create-model.html?${params.toString()}`;
         }
-        
+
         // 点赞模型
         function likeModel() {
             isLiked = !isLiked;
@@ -825,7 +832,7 @@
                 likeBtn.style.background = 'linear-gradient(135deg, #ff6b6b, #ee5a5a)';
             }
         }
-        
+
         // 分享模型
         function shareModel() {
             const shareUrl = window.location.href;
@@ -844,12 +851,12 @@
                 });
             }
         }
-        
+
         // 一键应用
         function applyModel() {
             alert('正在启动模型: ' + currentModel.title);
         }
-        
+
         // 设为私有
         function setPrivate() {
             if (confirm('确定要将此模型设为私有吗？')) {
@@ -857,7 +864,7 @@
                 location.reload();
             }
         }
-        
+
         // 设为公开
         function setPublic() {
             if (confirm('确定要将此模型设为公开吗？')) {
@@ -865,7 +872,7 @@
                 location.reload();
             }
         }
-        
+
         // 删除模型
         function deleteModel() {
             if (confirm('确定要删除此模型吗？此操作不可恢复！')) {
@@ -873,7 +880,7 @@
                 window.location.href = 'my-assets-model.html';
             }
         }
-        
+
         // 取消收藏
         function cancelCollection() {
             if (confirm('确定要取消收藏吗？')) {
@@ -881,26 +888,27 @@
                 window.location.href = 'my-assets-model.html';
             }
         }
-        
+
         // 预览模型
         function previewModel() {
             alert('预览模型效果');
         }
-        
+
         // 发布模型
         function publishModel() {
             if (confirm('确定要发布这个模型吗？')) {
                 alert('模型已提交审核！');
             }
         }
-        
+
         // 返回上一页
         function goBack() {
             window.history.back();
         }
-        
+
         // 初始化页面
         init();
     </script>
 </body>
+
 </html>

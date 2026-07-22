@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AIGC项目展示</title>
 
@@ -12,7 +14,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
             background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
@@ -20,7 +22,7 @@
             min-height: 100vh;
             line-height: 1.6;
         }
-        
+
         .container {
             display: flex;
             max-width: 1400px;
@@ -28,20 +30,20 @@
             padding: 40px 20px;
             min-height: 100vh;
         }
-        
+
         /* 左侧导航栏 */
         .sidebar {
             width: 250px;
             max-height: 800px;
             background-color: rgba(255, 255, 255, 0.95);
             border-radius: 18px;
-            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
             padding: 30px 20px;
             margin-right: 30px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
-        
+
         .sidebar h2 {
             font-size: 1.5rem;
             font-weight: 700;
@@ -49,15 +51,15 @@
             margin-bottom: 30px;
             text-align: center;
         }
-        
+
         .nav-menu {
             list-style: none;
         }
-        
+
         .nav-item {
             margin-bottom: 15px;
         }
-        
+
         .nav-link {
             display: block;
             padding: 12px 16px;
@@ -68,30 +70,30 @@
             font-size: 1rem;
             font-weight: 500;
         }
-        
+
         .nav-link:hover {
             background-color: #e3f2fd;
             color: #2196f3;
             transform: translateX(5px);
         }
-        
+
         .nav-link.active {
             background: linear-gradient(135deg, #2196f3, #1976d2);
             color: white;
             box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
         }
-        
+
         /* 二级导航菜单 */
         .sub-nav-menu {
             list-style: none;
             margin-top: 10px;
             margin-left: 20px;
         }
-        
+
         .sub-nav-item {
             margin-bottom: 8px;
         }
-        
+
         .sub-nav-link {
             display: block;
             padding: 8px 12px;
@@ -102,33 +104,33 @@
             font-size: 0.9rem;
             font-weight: 500;
         }
-        
+
         .sub-nav-link:hover {
             background-color: #e8f5e8;
             color: #4caf50;
             transform: translateX(3px);
         }
-        
+
         .sub-nav-link.active {
             background: linear-gradient(135deg, #4caf50, #388e3c);
             color: white;
             box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
         }
-        
+
         /* 主内容区域 */
         .main-content {
             flex: 1;
         }
-        
+
         h1 {
             font-size: 2.8rem;
             font-weight: 700;
             color: #2c3e50;
             margin-bottom: 40px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
             letter-spacing: 2px;
         }
-        
+
         /* 大类型标签样式 */
         .main-tabs {
             display: flex;
@@ -138,10 +140,10 @@
             padding: 25px;
             background-color: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(10px);
         }
-        
+
         .main-tab {
             padding: 12px 24px;
             border: 2px solid #e0e0e0;
@@ -154,7 +156,7 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         .main-tab::before {
             content: '';
             position: absolute;
@@ -165,25 +167,25 @@
             background: linear-gradient(90deg, transparent, rgba(33, 150, 243, 0.2), transparent);
             transition: left 0.5s ease;
         }
-        
+
         .main-tab:hover::before {
             left: 100%;
         }
-        
+
         .main-tab:hover {
             background-color: #e3f2fd;
             border-color: #2196f3;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
         }
-        
+
         .main-tab.active {
             background: linear-gradient(135deg, #2196f3, #1976d2);
             color: white;
             border-color: #1976d2;
             box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
         }
-        
+
         /* 小类型标签样式 */
         .sub-tabs {
             display: flex;
@@ -193,10 +195,10 @@
             padding: 20px;
             background-color: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(10px);
         }
-        
+
         .sub-tab {
             padding: 10px 20px;
             border: 2px solid #e0e0e0;
@@ -209,7 +211,7 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         .sub-tab::before {
             content: '';
             position: absolute;
@@ -220,48 +222,48 @@
             background: linear-gradient(90deg, transparent, rgba(76, 175, 80, 0.2), transparent);
             transition: left 0.5s ease;
         }
-        
+
         .sub-tab:hover::before {
             left: 100%;
         }
-        
+
         .sub-tab:hover {
             background-color: #e8f5e8;
             border-color: #4caf50;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
         }
-        
+
         .sub-tab.active {
             background: linear-gradient(135deg, #4caf50, #388e3c);
             color: white;
             border-color: #388e3c;
             box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
         }
-        
+
         /* 瀑布流容器 */
         .waterfall {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
             gap: 30px;
         }
-        
+
         /* 卡片样式 */
         .card {
             background-color: white;
             border-radius: 18px;
             overflow: hidden;
-            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
             transition: transform 0.4s ease, box-shadow 0.4s ease;
             position: relative;
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
-        
+
         .card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.18);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
         }
-        
+
         .card img {
             width: 100%;
             height: 250px;
@@ -269,11 +271,11 @@
             display: block;
             transition: transform 0.6s ease;
         }
-        
+
         .card:hover img {
             transform: scale(1.1);
         }
-        
+
         /* 视频容器样式 */
         .video-container {
             position: relative;
@@ -281,7 +283,7 @@
             height: 250px;
             overflow: hidden;
         }
-        
+
         .video-container video {
             width: 100%;
             height: 100%;
@@ -289,15 +291,15 @@
             display: block;
             transition: transform 0.6s ease;
         }
-        
+
         .card:hover .video-container video {
             transform: scale(1.1);
         }
-        
+
         .card-content {
             padding: 20px;
         }
-        
+
         /* 卡片标签 */
         .card-tags {
             display: flex;
@@ -305,7 +307,7 @@
             flex-wrap: wrap;
             margin-bottom: 15px;
         }
-        
+
         .card-tag {
             padding: 6px 14px;
             background-color: #f8f9fa;
@@ -315,13 +317,13 @@
             border: 1px solid #e9ecef;
             transition: all 0.3s ease;
         }
-        
+
         .card-tag:hover {
             background-color: #e3f2fd;
             border-color: #2196f3;
             color: #2196f3;
         }
-        
+
         /* 卡片底部 */
         .card-footer {
             display: flex;
@@ -330,14 +332,14 @@
             padding-top: 15px;
             border-top: 1px solid #f0f0f0;
         }
-        
+
         /* 作者信息 */
         .author-info {
             display: flex;
             align-items: center;
             gap: 10px;
         }
-        
+
         .author-avatar {
             width: 24px !important;
             height: 24px !important;
@@ -346,24 +348,24 @@
             border: 2px solid #f0f0f0;
             transition: all 0.3s ease;
         }
-        
+
         .author-avatar:hover {
             transform: scale(1.1);
             border-color: #2196f3;
         }
-        
+
         .author-name {
             font-size: 0.9rem;
             font-weight: 500;
             color: #333;
         }
-        
+
         /* 操作按钮 */
         .card-actions {
             display: flex;
             gap: 15px;
         }
-        
+
         .action-btn {
             display: flex;
             align-items: center;
@@ -378,194 +380,195 @@
             font-weight: 500;
             color: #666;
         }
-        
+
         .action-btn:hover {
             background-color: #f8f9fa;
             border-color: #2196f3;
             transform: translateY(-2px);
         }
-        
+
         .action-btn.liked {
             background-color: #ffebee;
             border-color: #f44336;
             color: #f44336;
         }
-        
+
         .action-btn.favorited {
             background-color: #fff3e0;
             border-color: #ff9800;
             color: #ff9800;
         }
-        
+
         .action-icon {
             font-size: 1rem;
         }
-        
+
         .action-count {
             font-size: 0.8rem;
         }
-        
+
         /* 响应式设计 */
         @media (max-width: 1024px) {
             .container {
                 flex-direction: column;
                 padding: 30px 20px;
             }
-            
+
             .sidebar {
                 width: 100%;
                 margin-right: 0;
                 margin-bottom: 30px;
             }
-            
+
             .nav-menu {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 10px;
             }
-            
+
             .nav-item {
                 margin-bottom: 0;
                 position: relative;
             }
-            
+
             .nav-link {
                 padding: 10px 14px;
                 font-size: 0.9rem;
             }
-            
+
             .sub-nav-menu {
                 position: absolute;
                 top: 100%;
                 left: 0;
                 background-color: white;
                 border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
                 padding: 10px;
                 min-width: 150px;
                 z-index: 1000;
                 margin-top: 5px;
             }
-            
+
             .sub-nav-item {
                 margin-bottom: 5px;
             }
-            
+
             .sub-nav-link {
                 padding: 6px 10px;
                 font-size: 0.85rem;
             }
         }
-        
+
         @media (max-width: 768px) {
             .container {
                 padding: 30px 15px;
             }
-            
+
             h1 {
                 font-size: 2.2rem;
                 margin-bottom: 35px;
                 letter-spacing: 1px;
             }
-            
+
             .waterfall {
                 grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
                 gap: 25px;
             }
-            
+
             .sub-tabs {
                 gap: 10px;
                 padding: 15px;
             }
-            
+
             .sub-tab {
                 padding: 8px 16px;
                 font-size: 0.85rem;
             }
-            
+
             .card {
                 border-radius: 15px;
             }
-            
+
             .card img {
                 height: 220px;
             }
-            
+
             .video-container {
                 height: 220px;
             }
-            
+
             .card-content {
                 padding: 18px;
             }
         }
-        
+
         @media (max-width: 480px) {
             .container {
                 padding: 20px 10px;
             }
-            
+
             h1 {
                 font-size: 1.8rem;
                 margin-bottom: 30px;
             }
-            
+
             .waterfall {
                 grid-template-columns: 1fr;
                 gap: 20px;
             }
-            
+
             .main-tabs {
                 padding: 15px;
             }
-            
+
             .main-tab {
                 padding: 8px 16px;
                 font-size: 0.85rem;
             }
-            
+
             .sub-tabs {
                 padding: 12px;
             }
-            
+
             .sub-tab {
                 padding: 6px 12px;
                 font-size: 0.8rem;
             }
-            
+
             .card img {
                 height: 200px;
             }
-            
+
             .video-container {
                 height: 200px;
             }
-            
+
             .card-content {
                 padding: 15px;
             }
         }
-        
+
         /* 加载动画 */
         .loading {
             text-align: center;
             padding: 50px;
             color: #666;
         }
-        
+
         /* 空状态 */
         .empty-state {
             text-align: center;
             padding: 80px 20px;
             color: #666;
         }
-        
+
         .empty-state h3 {
             margin-bottom: 10px;
             color: #2c3e50;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <!-- 左侧导航栏 -->
@@ -609,11 +612,11 @@
                 </li>
             </ul>
         </div>
-        
+
         <!-- 主内容区域 -->
         <div class="main-content">
             <h1>作品广场</h1>
-            
+
             <!-- 小类型标签 -->
             <div class="sub-tabs">
                 <div class="sub-tab active" data-subtype="all">全部</div>
@@ -629,14 +632,14 @@
                 <div class="sub-tab" data-subtype="esport">电竞</div>
                 <div class="sub-tab" data-subtype="other">其他</div>
             </div>
-            
+
             <!-- 瀑布流内容 -->
             <div class="waterfall" id="waterfall">
                 <!-- 卡片将通过JavaScript动态生成 -->
             </div>
         </div>
     </div>
-    
+
     <script>
         // 模拟数据
         const data = [
@@ -945,41 +948,41 @@
                 favorites: 156
             }
         ];
-        
+
         // 当前选中的类型
         let currentType = "all";
         let currentSubtype = "all";
-        
+
         // 初始化页面
         function init() {
             renderCards();
             bindEvents();
         }
-        
+
         // 渲染卡片
         function renderCards() {
             const waterfall = document.getElementById('waterfall');
             waterfall.innerHTML = '';
-            
+
             const filteredData = data.filter(item => {
                 const typeMatch = currentType === 'all' || item.type === currentType;
                 const subtypeMatch = currentSubtype === 'all' || item.subtype === currentSubtype;
                 return typeMatch && subtypeMatch;
             });
-            
+
             filteredData.forEach(item => {
                 const card = createCard(item);
                 waterfall.appendChild(card);
             });
         }
-        
+
         // 创建卡片元素
         function createCard(item) {
             const card = document.createElement('div');
             card.className = 'card';
             card.style.cursor = 'pointer';
             card.onclick = () => window.location.href = `assets/detail.html?id=${item.id}`;
-            
+
             // 类型名称映射
             const typeNames = {
                 'character': '角色',
@@ -988,7 +991,7 @@
                 'video': '短剧',
                 'model': '模型'
             };
-            
+
             // 子类型名称映射
             const subtypeNames = {
                 'parent-child': '亲子',
@@ -1005,7 +1008,7 @@
                 'technology': '技术',
                 'anime': '二次元'
             };
-            
+
             // 根据媒体类型生成不同的内容
             let mediaContent = '';
             if (item.mediaType === 'video') {
@@ -1022,7 +1025,7 @@
                     <img src="${item.image}" alt="${item.title}">
                 `;
             }
-            
+
             card.innerHTML = `
                 ${mediaContent}
                 <div class="card-content">
@@ -1048,13 +1051,13 @@
             `;
             return card;
         }
-        
+
         // 点赞功能
         function toggleLike(button, id) {
             const likeBtn = button;
             const likeCount = likeBtn.querySelector('.action-count');
             const isLiked = likeBtn.classList.contains('liked');
-            
+
             if (isLiked) {
                 likeBtn.classList.remove('liked');
                 likeCount.textContent = parseInt(likeCount.textContent) - 1;
@@ -1063,13 +1066,13 @@
                 likeCount.textContent = parseInt(likeCount.textContent) + 1;
             }
         }
-        
+
         // 收藏功能
         function toggleFavorite(button, id) {
             const favoriteBtn = button;
             const favoriteCount = favoriteBtn.querySelector('.action-count');
             const isFavorited = favoriteBtn.classList.contains('favorited');
-            
+
             if (isFavorited) {
                 favoriteBtn.classList.remove('favorited');
                 favoriteCount.textContent = parseInt(favoriteCount.textContent) - 1;
@@ -1078,7 +1081,7 @@
                 favoriteCount.textContent = parseInt(favoriteCount.textContent) + 1;
             }
         }
-        
+
         // 绑定事件
         function bindEvents() {
             // 绑定二级导航菜单事件
@@ -1086,7 +1089,7 @@
                 currentType = link.dataset.type;
                 renderCards();
             });
-            
+
             // 小类型标签点击事件
             const subTabs = document.querySelectorAll('.sub-tab');
             subTabs.forEach(tab => {
@@ -1098,7 +1101,7 @@
                 });
             });
         }
-        
+
         // 页面加载完成后初始化
         window.addEventListener('DOMContentLoaded', () => {
             console.log('DOMContentLoaded event fired');
@@ -1110,4 +1113,5 @@
         });
     </script>
 </body>
+
 </html>

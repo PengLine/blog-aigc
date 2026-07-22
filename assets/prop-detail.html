@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>道具详情 - AIGC创作平台</title>
     <link rel="stylesheet" href="style.css">
@@ -12,11 +14,11 @@
             margin: 0 auto;
             padding: 40px 20px;
         }
-        
+
         .detail-header {
             margin-bottom: 40px;
         }
-        
+
         .detail-header h1 {
             font-size: 2.5rem;
             font-weight: 700;
@@ -25,21 +27,21 @@
             display: inline-block;
             margin-right: 15px;
         }
-        
+
         .detail-header {
             display: flex;
             align-items: center;
             margin-bottom: 20px;
             flex-wrap: wrap;
         }
-        
+
         .detail-author {
             display: flex;
             justify-content: flex-end;
             align-items: center;
             gap: 10px;
         }
-        
+
         .author-avatar {
             width: 40px;
             height: 40px;
@@ -47,12 +49,12 @@
             object-fit: cover;
             border: 2px solid #e0e0e0;
         }
-        
+
         .author-name {
             font-weight: 600;
             color: #333;
         }
-        
+
         .detail-type {
             display: inline-block;
             padding: 6px 16px;
@@ -62,7 +64,7 @@
             font-size: 0.9rem;
             font-weight: 500;
         }
-        
+
         .detail-status {
             display: inline-block;
             padding: 6px 16px;
@@ -72,45 +74,45 @@
             vertical-align: middle;
             margin-top: 5px;
         }
-        
+
         .status-public {
             background: #e8f5e9;
             color: #2e7d32;
         }
-        
+
         .status-private {
             background: #fff3e0;
             color: #ef6c00;
         }
-        
+
         .status-pending {
             background: #e3f2fd;
             color: #1976d2;
         }
-        
+
         .status-rejected {
             background: #ffebee;
             color: #c62828;
         }
-        
+
         /* 隐藏类 */
         .hidden {
             display: none !important;
         }
-        
+
         .status-draft {
             background: #f5f5f5;
             color: #616161;
         }
-        
+
         .detail-media {
             position: relative;
             background: #f8f9fa;
             border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
-        
+
         .detail-image {
             width: 100%;
             height: 500px;
@@ -118,71 +120,71 @@
             cursor: pointer;
             transition: transform 0.3s ease;
         }
-        
+
         .detail-image:hover {
             transform: scale(1.02);
         }
-        
+
         .detail-info {
             background: white;
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             margin-bottom: 30px;
         }
-        
+
         .detail-info h2 {
             font-size: 1.5rem;
             font-weight: 600;
             color: #333;
             margin-bottom: 20px;
         }
-        
+
         .info-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
         }
-        
+
         .info-item {
             padding: 15px;
             background: #f8f9fa;
             border-radius: 10px;
         }
-        
+
         .info-label {
             font-size: 0.9rem;
             color: #666;
             margin-bottom: 5px;
         }
-        
+
         .info-value {
             font-size: 1.1rem;
             font-weight: 600;
             color: #333;
         }
-        
+
         .detail-description {
             background: white;
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             margin-bottom: 30px;
         }
-        
+
         .detail-description h2 {
             font-size: 1.5rem;
             font-weight: 600;
             color: #333;
             margin-bottom: 15px;
         }
-        
+
         .detail-description p {
             font-size: 1.1rem;
             line-height: 1.6;
             color: #666;
         }
-        
+
         .detail-actions {
             display: flex;
             justify-content: flex-end;
@@ -190,7 +192,7 @@
             margin-bottom: 40px;
             flex-wrap: wrap;
         }
-        
+
         .action-btn {
             display: flex;
             align-items: center;
@@ -205,7 +207,7 @@
             font-weight: 500;
             transition: all 0.3s ease;
         }
-        
+
         .action-btn:hover {
             background: #f8f9fa;
             border-color: #ff9800;
@@ -213,42 +215,42 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(255, 152, 0, 0.2);
         }
-        
+
         .action-btn.primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border-color: transparent;
         }
-        
+
         .action-btn.primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
-        
+
         .action-btn.danger {
             background: #ffebee;
             border-color: #f44336;
             color: #f44336;
         }
-        
+
         .action-btn.danger:hover {
             background: #f44336;
             color: white;
         }
-        
+
         .action-btn.liked {
             background: #ffebee;
             border-color: #f44336;
             color: #f44336;
         }
-        
+
         .detail-tags {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
             margin-bottom: 40px;
         }
-        
+
         .detail-tag {
             padding: 8px 16px;
             background: #f0f0f0;
@@ -257,35 +259,35 @@
             font-size: 0.9rem;
             transition: all 0.3s ease;
         }
-        
+
         .detail-tag:hover {
             background: #fff3e0;
             color: #ef6c00;
         }
-        
+
         /* 积分设置区域 */
         .points-section {
             background: white;
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             margin-bottom: 30px;
         }
-        
+
         .points-section h2 {
             font-size: 1.5rem;
             font-weight: 600;
             color: #333;
             margin-bottom: 20px;
         }
-        
+
         .points-input-group {
             display: flex;
             align-items: center;
             gap: 15px;
             margin-bottom: 15px;
         }
-        
+
         .points-input {
             width: 120px;
             padding: 10px 15px;
@@ -293,34 +295,34 @@
             border-radius: 8px;
             font-size: 1rem;
         }
-        
+
         .points-input:focus {
             outline: none;
             border-color: #ff9800;
         }
-        
+
         /* 权限设置区域 */
         .permission-section {
             background: white;
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             margin-bottom: 30px;
         }
-        
+
         .permission-section h2 {
             font-size: 1.5rem;
             font-weight: 600;
             color: #333;
             margin-bottom: 20px;
         }
-        
+
         .permission-options {
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
-        
+
         .permission-option {
             display: flex;
             align-items: center;
@@ -331,22 +333,22 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .permission-option:hover {
             background: #fff3e0;
         }
-        
+
         .permission-option input[type="radio"] {
             width: 20px;
             height: 20px;
             cursor: pointer;
         }
-        
+
         .permission-option label {
             cursor: pointer;
             flex: 1;
         }
-        
+
         /* 图片预览模态框 */
         .modal {
             display: none;
@@ -355,25 +357,25 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.9);
+            background: rgba(0, 0, 0, 0.9);
             z-index: 1000;
             justify-content: center;
             align-items: center;
         }
-        
+
         .modal-content {
             position: relative;
             max-width: 90%;
             max-height: 90%;
         }
-        
+
         .modal-image {
             width: 100%;
             height: auto;
             max-height: 90vh;
             object-fit: contain;
         }
-        
+
         .close-modal {
             position: absolute;
             top: -40px;
@@ -381,7 +383,7 @@
             color: white;
             font-size: 2rem;
             cursor: pointer;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             border: none;
             border-radius: 50%;
             width: 40px;
@@ -390,53 +392,54 @@
             align-items: center;
             justify-content: center;
         }
-        
+
         .close-modal:hover {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
         }
-        
+
         /* 响应式设计 */
         @media (max-width: 768px) {
             .detail-container {
                 padding: 20px 15px;
             }
-            
+
             .detail-header h1 {
                 font-size: 2rem;
             }
-            
+
             .detail-meta {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 15px;
             }
-            
+
             .detail-image {
                 height: 300px;
             }
-            
+
             .detail-info,
             .detail-description,
             .points-section,
             .permission-section {
                 padding: 20px;
             }
-            
+
             .detail-actions {
                 flex-direction: column;
                 gap: 10px;
             }
-            
+
             .action-btn {
                 justify-content: center;
             }
-            
+
             .info-grid {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <!-- 主内容区域 -->
@@ -465,12 +468,12 @@
                 <div class="detail-tags" id="detailTags">
                     <!-- 标签将通过JavaScript动态生成 -->
                 </div>
-                
+
                 <!-- 媒体内容 -->
                 <div class="detail-media" id="detailMedia">
                     <!-- 内容将通过JavaScript动态生成 -->
                 </div>
-                
+
                 <!-- 详细信息 -->
                 <div class="detail-info">
                     <h2>道具信息</h2>
@@ -478,13 +481,13 @@
                         <!-- 信息项将通过JavaScript动态生成 -->
                     </div>
                 </div>
-                
+
                 <!-- 描述 -->
                 <div class="detail-description">
                     <h2>道具描述</h2>
                     <p id="detailDescription">加载中...</p>
                 </div>
-                
+
                 <!-- 权限设置（仅自己创建时显示） -->
                 <div class="permission-section hidden" id="permissionSection">
                     <h2>权限设置</h2>
@@ -503,7 +506,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- 积分信息（所有人可见） -->
                 <div class="points-section hidden" id="pointsSection">
                     <h2>使用积分</h2>
@@ -512,7 +515,7 @@
                         <span id="pointsDisplay" style="font-size: 1.2rem; font-weight: 600; color: #333;">0 积分</span>
                     </div>
                 </div>
-                
+
                 <!-- 积分编辑（仅自己创建时显示） -->
                 <div class="points-section hidden" id="pointsEditSection">
                     <h2>使用积分设置</h2>
@@ -523,7 +526,7 @@
                     </div>
                     <p style="color: #666; font-size: 0.9rem;">设置为0表示免费使用</p>
                 </div>
-                
+
                 <!-- 操作按钮 -->
                 <div class="detail-actions" id="detailActions">
                     <!-- 按钮将通过JavaScript动态生成 -->
@@ -531,7 +534,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- 图片预览模态框 -->
     <div class="modal" id="imageModal">
         <div class="modal-content">
@@ -551,7 +554,7 @@
                 source: params.get('source') || 'prop'
             };
         }
-        
+
         // 模拟道具数据
         const mockProps = {
             my: [
@@ -787,53 +790,53 @@
                 }
             ]
         };
-        
+
         let currentProp = null;
         let isLiked = false;
-        
+
         // 初始化页面
         function init() {
             const params = getUrlParams();
             const prop = findProp(params.id, params.type);
-            
+
             if (!prop) {
                 alert('道具不存在');
                 goBack();
                 return;
             }
-            
+
             currentProp = prop;
             renderPropDetail(prop, params.type);
         }
-        
+
         // 查找道具
         function findProp(id, type) {
             const props = mockProps[type] || [];
             return props.find(p => p.id == id);
         }
-        
+
         // 渲染道具详情
         function renderPropDetail(prop, type) {
             // 设置标题
             document.getElementById('detailTitle').textContent = prop.title;
-            
+
             // 设置作者信息
             document.getElementById('authorName').textContent = prop.author.name;
             document.getElementById('authorAvatar').src = prop.author.avatar;
-            
+
             // 设置状态
             const statusEl = document.getElementById('detailStatus');
             statusEl.textContent = getStatusText(prop.status);
             statusEl.className = 'detail-status status-' + prop.status;
-            
+
             // 设置媒体内容
             document.getElementById('detailMedia').innerHTML = `
                 <img src="${prop.image}" alt="${prop.title}" class="detail-image" onclick="openModal('${prop.image}')">
             `;
-            
+
             // 设置描述
             document.getElementById('detailDescription').textContent = prop.description;
-            
+
             // 设置标签
             const tagsContainer = document.getElementById('detailTags');
             if (prop.tags && prop.tags.length > 0) {
@@ -843,7 +846,7 @@
             } else {
                 tagsContainer.innerHTML = '<span class="detail-tag">无标签</span>';
             }
-            
+
             // 设置信息网格
             document.getElementById('infoGrid').innerHTML = `
                 <div class="info-item">
@@ -863,15 +866,15 @@
                     <div class="info-value">${(prop.points !== undefined && prop.points !== null) ? (prop.points > 0 ? prop.points + ' 积分' : '免费') : '未设置'}</div>
                 </div>
             `;
-            
+
             // 根据类型渲染不同的操作按钮
             renderActions(type, prop);
         }
-        
+
         // 渲染操作按钮
         function renderActions(type, prop) {
             const actionsContainer = document.getElementById('detailActions');
-            
+
             // 添加点赞和分享按钮（所有页面都包含）
             let commonButtons = `
                 <button class="action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike()">
@@ -883,7 +886,7 @@
                     <span>分享</span>
                 </button>
             `;
-            
+
             if (type === 'collection') {
                 // 收藏的别人的道具：只能"一键应用"和"取消收藏"
                 actionsContainer.innerHTML = `
@@ -897,7 +900,7 @@
                     </button>
                     ${commonButtons}
                 `;
-                
+
                 // 隐藏权限设置（收藏的资产不能设置）
                 document.getElementById('permissionSection').classList.add('hidden');
                 // 显示积分信息（只读）
@@ -908,7 +911,7 @@
             } else {
                 // 自己创建的道具：根据状态显示不同按钮
                 let statusButtons = '';
-                
+
                 switch (prop.status) {
                     case 'public':
                         // 公开：私有、一键应用
@@ -983,25 +986,25 @@
                             </button>
                         `;
                 }
-                
+
                 actionsContainer.innerHTML = statusButtons + commonButtons;
-                
+
                 // 显示权限设置
                 document.getElementById('permissionSection').classList.remove('hidden');
                 // 隐藏积分只读显示
                 document.getElementById('pointsSection').classList.add('hidden');
                 // 显示积分编辑
                 document.getElementById('pointsEditSection').classList.remove('hidden');
-                
+
                 // 设置当前权限
                 const permRadio = document.querySelector(`input[name="permission"][value="${prop.status === 'public' ? 'public' : 'private'}"]`);
                 if (permRadio) permRadio.checked = true;
-                
+
                 // 设置当前积分
                 document.getElementById('pointsInput').value = prop.points;
             }
         }
-        
+
         // 获取状态文本
         function getStatusText(status) {
             const statusMap = {
@@ -1013,7 +1016,7 @@
             };
             return statusMap[status] || status;
         }
-        
+
         // 获取类型文本
         function getTypeText(type) {
             const typeMap = {
@@ -1027,7 +1030,7 @@
             };
             return typeMap[type] || type;
         }
-        
+
         // 获取稀有度文本
         function getRarityText(rarity) {
             const rarityMap = {
@@ -1039,28 +1042,28 @@
             };
             return rarityMap[rarity] || rarity;
         }
-        
+
         // 返回上一页
         function goBack() {
             window.location.href = 'my-assets-prop.html';
         }
-        
+
         // 打开图片模态框
         function openModal(imageSrc) {
             document.getElementById('modalImage').src = imageSrc;
             document.getElementById('imageModal').style.display = 'flex';
         }
-        
+
         // 关闭模态框
         function closeModal() {
             document.getElementById('imageModal').style.display = 'none';
         }
-        
+
         // 一键应用道具
         function applyProp() {
             alert(`正在应用道具：${currentProp.title}\n消耗积分：${currentProp.points}\n\n应用成功！`);
         }
-        
+
         // 编辑道具
         function editProp() {
             // 将当前道具数据序列化为URL参数
@@ -1068,23 +1071,23 @@
             params.append('id', currentProp.id);
             params.append('type', 'edit');
             params.append('dataType', getUrlParams().type);
-            
+
             // 跳转到创建页面并传递数据
             window.location.href = `create-prop.html?${params.toString()}`;
         }
-        
+
         // 预览道具
         function previewProp() {
             alert('预览道具效果');
         }
-        
+
         // 发布道具
         function publishProp() {
             if (confirm('确定要发布这个道具吗？')) {
                 alert('道具已提交审核！');
             }
         }
-        
+
         // 删除道具
         function deleteProp() {
             if (confirm('确定要删除这个道具吗？此操作不可恢复。')) {
@@ -1092,7 +1095,7 @@
                 goBack();
             }
         }
-        
+
         // 设为私有
         function setPrivate() {
             if (confirm('确定要将此道具设为私有吗？')) {
@@ -1100,7 +1103,7 @@
                 location.reload();
             }
         }
-        
+
         // 设为公开
         function setPublic() {
             if (confirm('确定要将此道具设为公开吗？')) {
@@ -1108,7 +1111,7 @@
                 location.reload();
             }
         }
-        
+
         // 取消收藏
         function cancelCollection() {
             if (confirm('确定要取消收藏吗？')) {
@@ -1116,27 +1119,28 @@
                 window.location.href = 'my-assets-prop.html';
             }
         }
-        
+
         // 切换点赞
         function toggleLike() {
             isLiked = !isLiked;
             alert(isLiked ? '已点赞' : '已取消点赞');
         }
-        
+
         // 分享内容
         function shareContent() {
             alert('分享链接已复制到剪贴板！');
         }
-        
+
         // 点击模态框背景关闭
-        document.getElementById('imageModal').addEventListener('click', function(e) {
+        document.getElementById('imageModal').addEventListener('click', function (e) {
             if (e.target === this) {
                 closeModal();
             }
         });
-        
+
         // 页面加载完成后初始化
         window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
+
 </html>

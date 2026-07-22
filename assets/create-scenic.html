@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>创建景点 - AIGC创作平台</title>
     <link rel="stylesheet" href="../style.css">
@@ -13,7 +15,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
             background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
@@ -21,13 +23,13 @@
             min-height: 100vh;
             line-height: 1.6;
         }
-        
+
         .container {
             max-width: 800px;
             margin: 0 auto;
             padding: 40px 20px;
         }
-        
+
         .back-link {
             display: inline-flex;
             align-items: center;
@@ -41,27 +43,27 @@
             border: 1px solid #dee2e6;
             transition: all 0.3s ease;
         }
-        
+
         .back-link:hover {
             background: #e9ecef;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             text-decoration: none;
         }
-        
+
         .back-link i {
             margin-right: 8px;
         }
-        
+
         .create-form {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 18px;
-            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
             padding: 40px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
-        
+
         .create-form h2 {
             font-size: 2rem;
             font-weight: 700;
@@ -69,18 +71,18 @@
             margin-bottom: 30px;
             text-align: center;
         }
-        
+
         .form-group {
             margin-bottom: 25px;
         }
-        
+
         .form-group label {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
             color: #2c3e50;
         }
-        
+
         .form-group input,
         .form-group select,
         .form-group textarea {
@@ -91,7 +93,7 @@
             font-size: 1rem;
             transition: all 0.3s ease;
         }
-        
+
         .form-group input:focus,
         .form-group select:focus,
         .form-group textarea:focus {
@@ -99,12 +101,12 @@
             border-color: #2196f3;
             box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
         }
-        
+
         .form-group textarea {
             resize: vertical;
             min-height: 120px;
         }
-        
+
         .image-upload {
             border: 2px dashed #e9ecef;
             border-radius: 10px;
@@ -114,12 +116,12 @@
             transition: all 0.3s ease;
             position: relative;
         }
-        
+
         .image-upload:hover {
             border-color: #2196f3;
             background-color: rgba(33, 150, 243, 0.05);
         }
-        
+
         .image-upload input {
             position: absolute;
             top: 0;
@@ -129,17 +131,17 @@
             opacity: 0;
             cursor: pointer;
         }
-        
+
         .image-upload i {
             font-size: 2.5rem;
             color: #adb5bd;
             margin-bottom: 15px;
         }
-        
+
         .image-upload p {
             color: #6c757d;
         }
-        
+
         .preview-image {
             width: 100%;
             max-height: 300px;
@@ -147,18 +149,18 @@
             border-radius: 10px;
             margin-top: 20px;
         }
-        
+
         .hidden {
             display: none !important;
         }
-        
+
         .tag-input {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
             margin-top: 10px;
         }
-        
+
         .tag {
             background: #e3f2fd;
             color: #1976d2;
@@ -170,12 +172,12 @@
             align-items: center;
             gap: 8px;
         }
-        
+
         .remove-tag {
             cursor: pointer;
             font-weight: bold;
         }
-        
+
         .form-actions {
             display: flex;
             justify-content: flex-end;
@@ -183,7 +185,7 @@
             margin-top: 40px;
             flex-wrap: wrap;
         }
-        
+
         .btn {
             padding: 12px 30px;
             border: none;
@@ -193,46 +195,46 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .btn-primary {
             background: linear-gradient(135deg, #2196f3, #1976d2);
             color: #fff;
         }
-        
+
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
         }
-        
+
         .btn-secondary {
             background: #6c757d;
             color: #fff;
         }
-        
+
         .btn-secondary:hover {
             background: #5a6268;
             transform: translateY(-2px);
         }
-        
+
         .btn-outline {
             background-color: transparent;
             border: 2px solid #2196f3;
             color: #2196f3;
         }
-        
+
         .btn-outline:hover {
             background: linear-gradient(135deg, #2196f3, #1976d2);
             color: #fff;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
         }
-        
+
         .label-with-button {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .btn-ai-generate {
             padding: 8px 16px;
             background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
@@ -247,16 +249,16 @@
             align-items: center;
             gap: 5px;
         }
-        
+
         .btn-ai-generate:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
         }
-        
+
         .btn-ai-generate i {
             font-size: 1rem;
         }
-        
+
         /* 模态框样式 */
         .modal-overlay {
             position: fixed;
@@ -273,12 +275,12 @@
             visibility: hidden;
             transition: all 0.3s ease;
         }
-        
+
         .modal-overlay.active {
             opacity: 1;
             visibility: visible;
         }
-        
+
         .modal {
             background: #fff;
             border-radius: 18px;
@@ -290,24 +292,24 @@
             transform: translateY(-20px);
             transition: all 0.3s ease;
         }
-        
+
         .modal-overlay.active .modal {
             transform: translateY(0);
         }
-        
+
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
-        
+
         .modal-title {
             font-size: 1.5rem;
             font-weight: 700;
             color: #2c3e50;
         }
-        
+
         .modal-close {
             background: none;
             border: none;
@@ -316,25 +318,25 @@
             cursor: pointer;
             transition: color 0.3s ease;
         }
-        
+
         .modal-close:hover {
             color: #dc3545;
         }
-        
+
         .modal-body {
             margin-bottom: 20px;
         }
-        
+
         .modal-footer {
             display: flex;
             justify-content: flex-end;
             gap: 10px;
         }
-        
+
         .modal-footer .btn {
             padding: 10px 24px;
         }
-        
+
         .ai-prompt {
             width: 100%;
             padding: 12px 16px;
@@ -344,26 +346,26 @@
             min-height: 120px;
             resize: vertical;
         }
-        
+
         .ai-prompt:focus {
             outline: none;
             border-color: #2196f3;
             box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
         }
-        
+
         @media (max-width: 768px) {
             .container {
                 padding: 20px 15px;
             }
-            
+
             .create-form {
                 padding: 25px;
             }
-            
+
             .form-actions {
                 flex-direction: column;
             }
-            
+
             .btn {
                 width: 100%;
                 text-align: center;
@@ -371,23 +373,24 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <a href="my-assets-scenic.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回我的景点</a>
-        
+
         <div class="create-form">
             <h2>景点信息</h2>
-            
+
             <div class="form-group">
                 <label for="scenicName">景点名称</label>
                 <input type="text" id="scenicName" placeholder="请输入景点名称">
             </div>
-            
+
             <div class="form-group">
                 <label for="scenicDescription">景点描述</label>
                 <textarea id="scenicDescription" placeholder="请输入景点描述"></textarea>
             </div>
-            
+
             <div class="form-group">
                 <div class="label-with-button">
                     <label>景点图片</label>
@@ -402,7 +405,7 @@
                     <img id="previewImage" class="preview-image hidden" src="" alt="预览图片">
                 </div>
             </div>
-            
+
             <div class="form-group">
                 <label for="scenicType">景点类型</label>
                 <select id="scenicType">
@@ -415,7 +418,7 @@
                     <option value="other">其他</option>
                 </select>
             </div>
-            
+
             <div class="form-group">
                 <label for="scenicRarity">稀有度</label>
                 <select id="scenicRarity">
@@ -426,28 +429,28 @@
                     <option value="legendary">传说</option>
                 </select>
             </div>
-            
+
             <div class="form-group">
                 <label for="scenicFeatures">景点特色</label>
                 <textarea id="scenicFeatures" placeholder="请输入景点特色，每行一个"></textarea>
             </div>
-            
+
             <div class="form-group">
                 <label for="scenicBestTime">最佳游览时间</label>
                 <textarea id="scenicBestTime" placeholder="请输入最佳游览时间，每行一个"></textarea>
             </div>
-            
+
             <div class="form-group">
                 <label for="scenicTags">标签</label>
                 <input type="text" id="scenicTags" placeholder="请输入标签，用逗号分隔">
                 <div class="tag-input" id="tagInput"></div>
             </div>
-            
+
             <div class="form-group">
                 <label for="scenicPoints">使用积分</label>
                 <input type="number" id="scenicPoints" min="0" placeholder="请输入使用该景点需要消耗的积分">
             </div>
-            
+
             <div class="form-actions">
                 <button class="btn btn-secondary" onclick="goBack()">取消</button>
                 <button class="btn btn-primary" onclick="saveDraft()">保存草稿</button>
@@ -455,7 +458,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- AI 生成弹框 -->
     <div class="modal-overlay" id="aiModal">
         <div class="modal">
@@ -475,7 +478,7 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         // 获取URL参数
         function getUrlParams() {
@@ -490,7 +493,7 @@
             }
             return params;
         }
-        
+
         // 模拟景点数据
         const mockScenics = {
             my: [
@@ -698,7 +701,7 @@
                 }
             ]
         };
-        
+
         // 页面加载时初始化
         function init() {
             const params = getUrlParams();
@@ -706,13 +709,13 @@
                 loadDraftData(params.id, params.dataType);
                 document.querySelector('.create-form h2').textContent = '编辑景点';
             }
-            
+
             // 图片上传预览
-            document.getElementById('scenicImage').addEventListener('change', function(e) {
+            document.getElementById('scenicImage').addEventListener('change', function (e) {
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = function(e) {
+                    reader.onload = function (e) {
                         const previewImage = document.getElementById('previewImage');
                         previewImage.src = e.target.result;
                         previewImage.classList.remove('hidden');
@@ -720,9 +723,9 @@
                     reader.readAsDataURL(file);
                 }
             });
-            
+
             // 标签输入处理
-            document.getElementById('scenicTags').addEventListener('keypress', function(e) {
+            document.getElementById('scenicTags').addEventListener('keypress', function (e) {
                 if (e.key === ',') {
                     e.preventDefault();
                     addTag(this.value.trim());
@@ -730,12 +733,12 @@
                 }
             });
         }
-        
+
         // 加载草稿数据
         function loadDraftData(id, dataType) {
             const scenics = mockScenics[dataType] || [];
             const draft = scenics.find(s => s.id == id);
-            
+
             if (draft) {
                 // 填充表单
                 document.getElementById('scenicName').value = draft.title || '';
@@ -745,13 +748,13 @@
                 document.getElementById('scenicFeatures').value = draft.features || '';
                 document.getElementById('scenicBestTime').value = draft.bestTime || '';
                 document.getElementById('scenicPoints').value = draft.points || 0;
-                
+
                 // 设置标签
                 if (draft.tags && draft.tags.length > 0) {
                     document.getElementById('scenicTags').value = draft.tags.join(', ');
                     draft.tags.forEach(tag => addTag(tag));
                 }
-                
+
                 // 设置预览图片
                 if (draft.image) {
                     const previewImage = document.getElementById('previewImage');
@@ -762,52 +765,52 @@
                 console.log('未找到景点数据:', id, dataType);
             }
         }
-        
+
         // 添加标签
         function addTag(tagText) {
             if (!tagText) return;
-            
+
             const tagInput = document.getElementById('tagInput');
             const tagElement = document.createElement('div');
             tagElement.className = 'tag';
             tagElement.innerHTML = `${tagText}<span class="remove-tag" onclick="removeTag(this)">×</span>`;
             tagInput.appendChild(tagElement);
         }
-        
+
         // 移除标签
         function removeTag(element) {
             element.parentElement.remove();
         }
-        
+
         // 保存草稿
         function saveDraft() {
             const scenicData = collectFormData();
             scenicData.status = 'draft';
-            
+
             // 模拟保存操作
             alert('草稿已保存');
             window.location.href = 'my-assets-scenic.html';
         }
-        
+
         // 发布景点
         function publishScenic() {
             const scenicData = collectFormData();
             scenicData.status = 'public';
-            
+
             // 模拟发布操作
             if (confirm('确定要发布这个景点吗？')) {
                 alert('景点已提交审核！');
                 window.location.href = 'my-assets-scenic.html';
             }
         }
-        
+
         // 收集表单数据
         function collectFormData() {
             const tags = [];
             document.querySelectorAll('.tag').forEach(tag => {
                 tags.push(tag.textContent.replace('×', '').trim());
             });
-            
+
             return {
                 title: document.getElementById('scenicName').value,
                 description: document.getElementById('scenicDescription').value,
@@ -820,26 +823,26 @@
                 image: document.getElementById('previewImage').src
             };
         }
-        
+
         // AI生成相关函数
         function openAIModal() {
             document.getElementById('aiModal').classList.add('active');
         }
-        
+
         function closeAIModal() {
             document.getElementById('aiModal').classList.remove('active');
         }
-        
+
         function generateWithAI() {
             const prompt = document.getElementById('aiPrompt').value;
             if (!prompt) {
                 alert('请输入生成提示');
                 return;
             }
-            
+
             // 模拟 AI 生成过程
             alert('AI 生成中，请稍候...');
-            
+
             // 模拟生成结果
             setTimeout(() => {
                 document.getElementById('previewImage').src = `https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(prompt)}&image_size=landscape_4_3`;
@@ -847,16 +850,17 @@
                 closeAIModal();
             }, 2000);
         }
-        
+
         // 返回上一页
         function goBack() {
             window.history.back();
         }
-        
+
         // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             init();
         });
     </script>
 </body>
+
 </html>

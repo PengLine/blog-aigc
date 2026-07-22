@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>创建道具 - AI 创作平台</title>
     <link rel="stylesheet" href="../style.css">
@@ -13,7 +15,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
             background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
@@ -22,44 +24,44 @@
             line-height: 1.6;
             padding: 40px 20px;
         }
-        
+
         .container {
             max-width: 800px;
             margin: 0 auto;
         }
-        
+
         .page-header {
             margin-bottom: 30px;
             padding: 25px 30px;
             background: white;
             border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
-        
+
         .page-title {
             font-size: 2rem;
             font-weight: 700;
             color: #2c3e50;
             margin-bottom: 8px;
         }
-        
+
         .page-description {
             color: #718096;
             font-size: 1.1rem;
         }
-        
+
         .create-form {
             background: white;
             border-radius: 15px;
             padding: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
-        
+
         .form-group {
             margin-bottom: 25px;
         }
-        
+
         .form-group label {
             display: block;
             font-size: 1rem;
@@ -67,7 +69,7 @@
             color: #333;
             margin-bottom: 8px;
         }
-        
+
         .form-group input,
         .form-group textarea,
         .form-group select {
@@ -79,7 +81,7 @@
             transition: all 0.3s ease;
             font-family: inherit;
         }
-        
+
         .form-group input:focus,
         .form-group textarea:focus,
         .form-group select:focus {
@@ -87,17 +89,17 @@
             border-color: #2196f3;
             box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
         }
-        
+
         .form-group textarea {
             min-height: 120px;
             resize: vertical;
         }
-        
+
         .form-group select {
             cursor: pointer;
             background-color: white;
         }
-        
+
         .image-upload {
             border: 2px dashed #dee2e6;
             border-radius: 10px;
@@ -107,27 +109,27 @@
             transition: all 0.3s ease;
             position: relative;
         }
-        
+
         .image-upload:hover {
             border-color: #2196f3;
             background-color: #f8f9fa;
         }
-        
+
         .image-upload input {
             display: none;
         }
-        
+
         .image-upload i {
             font-size: 48px;
             color: #ccc;
             margin-bottom: 10px;
         }
-        
+
         .image-upload p {
             margin: 0;
             color: #666;
         }
-        
+
         .preview-image {
             max-width: 100%;
             max-height: 300px;
@@ -137,14 +139,14 @@
             margin-left: auto;
             margin-right: auto;
         }
-        
+
         .tag-input {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
             margin-top: 8px;
         }
-        
+
         .tag {
             background: #e9ecef;
             padding: 4px 12px;
@@ -153,24 +155,24 @@
             display: flex;
             align-items: center;
         }
-        
+
         .tag .remove-tag {
             margin-left: 8px;
             cursor: pointer;
             color: #666;
         }
-        
+
         .tag .remove-tag:hover {
             color: #dc3545;
         }
-        
+
         .form-actions {
             display: flex;
             gap: 15px;
             margin-top: 40px;
             justify-content: center;
         }
-        
+
         .btn {
             padding: 12px 30px;
             border: none;
@@ -180,51 +182,51 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        
+
         .btn-primary {
             background: linear-gradient(135deg, #2196f3, #1976d2);
             color: #fff;
         }
-        
+
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
         }
-        
+
         .btn-secondary {
             background: #6c757d;
             color: #fff;
         }
-        
+
         .btn-secondary:hover {
             background: #5a6268;
             transform: translateY(-2px);
         }
-        
+
         .btn-outline {
             background-color: transparent;
             border: 2px solid #2196f3;
             color: #2196f3;
         }
-        
+
         .btn-outline:hover {
             background: linear-gradient(135deg, #2196f3, #1976d2);
             color: #fff;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
         }
-        
+
         .ai-section {
             margin-top: 40px;
             padding-top: 30px;
             border-top: 1px solid #e9ecef;
         }
-        
+
         .ai-section h3 {
             margin-bottom: 20px;
             color: #333;
         }
-        
+
         .ai-prompt {
             width: 100%;
             padding: 12px 15px;
@@ -235,17 +237,17 @@
             min-height: 120px;
             font-family: inherit;
         }
-        
+
         .ai-prompt:focus {
             outline: none;
             border-color: #2196f3;
             box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
         }
-        
+
         .hidden {
             display: none !important;
         }
-        
+
         .back-link {
             display: inline-flex;
             align-items: center;
@@ -259,24 +261,24 @@
             border: 1px solid #dee2e6;
             transition: all 0.3s ease;
         }
-        
+
         .back-link:hover {
             background: #e9ecef;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             text-decoration: none;
         }
-        
+
         .back-link i {
             margin-right: 8px;
         }
-        
+
         .label-with-button {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        
+
         .btn-ai-generate {
             padding: 8px 16px;
             background: linear-gradient(135deg, #667eea, #764ba2);
@@ -291,16 +293,16 @@
             align-items: center;
             gap: 6px;
         }
-        
+
         .btn-ai-generate:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
-        
+
         .btn-ai-generate i {
             font-size: 1rem;
         }
-        
+
         /* 弹框样式 */
         .modal-overlay {
             position: fixed;
@@ -317,12 +319,12 @@
             visibility: hidden;
             transition: all 0.3s ease;
         }
-        
+
         .modal-overlay.active {
             opacity: 1;
             visibility: visible;
         }
-        
+
         .modal {
             background: white;
             border-radius: 15px;
@@ -334,24 +336,24 @@
             transform: translateY(-20px);
             transition: all 0.3s ease;
         }
-        
+
         .modal-overlay.active .modal {
             transform: translateY(0);
         }
-        
+
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
-        
+
         .modal-title {
             font-size: 1.5rem;
             font-weight: 700;
             color: #2c3e50;
         }
-        
+
         .modal-close {
             background: none;
             border: none;
@@ -360,43 +362,44 @@
             cursor: pointer;
             transition: color 0.3s ease;
         }
-        
+
         .modal-close:hover {
             color: #dc3545;
         }
-        
+
         .modal-body {
             margin-bottom: 20px;
         }
-        
+
         .modal-footer {
             display: flex;
             justify-content: flex-end;
             gap: 10px;
         }
-        
+
         .modal-footer .btn {
             padding: 10px 24px;
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <a href="my-assets-prop.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回我的道具</a>
-        
+
         <div class="create-form">
             <h2>道具信息</h2>
-            
+
             <div class="form-group">
                 <label for="propName">道具名称</label>
                 <input type="text" id="propName" placeholder="请输入道具名称">
             </div>
-            
+
             <div class="form-group">
                 <label for="propDescription">道具描述</label>
                 <textarea id="propDescription" placeholder="请输入道具描述"></textarea>
             </div>
-            
+
             <div class="form-group">
                 <div class="label-with-button">
                     <label>道具图片</label>
@@ -411,7 +414,7 @@
                     <img id="previewImage" class="preview-image hidden" src="" alt="预览图片">
                 </div>
             </div>
-            
+
             <div class="form-group">
                 <label for="propType">道具类型</label>
                 <select id="propType">
@@ -425,7 +428,7 @@
                     <option value="other">其他</option>
                 </select>
             </div>
-            
+
             <div class="form-group">
                 <label for="propRarity">稀有度</label>
                 <select id="propRarity">
@@ -437,23 +440,23 @@
                     <option value="mythical">神话</option>
                 </select>
             </div>
-            
+
             <div class="form-group">
                 <label for="propEffect">效果/属性</label>
                 <textarea id="propEffect" placeholder="请输入道具的效果或属性"></textarea>
             </div>
-            
+
             <div class="form-group">
                 <label for="propTags">标签</label>
                 <input type="text" id="propTags" placeholder="请输入标签，用逗号分隔">
                 <div class="tag-input" id="tagInput"></div>
             </div>
-            
+
             <div class="form-group">
                 <label for="propPoints">使用积分</label>
                 <input type="number" id="propPoints" min="0" placeholder="请输入使用该道具需要消耗的积分">
             </div>
-            
+
             <div class="form-actions">
                 <button class="btn btn-secondary" onclick="goBack()">取消</button>
                 <button class="btn btn-primary" onclick="saveDraft()">保存草稿</button>
@@ -461,7 +464,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- AI 生成弹框 -->
     <div class="modal-overlay" id="aiModal">
         <div class="modal">
@@ -472,7 +475,8 @@
             <div class="modal-body">
                 <div class="form-group">
                     <label for="aiPrompt">生成提示</label>
-                    <textarea class="ai-prompt" id="aiPrompt" placeholder="请输入生成提示，例如：一把散发着蓝色光芒的魔法剑，剑身上刻有古老的符文"></textarea>
+                    <textarea class="ai-prompt" id="aiPrompt"
+                        placeholder="请输入生成提示，例如：一把散发着蓝色光芒的魔法剑，剑身上刻有古老的符文"></textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -496,7 +500,7 @@
             }
             return params;
         }
-        
+
         // 模拟道具数据
         const mockProps = {
             my: [
@@ -697,7 +701,7 @@
                 }
             ]
         };
-        
+
         // 页面加载时初始化
         function init() {
             const params = getUrlParams();
@@ -706,13 +710,13 @@
                 document.getElementById('pageTitle').textContent = '编辑道具';
                 document.getElementById('pageDescription').textContent = '编辑您的AI道具资产';
             }
-            
+
             // 图片上传预览
-            document.getElementById('propImage').addEventListener('change', function(e) {
+            document.getElementById('propImage').addEventListener('change', function (e) {
                 const file = e.target.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = function(e) {
+                    reader.onload = function (e) {
                         const previewImage = document.getElementById('previewImage');
                         previewImage.src = e.target.result;
                         previewImage.classList.remove('hidden');
@@ -720,9 +724,9 @@
                     reader.readAsDataURL(file);
                 }
             });
-            
+
             // 标签输入处理
-            document.getElementById('propTags').addEventListener('keypress', function(e) {
+            document.getElementById('propTags').addEventListener('keypress', function (e) {
                 if (e.key === ',') {
                     e.preventDefault();
                     addTag(this.value.trim());
@@ -730,12 +734,12 @@
                 }
             });
         }
-        
+
         // 加载草稿数据
         function loadDraftData(id, dataType) {
             const props = mockProps[dataType] || [];
             const draft = props.find(p => p.id == id);
-            
+
             if (draft) {
                 // 填充表单
                 document.getElementById('propName').value = draft.title || '';
@@ -744,13 +748,13 @@
                 document.getElementById('propRarity').value = draft.rarity || 'common';
                 document.getElementById('propEffect').value = draft.effect || '';
                 document.getElementById('propPoints').value = draft.points || 0;
-                
+
                 // 设置标签
                 if (draft.tags && draft.tags.length > 0) {
                     document.getElementById('propTags').value = draft.tags.join(', ');
                     draft.tags.forEach(tag => addTag(tag));
                 }
-                
+
                 // 设置预览图片
                 if (draft.image) {
                     const previewImage = document.getElementById('previewImage');
@@ -761,47 +765,47 @@
                 console.log('未找到道具数据:', id, dataType);
             }
         }
-        
+
         // 添加标签
         function addTag(tagText) {
             if (!tagText) return;
-            
+
             const tagInput = document.getElementById('tagInput');
             const tagElement = document.createElement('div');
             tagElement.className = 'tag';
             tagElement.innerHTML = `${tagText}<span class="remove-tag" onclick="removeTag(this)">×</span>`;
             tagInput.appendChild(tagElement);
         }
-        
+
         // 移除标签
         function removeTag(element) {
             element.parentElement.remove();
         }
-        
+
         // 保存草稿
         function saveDraft() {
             const propData = collectFormData();
             propData.status = 'draft';
-            
+
             // 模拟保存操作
             alert('草稿已保存');
             window.location.href = 'my-assets-prop.html';
         }
-        
+
         // 发布道具
         function publishProp() {
             const propData = collectFormData();
             propData.status = 'public';
-            
+
             // 模拟发布操作
             alert('道具已发布');
             window.location.href = 'my-assets-prop.html';
         }
-        
+
         // 收集表单数据
         function collectFormData() {
             const tags = Array.from(document.querySelectorAll('.tag')).map(tag => tag.textContent.replace('×', '').trim());
-            
+
             return {
                 title: document.getElementById('propName').value,
                 description: document.getElementById('propDescription').value,
@@ -813,17 +817,17 @@
                 points: parseInt(document.getElementById('propPoints').value) || 0
             };
         }
-        
+
         // 打开 AI 生成弹框
         function openAIModal() {
             document.getElementById('aiModal').classList.add('active');
         }
-        
+
         // 关闭 AI 生成弹框
         function closeAIModal() {
             document.getElementById('aiModal').classList.remove('active');
         }
-        
+
         // 使用 AI 生成
         function generateWithAI() {
             const prompt = document.getElementById('aiPrompt').value;
@@ -831,10 +835,10 @@
                 alert('请输入生成提示');
                 return;
             }
-            
+
             // 模拟 AI 生成过程
             alert('AI 生成中，请稍候...');
-            
+
             // 模拟生成结果
             setTimeout(() => {
                 document.getElementById('previewImage').src = `https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=${encodeURIComponent(prompt)}&image_size=landscape_4_3`;
@@ -842,16 +846,17 @@
                 closeAIModal();
             }, 2000);
         }
-        
+
         // 返回上一页
         function goBack() {
             window.history.back();
         }
-        
+
         // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             init();
         });
     </script>
 </body>
+
 </html>

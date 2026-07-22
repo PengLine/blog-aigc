@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>个人中心 - AIGC创作平台</title>
 
@@ -13,7 +15,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -22,25 +24,25 @@
             line-height: 1.6;
             padding: 20px 0;
         }
-        
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 0 20px;
         }
-        
+
         .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 30px;
-            background: rgba(255,255,255, 0.95);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             padding: 20px 30px;
             border-radius: 16px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
-        
+
         .back-button {
             display: inline-flex;
             align-items: center;
@@ -56,17 +58,17 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
-        
+
         .back-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
         }
-        
+
         .page-header {
             flex: 1;
             text-align: center;
         }
-        
+
         .page-title {
             font-size: 2rem;
             font-weight: 800;
@@ -77,23 +79,23 @@
             margin-bottom: 8px;
             letter-spacing: 1px;
         }
-        
+
         .page-description {
             font-size: 1rem;
             color: #666;
             max-width: 600px;
             margin: 0 auto;
         }
-        
+
         .profile-content {
-            background: rgba(255,255,255, 0.98);
+            background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(20px);
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
             padding: 50px;
-            border: 1px solid rgba(255,255,255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
-        
+
         .profile-header {
             display: flex;
             align-items: center;
@@ -102,11 +104,11 @@
             padding-bottom: 30px;
             border-bottom: 2px solid #f0f4f8;
         }
-        
+
         .avatar-container {
             position: relative;
         }
-        
+
         .avatar {
             width: 150px;
             height: 150px;
@@ -115,7 +117,7 @@
             border: 4px solid #667eea;
             box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
         }
-        
+
         .avatar-edit {
             position: absolute;
             bottom: 0;
@@ -132,58 +134,58 @@
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
             transition: all 0.3s ease;
         }
-        
+
         .avatar-edit:hover {
             transform: scale(1.1);
             box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
         }
-        
+
         .user-info {
             flex: 1;
         }
-        
+
         .username {
             font-size: 1.8rem;
             font-weight: 700;
             color: #2d3748;
             margin-bottom: 10px;
         }
-        
+
         .user-bio {
             font-size: 1.1rem;
             color: #666;
             margin-bottom: 20px;
             line-height: 1.6;
         }
-        
+
         .user-stats {
             display: flex;
             gap: 40px;
             margin-bottom: 20px;
         }
-        
+
         .stat-item {
             text-align: center;
         }
-        
+
         .stat-value {
             font-size: 1.5rem;
             font-weight: 700;
             color: #667eea;
             display: block;
         }
-        
+
         .stat-label {
             font-size: 0.9rem;
             color: #718096;
             margin-top: 5px;
         }
-        
+
         .user-actions {
             display: flex;
             gap: 15px;
         }
-        
+
         .btn {
             padding: 12px 24px;
             border: none;
@@ -196,37 +198,37 @@
             align-items: center;
             gap: 8px;
         }
-        
+
         .btn-primary {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
-        
+
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
         }
-        
+
         .btn-secondary {
             background: white;
             color: #667eea;
             border: 2px solid #667eea;
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
         }
-        
+
         .btn-secondary:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
             background: #fafbfc;
         }
-        
+
         .tabs {
             display: flex;
             border-bottom: 2px solid #f0f4f8;
             margin-bottom: 30px;
         }
-        
+
         .tab {
             padding: 15px 30px;
             font-size: 1.1rem;
@@ -236,28 +238,28 @@
             border-bottom: 3px solid transparent;
             transition: all 0.3s ease;
         }
-        
+
         .tab.active {
             color: #667eea;
             border-bottom-color: #667eea;
         }
-        
+
         .tab:hover {
             color: #667eea;
         }
-        
+
         .tab-content {
             display: none;
         }
-        
+
         .tab-content.active {
             display: block;
         }
-        
+
         .content-section {
             margin-bottom: 40px;
         }
-        
+
         .section-title {
             font-size: 1.3rem;
             font-weight: 700;
@@ -267,21 +269,21 @@
             align-items: center;
             gap: 10px;
         }
-        
+
         .section-title i {
             color: #667eea;
         }
-        
+
         .settings-form {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 25px;
         }
-        
+
         .form-group {
             margin-bottom: 25px;
         }
-        
+
         .form-label {
             display: block;
             font-size: 1rem;
@@ -289,7 +291,7 @@
             color: #4a5568;
             margin-bottom: 8px;
         }
-        
+
         .form-control {
             width: 100%;
             padding: 12px 16px;
@@ -299,19 +301,19 @@
             transition: all 0.3s ease;
             background: #fafbfc;
         }
-        
+
         .form-control:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
             background: white;
         }
-        
+
         .textarea-control {
             min-height: 120px;
             resize: vertical;
         }
-        
+
         .form-actions {
             grid-column: 1 / -1;
             display: flex;
@@ -319,13 +321,13 @@
             justify-content: flex-end;
             margin-top: 20px;
         }
-        
+
         .card-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 25px;
         }
-        
+
         .card {
             background: white;
             border-radius: 16px;
@@ -334,46 +336,46 @@
             transition: all 0.3s ease;
             border: 1px solid #e8ecf4;
         }
-        
+
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
         }
-        
+
         .card-image {
             width: 100%;
             height: 200px;
             object-fit: cover;
         }
-        
+
         .card-content {
             padding: 20px;
         }
-        
+
         .card-title {
             font-size: 1.1rem;
             font-weight: 600;
             color: #2d3748;
             margin-bottom: 10px;
         }
-        
+
         .card-meta {
             font-size: 0.9rem;
             color: #718096;
             margin-bottom: 15px;
         }
-        
+
         .card-actions {
             display: flex;
             gap: 10px;
         }
-        
+
         .btn-sm {
             padding: 8px 16px;
             font-size: 0.9rem;
             border-radius: 8px;
         }
-        
+
         .security-item {
             display: flex;
             align-items: center;
@@ -384,107 +386,108 @@
             margin-bottom: 15px;
             border: 1px solid #e8ecf4;
         }
-        
+
         .security-info h4 {
             font-size: 1.1rem;
             font-weight: 600;
             color: #2d3748;
             margin-bottom: 5px;
         }
-        
+
         .security-info p {
             font-size: 0.9rem;
             color: #718096;
         }
-        
+
         .security-status {
             padding: 6px 12px;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
         }
-        
+
         .status-enabled {
             background: rgba(72, 187, 120, 0.1);
             color: #48bb78;
         }
-        
+
         .status-disabled {
             background: rgba(245, 101, 101, 0.1);
             color: #f56565;
         }
-        
+
         @media (max-width: 768px) {
             .container {
                 padding: 0 15px;
             }
-            
+
             body {
                 padding: 15px 0;
             }
-            
+
             .header {
                 flex-direction: column;
                 gap: 20px;
                 padding: 15px 20px;
             }
-            
+
             .back-button {
                 width: 100%;
                 justify-content: center;
             }
-            
+
             .page-title {
                 font-size: 1.6rem;
             }
-            
+
             .profile-content {
                 padding: 30px 20px;
             }
-            
+
             .profile-header {
                 flex-direction: column;
                 text-align: center;
                 gap: 20px;
             }
-            
+
             .user-stats {
                 justify-content: center;
             }
-            
+
             .user-actions {
                 justify-content: center;
             }
-            
+
             .tabs {
                 overflow-x: auto;
                 white-space: nowrap;
             }
-            
+
             .tab {
                 padding: 12px 20px;
                 font-size: 1rem;
             }
-            
+
             .settings-form {
                 grid-template-columns: 1fr;
             }
-            
+
             .form-actions {
                 flex-direction: column;
             }
-            
+
             .btn {
                 width: 100%;
                 justify-content: center;
             }
-            
+
             .card-grid {
                 grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -498,7 +501,7 @@
             </div>
             <div style="width: 120px;"></div>
         </div>
-        
+
         <div class="profile-content">
             <!-- 个人资料头部 -->
             <div class="profile-header">
@@ -541,7 +544,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- 标签页 -->
             <div class="tabs">
                 <div class="tab active" data-tab="works">我的作品</div>
@@ -549,7 +552,7 @@
                 <div class="tab" data-tab="settings">账户设置</div>
                 <div class="tab" data-tab="security">安全中心</div>
             </div>
-            
+
             <!-- 标签页内容 -->
             <div class="tab-content active" id="works">
                 <div class="content-section">
@@ -605,7 +608,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="content-section">
                     <h3 class="section-title">
                         <i class="fas fa-magic"></i>
@@ -637,7 +640,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="tab-content" id="collections">
                 <div class="content-section">
                     <h3 class="section-title">
@@ -681,7 +684,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="tab-content" id="settings">
                 <div class="content-section">
                     <h3 class="section-title">
@@ -699,7 +702,8 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="bio">个人简介</label>
-                            <textarea class="form-control textarea-control" id="bio">专注于AI生成艺术和创意内容，热爱探索人工智能的无限可能。</textarea>
+                            <textarea class="form-control textarea-control"
+                                id="bio">专注于AI生成艺术和创意内容，热爱探索人工智能的无限可能。</textarea>
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="website">个人网站</label>
@@ -712,7 +716,7 @@
                     </form>
                 </div>
             </div>
-            
+
             <div class="tab-content" id="security">
                 <div class="content-section">
                     <h3 class="section-title">
@@ -744,31 +748,32 @@
             </div>
         </div>
     </div>
-    
+
     <script>
         // 标签页切换
         document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', function() {
+            tab.addEventListener('click', function () {
                 // 移除所有标签页的活动状态
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                 document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                
+
                 // 添加当前标签页的活动状态
                 this.classList.add('active');
                 const tabId = this.getAttribute('data-tab');
                 document.getElementById(tabId).classList.add('active');
             });
         });
-        
+
         // 模拟保存设置
-        document.querySelector('button[type="button"].btn-primary').addEventListener('click', function() {
+        document.querySelector('button[type="button"].btn-primary').addEventListener('click', function () {
             alert('设置已保存！');
         });
-        
+
         // 模拟头像编辑
-        document.querySelector('.avatar-edit').addEventListener('click', function() {
+        document.querySelector('.avatar-edit').addEventListener('click', function () {
             alert('请选择新的头像图片');
         });
     </script>
 </body>
+
 </html>

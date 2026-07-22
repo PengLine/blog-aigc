@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lora训练 - AIGC创作平台</title>
     <link rel="stylesheet" href="/static/css/style.css">
@@ -13,7 +15,7 @@
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
             font-family: 'Microsoft YaHei', 'PingFang SC', Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -22,25 +24,25 @@
             line-height: 1.6;
             padding: 20px 0;
         }
-        
+
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 0 20px;
         }
-        
+
         .header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 30px;
-            background: rgba(255,255,255, 0.95);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             padding: 20px 30px;
             border-radius: 16px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
-        
+
         .back-button {
             display: inline-flex;
             align-items: center;
@@ -56,17 +58,17 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
-        
+
         .back-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
         }
-        
+
         .page-header {
             flex: 1;
             text-align: center;
         }
-        
+
         .page-title {
             font-size: 2rem;
             font-weight: 800;
@@ -77,35 +79,35 @@
             margin-bottom: 8px;
             letter-spacing: 1px;
         }
-        
+
         .page-description {
             font-size: 1rem;
             color: #666;
             max-width: 600px;
             margin: 0 auto;
         }
-        
+
         .train-form {
-            background: rgba(255,255,255, 0.98);
+            background: rgba(255, 255, 255, 0.98);
             backdrop-filter: blur(20px);
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
             padding: 50px;
-            border: 1px solid rgba(255,255,255, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
-        
+
         .form-section {
             margin-bottom: 45px;
             padding-bottom: 35px;
             border-bottom: 2px solid #f0f4f8;
         }
-        
+
         .form-section:last-child {
             border-bottom: none;
             margin-bottom: 35px;
             padding-bottom: 0;
         }
-        
+
         .section-title {
             font-size: 1.5rem;
             font-weight: 700;
@@ -119,16 +121,16 @@
             gap: 12px;
             letter-spacing: 0.5px;
         }
-        
+
         .section-title i {
             color: #667eea;
             font-size: 1.3rem;
         }
-        
+
         .form-group {
             margin-bottom: 28px;
         }
-        
+
         .form-label {
             display: block;
             font-size: 1.05rem;
@@ -137,7 +139,7 @@
             margin-bottom: 10px;
             letter-spacing: 0.3px;
         }
-        
+
         .form-control {
             width: 100%;
             padding: 14px 18px;
@@ -148,14 +150,14 @@
             background: #fafbfc;
             font-weight: 500;
         }
-        
+
         .form-control:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
             background: white;
         }
-        
+
         .select-control {
             width: 100%;
             padding: 14px 18px;
@@ -172,14 +174,14 @@
             background-position: right 18px center;
             padding-right: 45px;
         }
-        
+
         .select-control:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
             background: white;
         }
-        
+
         .textarea-control {
             width: 100%;
             padding: 14px 18px;
@@ -193,20 +195,20 @@
             font-weight: 500;
             line-height: 1.6;
         }
-        
+
         .textarea-control:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
             background: white;
         }
-        
+
         .radio-group {
             display: flex;
             gap: 20px;
             flex-wrap: wrap;
         }
-        
+
         .radio-option {
             display: flex;
             align-items: center;
@@ -218,33 +220,33 @@
             border: 2px solid #e8ecf4;
             background: #fafbfc;
         }
-        
+
         .radio-option:hover {
             border-color: #667eea;
             background: #f0f4ff;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
         }
-        
+
         .radio-option input[type="radio"] {
             width: 20px;
             height: 20px;
             accent-color: #667eea;
         }
-        
+
         .radio-option label {
             font-size: 1rem;
             color: #2d3748;
             font-weight: 500;
             cursor: pointer;
         }
-        
+
         .checkbox-group {
             display: flex;
             gap: 20px;
             flex-wrap: wrap;
         }
-        
+
         .checkbox-option {
             display: flex;
             align-items: center;
@@ -256,27 +258,27 @@
             border: 2px solid #e8ecf4;
             background: #fafbfc;
         }
-        
+
         .checkbox-option:hover {
             border-color: #667eea;
             background: #f0f4ff;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
         }
-        
+
         .checkbox-option input[type="checkbox"] {
             width: 20px;
             height: 20px;
             accent-color: #667eea;
         }
-        
+
         .checkbox-option label {
             font-size: 1rem;
             color: #2d3748;
             font-weight: 500;
             cursor: pointer;
         }
-        
+
         .file-upload {
             border: 3px dashed #cbd5e0;
             border-radius: 16px;
@@ -286,18 +288,18 @@
             cursor: pointer;
             background: linear-gradient(135deg, #fafbfc 0%, #f0f4ff 100%);
         }
-        
+
         .file-upload:hover {
             border-color: #667eea;
             background: linear-gradient(135deg, #f0f4ff 0%, #e8ecf4 100%);
             transform: translateY(-4px);
             box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
         }
-        
+
         .file-upload input[type="file"] {
             display: none;
         }
-        
+
         .file-upload-icon {
             font-size: 4rem;
             color: #667eea;
@@ -305,19 +307,19 @@
             transition: all 0.4s ease;
             filter: drop-shadow(0 4px 8px rgba(102, 126, 234, 0.3));
         }
-        
+
         .file-upload:hover .file-upload-icon {
             transform: scale(1.1);
             filter: drop-shadow(0 6px 12px rgba(102, 126, 234, 0.4));
         }
-        
+
         .file-upload-text {
             font-size: 1.2rem;
             color: #2d3748;
             margin-bottom: 12px;
             font-weight: 600;
         }
-        
+
         .file-upload-hint {
             font-size: 0.95rem;
             color: #718096;
@@ -326,7 +328,7 @@
             border-radius: 20px;
             display: inline-block;
         }
-        
+
         .form-actions {
             display: flex;
             gap: 20px;
@@ -336,7 +338,7 @@
             border-top: 2px solid #f0f4f8;
             flex-wrap: wrap;
         }
-        
+
         .btn {
             padding: 16px 36px;
             border: none;
@@ -350,38 +352,38 @@
             gap: 10px;
             letter-spacing: 0.5px;
         }
-        
+
         .btn-primary {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
         }
-        
+
         .btn-primary:hover {
             transform: translateY(-3px);
             box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
         }
-        
+
         .btn-secondary {
             background: white;
             color: #667eea;
             border: 2px solid #667eea;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
         }
-        
+
         .btn-secondary:hover {
             transform: translateY(-3px);
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
             background: #fafbfc;
         }
-        
+
         .form-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 30px;
             margin-bottom: 30px;
         }
-        
+
         .progress-section {
             margin-top: 50px;
             padding: 35px;
@@ -390,7 +392,7 @@
             border: 2px solid #e8ecf4;
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.1);
         }
-        
+
         .progress-title {
             font-size: 1.3rem;
             font-weight: 700;
@@ -403,11 +405,11 @@
             align-items: center;
             gap: 12px;
         }
-        
+
         .progress-title i {
             color: #667eea;
         }
-        
+
         .progress-bar {
             width: 100%;
             height: 12px;
@@ -417,7 +419,7 @@
             margin-bottom: 20px;
             box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
         }
-        
+
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
@@ -427,13 +429,21 @@
             transition: width 0.3s ease;
             width: 0%;
         }
-        
+
         @keyframes gradientMove {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
-        
+
         .progress-info {
             display: flex;
             justify-content: space-between;
@@ -442,7 +452,7 @@
             margin-bottom: 25px;
             font-weight: 600;
         }
-        
+
         .logs-section {
             padding: 25px;
             background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
@@ -455,46 +465,46 @@
             border: 2px solid #4a5568;
             box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.3);
         }
-        
+
         .logs-section::-webkit-scrollbar {
             width: 8px;
         }
-        
+
         .logs-section::-webkit-scrollbar-track {
             background: #2d3748;
         }
-        
+
         .logs-section::-webkit-scrollbar-thumb {
             background: #667eea;
             border-radius: 4px;
         }
-        
+
         .log-entry {
             margin-bottom: 10px;
             line-height: 1.6;
             padding: 4px 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         .log-entry:last-child {
             border-bottom: none;
         }
-        
+
         .log-entry.success {
             color: #48bb78;
             text-shadow: 0 0 10px rgba(72, 187, 120, 0.3);
         }
-        
+
         .log-entry.error {
             color: #f56565;
             text-shadow: 0 0 10px rgba(245, 101, 101, 0.3);
         }
-        
+
         .log-entry.info {
             color: #4299e1;
             text-shadow: 0 0 10px rgba(66, 153, 225, 0.3);
         }
-        
+
         /* 弹框样式 */
         .modal {
             position: fixed;
@@ -509,7 +519,7 @@
             justify-content: center;
             z-index: 1000;
         }
-        
+
         .modal-content {
             background: white;
             border-radius: 20px;
@@ -520,18 +530,19 @@
             overflow-y: auto;
             animation: modalSlideIn 0.3s ease;
         }
-        
+
         @keyframes modalSlideIn {
             from {
                 opacity: 0;
                 transform: translateY(-30px) scale(0.95);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0) scale(1);
             }
         }
-        
+
         .modal-header {
             display: flex;
             align-items: center;
@@ -540,7 +551,7 @@
             border-bottom: 2px solid #f0f4f8;
             background: linear-gradient(135deg, #fafbfc 0%, #f0f4ff 100%);
         }
-        
+
         .modal-title {
             font-size: 1.5rem;
             font-weight: 700;
@@ -552,7 +563,7 @@
             align-items: center;
             gap: 12px;
         }
-        
+
         .close-button {
             background: none;
             border: none;
@@ -567,17 +578,17 @@
             align-items: center;
             justify-content: center;
         }
-        
+
         .close-button:hover {
             background: #f0f4ff;
             color: #667eea;
             transform: rotate(90deg);
         }
-        
+
         .modal-body {
             padding: 40px 35px;
         }
-        
+
         .modal-footer {
             display: flex;
             gap: 20px;
@@ -586,7 +597,7 @@
             border-top: 2px solid #f0f4f8;
             background: linear-gradient(135deg, #fafbfc 0%, #f0f4ff 100%);
         }
-        
+
         /* 按钮禁用状态 */
         .btn:disabled {
             opacity: 0.5;
@@ -597,87 +608,88 @@
             color: #718096 !important;
             border-color: #cbd5e0 !important;
         }
-        
+
         @media (max-width: 768px) {
             .container {
                 padding: 0 15px;
             }
-            
+
             body {
                 padding: 15px 0;
             }
-            
+
             .header {
                 flex-direction: column;
                 gap: 20px;
                 padding: 15px 20px;
             }
-            
+
             .back-button {
                 width: 100%;
                 justify-content: center;
             }
-            
+
             .page-title {
                 font-size: 1.6rem;
             }
-            
+
             .page-description {
                 font-size: 0.9rem;
             }
-            
+
             .train-form {
                 padding: 30px 20px;
             }
-            
+
             .form-row {
                 grid-template-columns: 1fr;
                 gap: 20px;
             }
-            
+
             .form-actions {
                 flex-direction: column;
                 align-items: stretch;
             }
-            
+
             .btn {
                 width: 100%;
                 justify-content: center;
             }
-            
+
             .file-upload {
                 padding: 35px 20px;
             }
-            
+
             .radio-group {
                 gap: 12px;
             }
-            
+
             .radio-option {
                 padding: 10px 15px;
             }
-            
+
             .modal-content {
                 width: 95%;
                 margin: 20px;
             }
-            
+
             .modal-header,
             .modal-body,
             .modal-footer {
                 padding: 20px;
             }
-            
+
             .section-title {
                 font-size: 1.3rem;
             }
-            
+
             .progress-section {
                 padding: 25px 20px;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -690,14 +702,14 @@
                 <p class="page-description">通过上传数据集训练自定义Lora模型，支持多种参数配置和训练选项</p>
             </div>
         </div>
-        
+
         <div class="train-form">
             <div class="form-section">
                 <h2 class="section-title">
                     <i class="fas fa-cog"></i>
                     基本设置
                 </h2>
-                
+
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label" for="modelSelect">模型选择</label>
@@ -708,37 +720,38 @@
                             <option value="custom">自定义模型</option>
                         </select>
                     </div>
-                    
+
                     <div class="form-group">
                         <label class="form-label" for="outputDir">输出目录</label>
-                        <input type="text" class="form-control" id="outputDir" value="./output/lora" placeholder="模型输出路径">
+                        <input type="text" class="form-control" id="outputDir" value="./output/lora"
+                            placeholder="模型输出路径">
                     </div>
                 </div>
-                
+
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label" for="trainCount">生成数量</label>
                         <input type="number" class="form-control" id="trainCount" min="1" max="100" value="5">
                     </div>
-                    
+
                     <div class="form-group">
                         <label class="form-label" for="trainEpochs">循环次数 (Epochs)</label>
                         <input type="number" class="form-control" id="trainEpochs" min="1" max="100" value="10">
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label" for="triggerWord">模型触发词</label>
                     <input type="text" class="form-control" id="triggerWord" value="customstyle" placeholder="输入模型触发词">
                 </div>
             </div>
-            
+
             <div class="form-section">
                 <h2 class="section-title">
                     <i class="fas fa-database"></i>
                     训练数据
                 </h2>
-                
+
                 <div class="form-group">
                     <label class="form-label">上传训练图片</label>
                     <div class="file-upload">
@@ -752,13 +765,13 @@
                         </label>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label" for="promptInput">提示词</label>
                     <textarea class="textarea-control" id="promptInput" placeholder="输入训练提示词，多个提示词用逗号分隔"></textarea>
                 </div>
             </div>
-            
+
             <div class="form-actions">
                 <button class="btn btn-secondary" onclick="resetForm()">
                     <i class="fas fa-redo"></i>
@@ -777,7 +790,7 @@
                     <span>开始训练</span>
                 </button>
             </div>
-            
+
             <!-- 高级设置弹框 -->
             <div id="advancedModal" class="modal" style="display: none;">
                 <div class="modal-content">
@@ -807,7 +820,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div class="form-group">
                                 <label class="form-label">打标算法</label>
                                 <div class="radio-group">
@@ -826,13 +839,14 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label" for="learningRate">学习率</label>
-                                <input type="text" class="form-control" id="learningRate" value="1e-4" placeholder="学习率">
+                                <input type="text" class="form-control" id="learningRate" value="1e-4"
+                                    placeholder="学习率">
                             </div>
-                            
+
                             <div class="form-group">
                                 <label class="form-label" for="batchSize">批量大小</label>
                                 <input type="number" class="form-control" id="batchSize" min="1" max="32" value="2">
@@ -845,7 +859,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="progress-section" style="display: none;" id="progressSection">
                 <h3 class="progress-title">
                     <i class="fas fa-spinner fa-spin"></i>
@@ -858,41 +872,41 @@
                     <span id="progressText">准备中...</span>
                     <span id="progressPercentage">0%</span>
                 </div>
-                
+
                 <div class="logs-section" id="logsSection">
                     <div class="log-entry info">[INFO] 训练准备中...</div>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <script>
         // 高级设置弹框
         function openAdvancedSettings() {
             document.getElementById('advancedModal').style.display = 'flex';
         }
-        
+
         function closeAdvancedSettings() {
             document.getElementById('advancedModal').style.display = 'none';
         }
-        
+
         function saveAdvancedSettings() {
             // 保存设置逻辑
             closeAdvancedSettings();
             alert('高级设置已保存');
         }
-        
+
         // 模拟打标过程
         function startTagging() {
             // 显示进度区域
             document.getElementById('progressSection').style.display = 'block';
-            
+
             // 清空之前的日志
             document.getElementById('logsSection').innerHTML = '<div class="log-entry info">[INFO] 打标准备中...</div>';
             document.getElementById('progressFill').style.width = '0%';
             document.getElementById('progressPercentage').textContent = '0%';
             document.getElementById('progressText').textContent = '准备中...';
-            
+
             // 模拟打标日志
             const logs = [
                 `[INFO] 开始打标`,
@@ -912,18 +926,18 @@
                 `[INFO] 打标完成`,
                 `[SUCCESS] 所有图片打标成功！`
             ];
-            
+
             // 模拟进度更新
             let progress = 0;
             let logIndex = 0;
             const progressInterval = setInterval(() => {
                 progress += 5;
                 if (progress > 100) progress = 100;
-                
+
                 // 更新进度条
                 document.getElementById('progressFill').style.width = `${progress}%`;
                 document.getElementById('progressPercentage').textContent = `${progress}%`;
-                
+
                 // 更新进度文本
                 if (progress < 10) {
                     document.getElementById('progressText').textContent = '准备中...';
@@ -934,7 +948,7 @@
                 } else {
                     document.getElementById('progressText').textContent = '完成中...';
                 }
-                
+
                 // 添加日志
                 if (logIndex < logs.length && progress >= logIndex * (100 / logs.length)) {
                     const logEntry = document.createElement('div');
@@ -948,14 +962,14 @@
                     }
                     logEntry.textContent = logs[logIndex];
                     document.getElementById('logsSection').appendChild(logEntry);
-                    
+
                     // 滚动到底部
                     const logsSection = document.getElementById('logsSection');
                     logsSection.scrollTop = logsSection.scrollHeight;
-                    
+
                     logIndex++;
                 }
-                
+
                 // 打标完成
                 if (progress === 100) {
                     clearInterval(progressInterval);
@@ -965,25 +979,25 @@
                 }
             }, 200);
         }
-        
+
         // 模拟训练过程
         function startTraining() {
             // 显示进度区域
             document.getElementById('progressSection').style.display = 'block';
-            
+
             // 清空之前的日志
             document.getElementById('logsSection').innerHTML = '<div class="log-entry info">[INFO] 训练准备中...</div>';
             document.getElementById('progressFill').style.width = '0%';
             document.getElementById('progressPercentage').textContent = '0%';
             document.getElementById('progressText').textContent = '准备中...';
-            
+
             // 获取表单数据
             const modelSelect = document.getElementById('modelSelect').value;
             const trainCount = document.getElementById('trainCount').value;
             const trainEpochs = document.getElementById('trainEpochs').value;
             const triggerWord = document.getElementById('triggerWord').value;
             const promptInput = document.getElementById('promptInput').value;
-            
+
             // 模拟训练日志
             const logs = [
                 `[INFO] 开始训练 Lora 模型`,
@@ -1008,18 +1022,18 @@
                 `[INFO] 保存模型到: ./output/lora/model.safetensors`,
                 `[SUCCESS] Lora 模型训练成功！`
             ];
-            
+
             // 模拟进度更新
             let progress = 0;
             let logIndex = 0;
             const progressInterval = setInterval(() => {
                 progress += 5;
                 if (progress > 100) progress = 100;
-                
+
                 // 更新进度条
                 document.getElementById('progressFill').style.width = `${progress}%`;
                 document.getElementById('progressPercentage').textContent = `${progress}%`;
-                
+
                 // 更新进度文本
                 if (progress < 10) {
                     document.getElementById('progressText').textContent = '准备中...';
@@ -1030,7 +1044,7 @@
                 } else {
                     document.getElementById('progressText').textContent = '完成中...';
                 }
-                
+
                 // 添加日志
                 if (logIndex < logs.length && progress >= logIndex * (100 / logs.length)) {
                     const logEntry = document.createElement('div');
@@ -1044,14 +1058,14 @@
                     }
                     logEntry.textContent = logs[logIndex];
                     document.getElementById('logsSection').appendChild(logEntry);
-                    
+
                     // 滚动到底部
                     const logsSection = document.getElementById('logsSection');
                     logsSection.scrollTop = logsSection.scrollHeight;
-                    
+
                     logIndex++;
                 }
-                
+
                 // 训练完成
                 if (progress === 100) {
                     clearInterval(progressInterval);
@@ -1059,7 +1073,7 @@
                 }
             }, 300);
         }
-        
+
         // 重置表单
         function resetForm() {
             document.getElementById('modelSelect').value = 'sd15';
@@ -1073,23 +1087,23 @@
             document.getElementById('learningRate').value = '1e-4';
             document.getElementById('batchSize').value = '2';
             document.getElementById('imageUpload').value = '';
-            
+
             // 隐藏进度区域
             document.getElementById('progressSection').style.display = 'none';
             document.getElementById('logsSection').innerHTML = '<div class="log-entry info">[INFO] 训练准备中...</div>';
             document.getElementById('progressFill').style.width = '0%';
             document.getElementById('progressPercentage').textContent = '0%';
             document.getElementById('progressText').textContent = '准备中...';
-            
+
             // 重置按钮状态
             document.getElementById('tagButton').disabled = true;
             document.getElementById('trainButton').disabled = true;
-            
+
             // 重置文件上传文本
             const fileUploadText = document.querySelector('.file-upload-text');
             fileUploadText.textContent = '点击或拖拽文件到此处上传';
         }
-        
+
         // 获取模型名称
         function getModelName(modelValue) {
             const modelMap = {
@@ -1100,9 +1114,9 @@
             };
             return modelMap[modelValue] || modelValue;
         }
-        
+
         // 文件上传预览
-        document.getElementById('imageUpload').addEventListener('change', function(e) {
+        document.getElementById('imageUpload').addEventListener('change', function (e) {
             const files = e.target.files;
             if (files.length > 0) {
                 const fileNames = Array.from(files).map(file => file.name).join(', ');
@@ -1112,9 +1126,9 @@
                 document.getElementById('tagButton').disabled = false;
             }
         });
-        
+
         // 点击弹框外部关闭
-        window.onclick = function(event) {
+        window.onclick = function (event) {
             const modal = document.getElementById('advancedModal');
             if (event.target == modal) {
                 modal.style.display = 'none';
@@ -1122,4 +1136,5 @@
         }
     </script>
 </body>
+
 </html>

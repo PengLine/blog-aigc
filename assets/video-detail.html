@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="robots" content="noindex, nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>短剧详情 - AIGC创作平台</title>
     <link rel="stylesheet" href="../style.css">
@@ -12,11 +14,11 @@
             margin: 0 auto;
             padding: 40px 20px;
         }
-        
+
         .detail-header {
             margin-bottom: 40px;
         }
-        
+
         .detail-header h1 {
             font-size: 2.5rem;
             font-weight: 700;
@@ -25,21 +27,21 @@
             display: inline-block;
             margin-right: 15px;
         }
-        
+
         .detail-header {
             display: flex;
             align-items: center;
             margin-bottom: 20px;
             flex-wrap: wrap;
         }
-        
+
         .detail-author {
             display: flex;
             justify-content: flex-end;
             align-items: center;
             gap: 10px;
         }
-        
+
         .author-avatar {
             width: 40px;
             height: 40px;
@@ -47,50 +49,50 @@
             object-fit: cover;
             border: 2px solid #e0e0e0;
         }
-        
+
         .detail-meta {
             display: flex;
             gap: 20px;
             margin-bottom: 30px;
             flex-wrap: wrap;
         }
-        
+
         .meta-item {
             display: flex;
             align-items: center;
             gap: 8px;
             color: #666;
         }
-        
+
         .meta-item i {
             color: #2196f3;
         }
-        
+
         .detail-content {
             display: grid;
             grid-template-columns: 1fr 300px;
             gap: 40px;
             margin-bottom: 40px;
         }
-        
+
         .detail-main {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 18px;
-            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
             padding: 30px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
-        
+
         .detail-sidebar {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 18px;
-            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12);
             padding: 30px;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
-        
+
         .detail-video {
             width: 100%;
             height: 400px;
@@ -99,32 +101,32 @@
             margin-bottom: 30px;
             background-color: #000;
         }
-        
+
         .detail-description {
             font-size: 1.1rem;
             line-height: 1.8;
             color: #333;
             margin-bottom: 30px;
         }
-        
+
         .detail-section {
             margin-bottom: 30px;
         }
-        
+
         .detail-section h3 {
             font-size: 1.5rem;
             font-weight: 700;
             color: #2c3e50;
             margin-bottom: 15px;
         }
-        
+
         .tag-list {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
             margin-bottom: 20px;
         }
-        
+
         .tag {
             background: #e3f2fd;
             color: #1976d2;
@@ -133,7 +135,7 @@
             font-size: 0.9rem;
             font-weight: 500;
         }
-        
+
         .btn {
             padding: 12px 20px;
             border: none;
@@ -145,40 +147,40 @@
             margin-right: 10px;
             margin-bottom: 10px;
         }
-        
+
         .btn-primary {
             background: linear-gradient(135deg, #2196f3, #1976d2);
             color: #fff;
         }
-        
+
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
         }
-        
+
         .btn-secondary {
             background: #6c757d;
             color: #fff;
         }
-        
+
         .btn-secondary:hover {
             background: #5a6268;
             transform: translateY(-2px);
         }
-        
+
         .btn-outline {
             background-color: transparent;
             border: 2px solid #2196f3;
             color: #2196f3;
         }
-        
+
         .btn-outline:hover {
             background: linear-gradient(135deg, #2196f3, #1976d2);
             color: #fff;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
         }
-        
+
         .back-link {
             display: inline-flex;
             align-items: center;
@@ -192,18 +194,18 @@
             border: 1px solid #dee2e6;
             transition: all 0.3s ease;
         }
-        
+
         .back-link:hover {
             background: #e9ecef;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             text-decoration: none;
         }
-        
+
         .back-link i {
             margin-right: 8px;
         }
-        
+
         .stat-item {
             display: flex;
             justify-content: space-between;
@@ -211,40 +213,40 @@
             padding: 15px 0;
             border-bottom: 1px solid #e9ecef;
         }
-        
+
         .stat-label {
             color: #666;
         }
-        
+
         .stat-value {
             font-weight: 700;
             color: #2c3e50;
         }
-        
+
         .action-buttons {
             margin-top: 30px;
         }
-        
+
         .btn-success {
             background: linear-gradient(135deg, #4caf50, #388e3c);
             color: #fff;
         }
-        
+
         .btn-success:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
         }
-        
+
         .btn-danger {
             background: linear-gradient(135deg, #f44336, #d32f2f);
             color: #fff;
         }
-        
+
         .btn-danger:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(244, 67, 54, 0.4);
         }
-        
+
         .btn-like {
             background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
             color: #fff;
@@ -252,12 +254,12 @@
             align-items: center;
             gap: 5px;
         }
-        
+
         .btn-like:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
         }
-        
+
         .btn-share {
             background: linear-gradient(135deg, #9c27b0, #7b1fa2);
             color: #fff;
@@ -265,50 +267,51 @@
             align-items: center;
             gap: 5px;
         }
-        
+
         .btn-share:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(156, 39, 176, 0.4);
         }
-        
+
         .btn-apply {
             background: linear-gradient(135deg, #ff9800, #f57c00);
             color: #fff;
             align-items: center;
             gap: 5px;
         }
-        
+
         .btn-apply:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
         }
-        
+
         .social-buttons {
             display: flex;
             gap: 10px;
             margin-bottom: 15px;
         }
-        
+
         @media (max-width: 768px) {
             .detail-content {
                 grid-template-columns: 1fr;
             }
-            
+
             .detail-header {
                 flex-direction: column;
                 align-items: flex-start;
             }
-            
+
             .detail-author {
                 margin-top: 15px;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="detail-container">
         <a href="my-assets-video.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回我的短剧</a>
-        
+
         <div class="detail-header">
             <h1 id="detailTitle">星际探险</h1>
             <div class="detail-author">
@@ -316,7 +319,7 @@
                 <span>我自己</span>
             </div>
         </div>
-        
+
         <div class="detail-meta">
             <div class="meta-item">
                 <i class="fas fa-calendar-alt"></i>
@@ -335,21 +338,22 @@
                 <span id="detailPoints">25 积分</span>
             </div>
         </div>
-        
+
         <div class="detail-content">
             <div class="detail-main">
-                <video id="detailVideo" class="detail-video" controls poster="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=space%20adventure%20scene%20sci-fi%20cinematic&image_size=landscape_4_3">
+                <video id="detailVideo" class="detail-video" controls
+                    poster="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=space%20adventure%20scene%20sci-fi%20cinematic&image_size=landscape_4_3">
                     <source src="#" type="video/mp4">
                     您的浏览器不支持视频播放。
                 </video>
-                
+
                 <div class="detail-section">
                     <h3>剧情简介</h3>
                     <p id="detailDescription" class="detail-description">
                         《星际探险》讲述了一群宇航员在遥远的未来探索未知星球的故事。他们在太空中遭遇了各种挑战和危险，同时也发现了宇宙中令人惊叹的奥秘。这是一部充满科幻元素和人性探索的短剧，展现了人类对未知世界的好奇和勇气。
                     </p>
                 </div>
-                
+
                 <div class="detail-section">
                     <h3>剧集信息</h3>
                     <p id="detailEpisodes">
@@ -360,7 +364,7 @@
                         - 字幕：中文、英文
                     </p>
                 </div>
-                
+
                 <div class="detail-section">
                     <h3>角色列表</h3>
                     <p id="detailCharacters">
@@ -371,7 +375,7 @@
                         - 机器人助手 K-9：智能机器人，协助团队完成任务
                     </p>
                 </div>
-                
+
                 <div class="detail-section">
                     <h3>标签</h3>
                     <div id="detailTags" class="tag-list">
@@ -382,7 +386,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="detail-sidebar">
                 <div class="detail-section">
                     <h3>短剧信息</h3>
@@ -399,7 +403,7 @@
                         <span id="detailPointsSidebar">25</span>
                     </div>
                 </div>
-                
+
                 <div class="social-buttons">
                     <button class="btn btn-like" onclick="likeVideo()">
                         <i class="fas fa-heart"></i> 点赞
@@ -408,14 +412,14 @@
                         <i class="fas fa-share-alt"></i> 分享
                     </button>
                 </div>
-                
+
                 <div class="action-buttons" id="actionButtons">
                     <!-- 按钮将通过JavaScript动态生成 -->
                 </div>
             </div>
         </div>
     </div>
-    
+
     <script src="../static/js/common.js"></script>
     <script>
         // 获取URL参数
@@ -427,7 +431,7 @@
                 source: params.get('source') || 'video'
             };
         }
-        
+
         // 模拟短剧数据
         const mockVideos = {
             my: [
@@ -646,43 +650,43 @@
                 }
             ]
         };
-        
+
         let currentVideo = null;
-        
+
         // 初始化页面
         function init() {
             const params = getUrlParams();
             const video = findVideo(params.id, params.type);
-            
+
             if (!video) {
                 alert('短剧不存在');
                 goBack();
                 return;
             }
-            
+
             currentVideo = video;
             renderVideoDetail(video, params.type);
         }
-        
+
         // 查找短剧
         function findVideo(id, type) {
             const videos = mockVideos[type] || [];
             return videos.find(v => v.id == id);
         }
-        
+
         // 渲染短剧详情
         function renderVideoDetail(video, type) {
             // 设置标题
             document.getElementById('detailTitle').textContent = video.title;
-            
+
             // 设置视频
             const videoElement = document.getElementById('detailVideo');
             videoElement.src = video.video;
             videoElement.poster = video.poster;
-            
+
             // 设置描述
             document.getElementById('detailDescription').textContent = video.description;
-            
+
             // 设置元数据
             document.getElementById('detailCreated').textContent = video.created;
             document.getElementById('detailCreatedSidebar').textContent = video.created;
@@ -691,13 +695,13 @@
             document.getElementById('detailPoints').textContent = video.points + ' 积分';
             document.getElementById('detailPointsSidebar').textContent = video.points;
             document.getElementById('detailStatus').textContent = video.status === 'public' ? '公开' : video.status === 'private' ? '私有' : video.status === 'pending' ? '审核中' : video.status === 'rejected' ? '已拒绝' : video.status;
-            
+
             // 设置剧集信息
             document.getElementById('detailEpisodes').innerHTML = video.episodes;
-            
+
             // 设置角色列表
             document.getElementById('detailCharacters').innerHTML = video.characters;
-            
+
             // 设置标签
             const tagsContainer = document.getElementById('detailTags');
             tagsContainer.innerHTML = '';
@@ -709,16 +713,16 @@
                     tagsContainer.appendChild(tagElement);
                 });
             }
-            
+
             // 渲染操作按钮
             renderActionButtons(video, type);
         }
-        
+
         // 渲染操作按钮
         function renderActionButtons(video, type) {
             const actionButtons = document.getElementById('actionButtons');
             let buttonsHtml = '';
-            
+
             // 如果是收藏别人的作品
             if (type === 'collection') {
                 buttonsHtml = `
@@ -789,10 +793,10 @@
                         `;
                 }
             }
-            
+
             actionButtons.innerHTML = buttonsHtml;
         }
-        
+
         // 编辑短剧
         function editVideo() {
             // 将当前短剧数据序列化为URL参数
@@ -800,11 +804,11 @@
             params.append('id', currentVideo.id);
             params.append('type', 'edit');
             params.append('dataType', getUrlParams().type);
-            
+
             // 跳转到创建页面并传递数据
             window.location.href = `create-video.html?${params.toString()}`;
         }
-        
+
         // 点赞短剧
         function likeVideo() {
             isLiked = !isLiked;
@@ -817,7 +821,7 @@
                 likeBtn.style.background = 'linear-gradient(135deg, #ff6b6b, #ee5a5a)';
             }
         }
-        
+
         // 分享短剧
         function shareVideo() {
             const shareUrl = window.location.href;
@@ -836,12 +840,12 @@
                 });
             }
         }
-        
+
         // 一键应用
         function applyVideo() {
             alert('正在启动短剧: ' + currentVideo.title);
         }
-        
+
         // 设为私有
         function setPrivate() {
             if (confirm('确定要将此短剧设为私有吗？')) {
@@ -849,7 +853,7 @@
                 location.reload();
             }
         }
-        
+
         // 设为公开
         function setPublic() {
             if (confirm('确定要将此短剧设为公开吗？')) {
@@ -857,7 +861,7 @@
                 location.reload();
             }
         }
-        
+
         // 删除短剧
         function deleteVideo() {
             if (confirm('确定要删除此短剧吗？此操作不可恢复！')) {
@@ -865,7 +869,7 @@
                 window.location.href = 'my-assets-video.html';
             }
         }
-        
+
         // 取消收藏
         function cancelCollection() {
             if (confirm('确定要取消收藏吗？')) {
@@ -873,26 +877,27 @@
                 window.location.href = 'my-assets-video.html';
             }
         }
-        
+
         // 预览短剧
         function previewVideo() {
             alert('预览短剧效果');
         }
-        
+
         // 发布短剧
         function publishVideo() {
             if (confirm('确定要发布这个短剧吗？')) {
                 alert('短剧已提交审核！');
             }
         }
-        
+
         // 返回上一页
         function goBack() {
             window.history.back();
         }
-        
+
         // 初始化页面
         init();
     </script>
 </body>
+
 </html>

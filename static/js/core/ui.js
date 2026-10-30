@@ -98,7 +98,8 @@ export function imgTag(src, alt = '', cls = '', extra = '') {
 
 export function avatarTag(user, size = '', extraClass = '') {
     const name = user?.name || '匿名';
-    const src = user?.avatar || avatarFallback(name);
+    // 失效演示图床的头像（所有人同一张占位图）降级为彩色首字母头像
+    const src = user?.avatar && !useArtCover(user.avatar) ? user.avatar : avatarFallback(name);
     return `<img src="${escapeHtml(src)}" alt="${escapeHtml(name)}" class="avatar ${size} ${extraClass}" loading="lazy" onerror="this.onerror=null;this.src='${avatarFallback(name)}'">`;
 }
 

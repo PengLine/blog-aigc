@@ -135,16 +135,20 @@ export async function render(host, ctx) {
     }
 
     function drawSide() {
-        wfList.innerHTML = items.map((w) => `<button class="lib-item ${w.id === state.workflowId ? 'active' : ''}" data-wf="${w.id}"
+        wfList.innerHTML = items.map((w) => {
+            // 当前工作流的节点数取实时值（增删后侧栏同步）
+            const nodeCount = w.id === state.workflowId ? wf().nodes.length : w.nodes.length;
+            return `<button class="lib-item ${w.id === state.workflowId ? 'active' : ''}" data-wf="${w.id}"
             style="text-align:left;padding:10px;border-radius:10px;border:1px solid ${w.id === state.workflowId ? 'var(--brand-300)' : 'transparent'};background:${w.id === state.workflowId ? 'var(--brand-50)' : 'transparent'};width:100%">
             <div class="row" style="gap:8px">
                 <span style="color:var(--brand-600)">${icon('workflow', 15)}</span>
                 <div style="min-width:0">
                     <div class="small" style="font-weight:600">${escapeHtml(w.name)}</div>
-                    <div class="small muted">${w.nodes.length} 节点 · ${num(w.runs)} 次运行</div>
+                    <div class="small muted">${nodeCount} 节点 · ${num(w.runs)} 次运行</div>
                 </div>
             </div>
-        </button>`).join('');
+        </button>`;
+        }).join('');
     }
 
     function drawHead() {
@@ -185,6 +189,8 @@ export async function render(host, ctx) {
             </svg>
             ${nodes.map((n, i) => nodeHtml(n, i)).join('')}
         </div>`;
+        // 同步绘一次（offsetWidth/Height 会强制布局，无需等帧），再用 rAF 兜一次处理字体回流后的细微偏移
+        drawEdges();
         requestAnimationFrame(drawEdges);
         drawInspector();
     }

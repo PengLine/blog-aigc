@@ -1,7 +1,7 @@
 import { listTrainings, createTraining, getTask, getAccount } from '../core/api.js';
 import { statusMeta } from '../core/constants.js';
 import { url, setPageTitle } from '../core/shell.js';
-import { icon, toast, progressBar, emptyState, copyText, openModal } from '../core/ui.js';
+import { icon, toast, progressBar, emptyState, copyText, openModal, imgTag } from '../core/ui.js';
 import { escapeHtml, num, timeAgo } from '../core/format.js';
 import { on, EVENTS } from '../core/bus.js';
 
@@ -53,7 +53,7 @@ export async function render(host, ctx) {
                     <div class="dataset-grid" id="datasetGrid">
                         ${datasets.length ? datasets.map((d) => `<button class="dataset-card ${state.datasetId === d.id ? 'active' : ''}" data-dataset="${d.id}">
                             <div class="dataset-thumbs">
-                                ${d.thumbs.slice(0, 4).map((t) => `<img src="${escapeHtml(t)}" alt="样本" loading="lazy">`).join('')}
+                                ${d.thumbs.slice(0, 4).map((t, i) => imgTag(t, `${d.name || '样本'} ${i + 1}`)).join('')}
                                 <span class="dataset-tag ${d.isOfficial ? 'official' : ''}">${d.isOfficial ? '官方' : '我的'}</span>
                             </div>
                             <b>${escapeHtml(d.name)}</b>

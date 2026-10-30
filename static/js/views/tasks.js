@@ -1,7 +1,7 @@
 import { listTasks, getTask, cancelTask, retryTask, createWork } from '../core/api.js';
 import { TASK_TYPES, KINDS, statusMeta } from '../core/constants.js';
 import { url, setPageTitle } from '../core/shell.js';
-import { icon, toast, emptyState, renderPagination, skeletonRows, confirmDialog, openModal, closeModal, copyText, videoStage } from '../core/ui.js';
+import { icon, toast, emptyState, renderPagination, skeletonRows, confirmDialog, openModal, closeModal, copyText, videoStage, imgTag } from '../core/ui.js';
 import { escapeHtml, num, timeAgo, fmtDate } from '../core/format.js';
 import { on, EVENTS } from '../core/bus.js';
 
@@ -199,7 +199,7 @@ export async function render(host, ctx) {
                         <div class="label" style="margin-bottom:6px">产物</div>
                         <div class="result-grid">
                             ${task.outputs.map((o) => o.type === 'image'
-                    ? `<img src="${escapeHtml(o.url)}" alt="${escapeHtml(o.title || '产物')}" loading="lazy">`
+                    ? imgTag(o.url, o.title || '产物')
                     : o.type === 'video'
                         ? videoStage(o, { title: task.title, prompt: task.payload?.prompt || '', extra: 'style="width:100%;border-radius:10px"' })
                         : `<div class="result-box small" style="white-space:pre-wrap">${escapeHtml(o.text || o.title || o.workId || '')}</div>`).join('')}

@@ -3,7 +3,7 @@
  */
 import { escapeHtml, num, timeAgo, placeholder, avatarFallback, fmtDuration } from './format.js';
 import { kindMeta, statusMeta } from './constants.js';
-import { artCover, POSTER_SECOND } from './cover.js';
+import { artCover, POSTER_SECOND, useArtCover } from './cover.js';
 
 /* ------------------------------ 图标 ------------------------------ */
 const ICONS = {
@@ -90,9 +90,9 @@ export function icon(name, size = 16) {
 const IMG_FALLBACK = "this.onerror=null;if(window.__coverFallback)this.src=window.__coverFallback(this.dataset.fbTitle,this.dataset.fbPrompt,this.dataset.fbKind)";
 export function imgTag(src, alt = '', cls = '', extra = '') {
     const fallback = escapeHtml(alt || 'AIGC');
-    // 无 src 时直接给确定性封面；有 src 时先试真图，失败回退
-    const safeSrc = src ? escapeHtml(src) : artCover({ title: alt || 'AIGC' });
-    // 先试真实图（远端图床 / 抽帧结果），失败时由 __coverFallback 生成确定性封面
+    // 空 src / 失效演示图床 → 直接确定性封面；否则先试真图，失败回退
+    const effective = useArtCover(src) ? artCover({ title: alt || 'AIGC' }) : src;
+    const safeSrc = escapeHtml(effective);
     return `<img src="${safeSrc}" alt="${escapeHtml(alt)}" class="${cls}" loading="lazy" data-fb-title="${fallback}" onerror="${IMG_FALLBACK}" ${extra}>`;
 }
 
@@ -172,17 +172,20 @@ export function skeletonRows(count = 5) {
 export function mediaThumb(work, cls = '') {
     const isVideo = (work.mediaType === 'video' || work.kind === 'video')
         && !!work.mediaUrl && /^https?:/i.test(work.mediaUrl);
+    // 卡片媒体框为 4:3，封面同比例生成避免 object-fit:cover 裁掉标题
     const fb = artCover({
         title: work.title,
         prompt: work.prompt,
         kind: isVideo ? 'video' : 'image',
-        second: isVideo ? POSTER_SECOND : null
+        second: isVideo ? POSTER_SECOND : null,
+        width: 512,
+        height: 384
     });
     if (isVideo) {
         return `<video class="vid-thumb ${cls}" muted playsinline preload="none" tabindex="-1" aria-hidden="true"
             poster="${escapeHtml(fb)}" data-thumb-src="${escapeHtml(work.mediaUrl)}" data-thumb-at="${POSTER_SECOND}"></video>`;
     }
-    const cover = work.cover || fb;
+    const cover = useArtCover(work.cover) ? fb : work.cover;
     return `<img src="${escapeHtml(cover)}" alt="${escapeHtml(work.title)}" class="${cls}" loading="lazy"
         data-fb-title="${escapeHtml(work.title)}" data-fb-prompt="${escapeHtml(work.prompt || '')}" data-fb-kind="image"
         onerror="${IMG_FALLBACK}">`;

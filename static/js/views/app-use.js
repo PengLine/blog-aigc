@@ -1,7 +1,7 @@
 import { getApp, runApp, getTask, getAccount, createWork } from '../core/api.js';
 import { statusMeta, KINDS } from '../core/constants.js';
 import { url, setPageTitle } from '../core/shell.js';
-import { icon, toast, openModal, closeModal, emptyState, copyText, videoStage } from '../core/ui.js';
+import { icon, toast, openModal, closeModal, emptyState, copyText, videoStage, imgTag } from '../core/ui.js';
 import { escapeHtml, num, timeAgo } from '../core/format.js';
 import { on, EVENTS } from '../core/bus.js';
 
@@ -268,7 +268,7 @@ export async function render(host, ctx) {
         return `
             ${images.length ? `<div class="result-grid">
                 ${images.map((o) => `<div style="position:relative">
-                    <img src="${escapeHtml(o.url)}" alt="${escapeHtml(o.title || '生成结果')}" loading="lazy" data-fb-title="${escapeHtml(o.title || '生成结果')}" onerror="this.onerror=null;if(window.__coverFallback)this.src=window.__coverFallback(this.dataset.fbTitle)">
+                    ${imgTag(o.url, o.title || '生成结果')}
                     <button class="btn btn-sm btn-outline" data-save="${escapeHtml(o.url)}" data-type="image"
                         style="position:absolute;right:6px;bottom:6px;background:var(--surface);color:var(--text)">${icon('layers', 12)}存为资产</button>
                 </div>`).join('')}

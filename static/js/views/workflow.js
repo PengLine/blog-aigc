@@ -1,7 +1,7 @@
 import { listWorkflows, getWorkflow, runWorkflow, getTask, getAccount, patchWorkflow, duplicateWorkflow } from '../core/api.js';
 import { statusMeta } from '../core/constants.js';
 import { url, setPageTitle } from '../core/shell.js';
-import { icon, toast, emptyState, copyText } from '../core/ui.js';
+import { icon, toast, emptyState, copyText, imgTag } from '../core/ui.js';
 import { escapeHtml, num, timeAgo } from '../core/format.js';
 import { on, EVENTS } from '../core/bus.js';
 
@@ -659,7 +659,7 @@ export async function render(host, ctx) {
             ${task.error ? `<div class="result-box" style="color:var(--danger)">${escapeHtml(task.error)}</div>` : ''}
             ${(task.outputs || []).length ? `<div class="result-grid">
                 ${task.outputs.map((o) => o.type === 'image'
-                    ? `<img src="${escapeHtml(o.url)}" alt="${escapeHtml(o.title || '工作流产物')}" loading="lazy" data-fb-title="${escapeHtml(o.title || '工作流产物')}" onerror="this.onerror=null;if(window.__coverFallback)this.src=window.__coverFallback(this.dataset.fbTitle)">`
+                    ? imgTag(o.url, o.title || '工作流产物')
                     : `<div class="result-box small">${escapeHtml(o.title || o.type)}</div>`).join('')}
             </div>` : running ? `<div class="small muted">${escapeHtml((task.logs || []).slice(-1)[0]?.msg || '节点执行中…')}</div>` : ''}
             <div class="log-panel" style="margin-top:12px">

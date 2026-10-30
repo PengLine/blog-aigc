@@ -5,6 +5,12 @@
 export const DAY = 86400000;
 const T0 = Date.now();
 
+/**
+ * 演示图床域名：该接口在当前环境只返回「生成中」占位图（HTTP 200），
+ * 不会触发 onerror，因此渲染层需识别该域名并主动降级为确定性封面。
+ */
+export const DEMO_IMG_HOST = 'trae-api-cn.mchost.guru';
+
 export const daysAgo = (days, hours = 0) => new Date(T0 - days * DAY - hours * 3600000).toISOString();
 
 export const img = (prompt, size = 'landscape_16_9') =>

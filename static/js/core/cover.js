@@ -12,6 +12,7 @@
  */
 import { escapeHtml } from './format.js';
 import { setWorkCover, setOutputCover } from './db.js';
+import { DEMO_IMG_HOST } from '../data/media.js';
 
 /** 默认取第 3 秒作为封面帧 */
 export const POSTER_SECOND = 3;
@@ -152,6 +153,19 @@ export function artCover(options = {}) {
 }
 
 /* ------------------------------ 视频抽帧 ------------------------------ */
+
+/**
+ * 是否应直接采用确定性封面而非发起图请求：
+ * 空值 / data URL / 失效的演示图床（返回“生成中”占位图、不报错）都返回 true。
+ * 真实后端图 URL（非该域）会返回 false，仍走原图。
+ */
+export function useArtCover(url) {
+    if (!url) return true;
+    const s = String(url);
+    if (s.startsWith('data:')) return false; // 已是本地封面
+    if (!/^https?:/i.test(s)) return true;
+    return s.includes(DEMO_IMG_HOST);
+}
 
 const memory = new Map();
 const pending = new Map();

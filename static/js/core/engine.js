@@ -8,6 +8,7 @@ import { KEYS, readLocal, writeLocal } from './storage.js';
 import { mutate, findUser, addNotification, addTransaction } from './db.js';
 import { emit, EVENTS } from './bus.js';
 import { img, VIDEO_SRC } from '../data/media.js';
+import { buildTrainPlan, lossAt, samplePrompt } from './training.js';
 import { uid } from './format.js';
 
 const TAB_ID = Math.random().toString(36).slice(2);
@@ -68,12 +69,7 @@ const STAGES = {
         [72, 'info', '光流插帧与色彩一致性校正'],
         [90, 'info', '封装 MP4 并生成封面']
     ],
-    train: [
-        [8, 'info', '校验数据集与标注完整性'],
-        [30, 'info', '开始训练：加载底模与优化器'],
-        [58, 'info', '训练进行中，定期保存 checkpoint'],
-        [85, 'info', '收敛检测通过，导出 LoRA 权重']
-    ],
+    train: [], // 训练日志由 buildTrainPlan 逐条驱动，不使用静态阶段表
     workflow: [
         [10, 'info', '解析工作流 DAG，6 个节点待执行'],
         [35, 'info', '节点「提示词编码」执行完成'],
@@ -96,6 +92,64 @@ function applyStages(task) {
     (STAGES[task.type] || []).forEach(([threshold, level, msg]) => {
         if (task.progress >= threshold) log(task, level, msg);
     });
+}
+
+/**
+ * 推进训练过程：根据共享的阶段计划逐条输出日志，
+ * 并在对应里程碑写入 loss 采样点 / checkpoint / 验证样张。
+ * 计划不入库（避免冷数据目膨胀），每 tick 由配置重建，与页面展示同源一致。
+ */
+function advanceTraining(db, task, training) {
+    const cfg = training.config || {};
+    const dataset = db.datasets.find((d) => d.id === training.datasetId) || {};
+    const plan = buildTrainPlan(cfg, dataset, training.trigger);
+    if (!Array.isArray(training.loss)) training.loss = [];
+    if (!Array.isArray(training.samples)) training.samples = [];
+    if (!Array.isArray(training.checkpoints)) training.checkpoints = [];
+
+    // loss 采样点按进度逐步生成，所以曲线会“边训边长”
+    const points = cfg.lossPoints || 24;
+    const want = Math.max(0, Math.min(points, Math.floor((task.progress / 100) * points)));
+    while (training.loss.length < want) {
+        const idx = training.loss.length;
+        training.loss.push({
+            step: Math.round((cfg.steps || 1000) * ((idx + 1) / points)),
+            loss: lossAt(cfg, idx, points)
+        });
+    }
+
+    const emitted = Number(training.emitted) || 0;
+    let i = emitted;
+    while (i < plan.length && plan[i].at <= task.progress) {
+        const item = plan[i];
+        log(task, item.level || 'info', item.msg);
+        if (item.kind === 'epoch') {
+            training.epochsDone = Math.max(Number(training.epochsDone) || 0, item.epoch);
+        } else if (item.kind === 'ckpt') {
+            if (!training.checkpoints.some((c) => c.step === item.step)) {
+                training.checkpoints.push({ step: item.step, epoch: item.epoch, name: item.label, sizeMb: cfg.weightMb || 16, loss: training.loss.length ? training.loss[training.loss.length - 1].loss : lossAt(cfg, 0, points) });
+            }
+        } else if (item.kind === 'sample' || item.kind === 'finalSample') {
+            if (!training.samples.some((s) => s.step === item.step && s.kind === item.kind)) {
+                training.samples.push({
+                    step: item.step || Math.round((cfg.steps || 0) * (task.progress / 100)),
+                    kind: item.kind === 'finalSample' ? 'final' : 'epoch',
+                    label: item.kind === 'finalSample' ? '终版对比' : `step ${item.step}`,
+                    loss: training.loss.length ? training.loss[training.loss.length - 1].loss : null,
+                    prompt: samplePrompt(cfg, training, item.kind),
+                    image: img(samplePrompt(cfg, training, item.kind), 'square')
+                });
+            }
+        }
+        i += 1;
+    }
+    if (i !== emitted) training.emitted = i;
+
+    // 确定性故障：已知的破坏性参数组合跑到对应阶段后终止（不靠随机骰子）
+    if (training.expectFault && task.progress >= (training.faultAt || 55)) {
+        return training.expectFault;
+    }
+    return null;
 }
 
 function outputImages(prompt, count = 2) {
@@ -198,30 +252,46 @@ function completeTask(db, task) {
     } else if (task.type === 'train') {
         const training = db.trainings.find((t) => t.id === task.payload.trainingId);
         if (training) {
+            const cfg = training.config || {};
+            const dataset = db.datasets.find((d) => d.id === training.datasetId) || {};
+            advanceTraining(db, task, training);
+            const points = cfg.lossPoints || 24;
             const loss = Array.isArray(training.loss) ? training.loss : [];
-            for (let i = loss.length; i < 36; i += 1) {
-                const step = (i + 1) * Math.max(50, Math.round(training.config.steps / 36));
-                loss.push({ step, loss: Number((0.26 * Math.exp(-i / 11) + 0.052 + Math.sin(i * 2.1) * 0.005).toFixed(3)) });
+            while (loss.length < points) {
+                const idx = loss.length;
+                loss.push({ step: Math.round((cfg.steps || 1000) * ((idx + 1) / points)), loss: lossAt(cfg, idx, points) });
             }
             training.loss = loss;
             training.status = 'succeeded';
+            training.epochsDone = cfg.epochs || training.epochsDone;
             training.finishedAt = now();
             training.durationMin = Math.max(1, Math.round((Date.now() - new Date(training.createdAt).getTime()) / 60000));
+            const finalLoss = loss[loss.length - 1]?.loss ?? 0.06;
+            if (!training.samples.some((s) => s.kind === 'final')) {
+                training.samples.push({
+                    step: cfg.steps || 0,
+                    kind: 'final',
+                    label: '终版对比',
+                    loss: finalLoss,
+                    prompt: samplePrompt(cfg, training, 'final'),
+                    image: img(samplePrompt(cfg, training, 'final'), 'square')
+                });
+            }
 
             const model = {
                 id: uid('m'),
                 kind: 'model',
                 subtype: 'art',
                 title: training.name,
-                desc: `基于数据集训练的 LoRA 模型，触发词 ${training.trigger}，rank ${training.config.rank}。`,
+                desc: `基于「${dataset.name || '自制数据集'}」训练的 LoRA 模型，触发词 ${training.trigger}，rank ${cfg.rank} / alpha ${cfg.alpha}，${cfg.epochs} epoch。`,
                 cover: img(`style sample from lora model ${training.name}, high detail`),
                 mediaType: 'image',
                 mediaUrl: null,
                 duration: 0,
-                tags: ['模型', 'LoRA', training.config.base],
+                tags: ['模型', 'LoRA', cfg.base],
                 prompt: '',
                 negative: '',
-                params: { model: training.config.base, steps: 28, cfg: 6 },
+                params: { model: cfg.base, steps: 28, cfg: 6 },
                 authorId: training.ownerId,
                 status: training.autoPublish ? 'published' : 'draft',
                 visibility: 'public',
@@ -234,13 +304,23 @@ function completeTask(db, task) {
                 sourceWorkId: null,
                 relatedIds: [],
                 meta: {
-                    base: training.config.base,
+                    base: cfg.base,
                     trigger: training.trigger,
-                    rank: training.config.rank,
-                    steps: training.config.steps,
-                    size: `${Math.max(6, Math.round(training.config.rank * 0.7))} MB`,
+                    rank: cfg.rank,
+                    alpha: cfg.alpha,
+                    steps: cfg.steps,
+                    epochs: cfg.epochs,
+                    lr: cfg.lr,
+                    optimizer: cfg.optimizer,
+                    scheduler: cfg.scheduler,
+                    precision: cfg.precision,
+                    resolution: cfg.resolution,
+                    datasetName: dataset.name || '自制数据集',
+                    size: `${cfg.weightMb || Math.max(6, Math.round((cfg.rank || 32) * 0.7))} MB`,
+                    recommendedWeight: cfg.rank >= 64 ? 0.7 : 0.8,
                     downloads: 0,
-                    loss: training.loss[training.loss.length - 1]?.loss || 0.06
+                    loss: finalLoss,
+                    trainingId: training.id
                 },
                 assetRefs: null,
                 ownerNote: ''
@@ -248,18 +328,19 @@ function completeTask(db, task) {
             db.works.unshift(model);
             training.modelId = model.id;
             task.outputs = [{ type: 'model', title: model.title, workId: model.id, url: model.cover }];
+            task.outputs.push(...training.samples.slice(-3).map((s) => ({ type: 'image', url: s.image, title: `训练样张 @ step ${s.step}` })));
             addNotification(db, {
                 userId: training.ownerId,
                 type: 'task',
                 tone: 'ok',
                 title: 'LoRA 训练完成',
-                body: `「${training.name}」训练完成，最终 loss ${model.meta.loss}，已生成模型资产。`,
+                body: `「${training.name}」跑完 ${cfg.epochs} epoch / ${cfg.steps} 步，最终 loss ${finalLoss}，已生成模型资产（${model.meta.size}）。`,
                 link: `lora-train.html?training=${training.id}`
             });
         }
     }
 
-    if (owner) {
+    if (owner && task.type !== 'train') {
         addNotification(db, {
             userId: task.ownerId,
             type: 'task',
@@ -273,11 +354,23 @@ function completeTask(db, task) {
 }
 
 function failTask(db, task, reason) {
+    const failedAt = Math.round(task.progress || 0);
     task.status = 'failed';
-    task.progress = 100;
+    task.progress = task.type === 'train' ? failedAt : 100;
     task.finishedAt = now();
     task.error = reason;
     log(task, 'err', reason);
+    if (task.type === 'train') {
+        const training = db.trainings.find((t) => t.id === task.payload.trainingId);
+        if (training) {
+            training.status = 'failed';
+            training.error = reason;
+            training.finishedAt = now();
+            training.failedAtPct = failedAt;
+            training.durationMin = Math.max(1, Math.round((Date.now() - new Date(training.createdAt).getTime()) / 60000));
+        }
+        log(task, 'warn', '已保存中断前的 loss 与 checkpoint，可在训练详情中「改参数重试」');
+    }
     if (task.cost > 0) {
         addTransaction(db, task.ownerId, { type: 'refund', amount: task.cost, title: `任务失败退款 · ${task.title}`, refId: task.id });
     }
@@ -287,7 +380,7 @@ function failTask(db, task, reason) {
         tone: 'danger',
         title: `${task.title} 执行失败`,
         body: `${reason}，已自动退还 ${task.cost} 算力积分。`,
-        link: 'tasks.html'
+        link: task.type === 'train' ? `lora-train.html?training=${task.refId}` : 'tasks.html'
     });
 }
 
@@ -313,7 +406,14 @@ function tick() {
                 if (task.status === 'running') {
                     task.progress = Math.min(100, task.progress + stepFor(task));
                     applyStages(task);
-                    if (task.progress >= 100) {
+                    let fault = null;
+                    if (task.type === 'train') {
+                        const training = db.trainings.find((t) => t.id === task.payload.trainingId);
+                        if (training) fault = advanceTraining(db, task, training);
+                    }
+                    if (fault) {
+                        failTask(db, task, fault);
+                    } else if (task.progress >= 100) {
                         if (task.type === 'image' && String(task.payload.prompt || '').includes('__fail__')) {
                             failTask(db, task, '内容安全检查未通过');
                         } else {

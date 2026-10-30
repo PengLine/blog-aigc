@@ -19,8 +19,8 @@ export const USERS = [
         likesReceived: 0,
         verified: true,
         plan: 'pro',
-        credits: 1280,
-        // 本期已用与种子流水（本计费周期消耗 240）保持一致
+        credits: 1160,
+        // 本期净消耗与种子流水保持一致（训练失败的扣除与退还相互抵消，不计入净消耗）
         computeUsed: 240,
         creditsResetAt: daysAgo(-12),
         joinedAt: daysAgo(430),

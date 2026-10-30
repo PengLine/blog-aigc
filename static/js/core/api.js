@@ -8,6 +8,7 @@ import { getDb, mutate, persist, findUser, publicUser, addNotification, addTrans
 import { currentUserId } from './auth.js';
 import { emit, EVENTS } from './bus.js';
 import { TASK_TYPES, taskCost, PLAN_MAP, RECHARGE_PACKAGES, MODEL_MAP } from './constants.js';
+import { normalizeConfig, predictFault, configWarnings } from './training.js';
 import { uid, sleep, fmtDate } from './format.js';
 
 export class ApiError extends Error {
@@ -566,8 +567,24 @@ export async function cancelTask(id) {
         task.status = 'canceled';
         task.finishedAt = now();
         task.logs.push({ t: clock(), level: 'warn', msg: '任务已被用户取消' });
+        if (task.type === 'train') {
+            const training = db.trainings.find((t) => t.id === task.refId);
+            if (training && ['queued', 'running'].includes(training.status)) {
+                training.status = 'canceled';
+                training.finishedAt = now();
+                training.error = '用户手动中断训练';
+            }
+        }
         if (task.cost > 0) {
-            addTransaction(db, me, { type: 'refund', amount: task.cost, title: `任务取消退款 · ${task.title}`, refId: task.id });
+            // 训练按时结算：已跑完的进度不予退还，其余按比例退回（比全退更接近真实计费）
+            const ratio = task.type === 'train' ? 1 - Math.min(100, task.progress || 0) / 100 : 1;
+            const refund = Math.max(0, Math.round(task.cost * ratio));
+            if (refund > 0) {
+                addTransaction(db, me, { type: 'refund', amount: refund, title: `任务取消退款 · ${task.title}`, refId: task.id });
+                task.logs.push({ t: clock(), level: 'info', msg: `按已完成 ${Math.round(task.progress || 0)}% 结算，退还 ${refund} / ${task.cost} 算力` });
+            } else {
+                task.logs.push({ t: clock(), level: 'warn', msg: '任务已跑满，无可退还算力' });
+            }
         }
         changed('task');
         return task;
@@ -578,6 +595,7 @@ export async function retryTask(id) {
     const db = getDb();
     const task = db.tasks.find((t) => t.id === id);
     if (!task) throw new ApiError('任务不存在', 'NOT_FOUND', 404);
+    if (task.type === 'train') throw new ApiError('训练任务请在训练页使用「改参数重试」，以保留新的训练记录', 'USE_TRAINING_RETRY', 400);
     return createTask({
         type: task.type,
         title: task.title,
@@ -778,66 +796,137 @@ export async function listTrainings() {
     });
 }
 
-export async function createTraining(payload) {
+/** 单条训练详情（含数据集与任务），供训练页轮询实时过程使用，避免拉全量列表 */
+export async function getTraining(id) {
     return respond(() => {
         const db = getDb();
         const me = currentUserId();
-        if (!payload.name || !String(payload.name).trim()) throw new ApiError('请填写模型名称');
-        if (!payload.datasetId) throw new ApiError('请选择训练数据集');
-        if (!payload.trigger || !String(payload.trigger).trim()) throw new ApiError('请设置触发词');
-        const dataset = db.datasets.find((d) => d.id === payload.datasetId);
-        if (!dataset) throw new ApiError('数据集不存在', 'NOT_FOUND', 404);
-        if (dataset.count < 10) throw new ApiError('数据集样本过少，至少需要 10 张图片');
-        const training = {
-            id: uid('tr'),
-            name: payload.name,
-            ownerId: me,
+        const training = db.trainings.find((t) => t.id === id);
+        if (!training) throw new ApiError('训练记录不存在', 'NOT_FOUND', 404);
+        if (training.ownerId !== me) throw new ApiError('无权查看该训练', 'FORBIDDEN', 403);
+        return {
+            training: {
+                ...training,
+                dataset: db.datasets.find((d) => d.id === training.datasetId) || null,
+                task: db.tasks.find((x) => x.id === training.taskId) || null
+            }
+        };
+    }, { min: 40, max: 120 });
+}
+
+/** 参数归一化 + 校验（纯函数，不写库）：显存超限 / 样本不足 / 触发词非法都会抛 ApiError */
+function checkTraining(payload) {
+    const db = getDb();
+    if (!payload.name || !String(payload.name).trim()) throw new ApiError('请填写模型名称');
+    if (String(payload.name).trim().length > 24) throw new ApiError('模型名称不超过 24 个字符');
+    if (!payload.trigger || !String(payload.trigger).trim()) throw new ApiError('请设置触发词');
+    if (!/^[A-Za-z0-9_]{1,16}$/.test(String(payload.trigger).trim())) throw new ApiError('触发词仅支持字母、数字与下划线，且不超过 16 字符');
+    if (!payload.datasetId) throw new ApiError('请选择训练数据集');
+    const dataset = db.datasets.find((d) => d.id === payload.datasetId);
+    if (!dataset) throw new ApiError('数据集不存在', 'NOT_FOUND', 404);
+    if (dataset.count < 10) throw new ApiError('数据集样本过少，至少需要 10 张图片');
+    if (dataset.tagged < Math.ceil(dataset.count * 0.6)) throw new ApiError(`${dataset.name} 还有 ${dataset.count - dataset.tagged} 张未打标，请先在资产库补齐标注`);
+    const config = normalizeConfig(payload.config || {}, dataset);
+    if (config.vramGb > config.vramLimitGb) {
+        throw new ApiError(`显存估算 ${config.vramGb.toFixed(1)} GB 超出节点上限 ${config.vramLimitGb} GB：请降低 Rank / 分辨率 / 批次，或增大梯度累积`);
+    }
+    return { dataset, config, warnings: configWarnings(config, dataset), fault: predictFault(config) };
+}
+
+/** 下单前的预估接口：与真实后端一致，前端只展示服务端算出的成本与时长 */
+export async function previewTraining(payload) {
+    return respond(() => {
+        const { dataset, config, warnings, fault } = checkTraining(payload);
+        const credits = findUser(getDb(), currentUserId())?.credits || 0;
+        return { dataset, config, warnings, fault, credits, enough: credits >= config.estimateCost };
+    }, { min: 60, max: 160 });
+}
+
+/** 真正建单（同步内部实现，createTraining / restartTraining 共用） */
+function submitTraining(db, me, payload) {
+    const { dataset, config, fault } = checkTraining(payload);
+    const cost = config.estimateCost;
+    if ((findUser(db, me)?.credits || 0) < cost) throw new ApiError(`算力不足：本次训练需要 ${cost} 积分`, 'NO_CREDIT', 402);
+    const training = {
+        id: uid('tr'),
+        name: String(payload.name).trim(),
+        ownerId: me,
+        datasetId: dataset.id,
+        taskId: '',
+        modelId: null,
+        status: 'queued',
+        trigger: String(payload.trigger).trim(),
+        config,
+        loss: [],
+        samples: [],
+        checkpoints: [],
+        epochsDone: 0,
+        createdAt: now(),
+        finishedAt: null,
+        durationMin: 0,
+        estimateMin: config.estimateMin,
+        error: null,
+        autoPublish: !!payload.autoPublish,
+        // 故意提交的已知危险组合：跑到对应阶段后失败，用于演示失败链路
+        expectFault: fault ? fault.reason : null,
+        faultAt: fault ? fault.at : null
+    };
+    spendCredits(db, me, cost, `LoRA 训练 · ${training.name}`, training.id);
+    const task = {
+        id: uid('t'),
+        type: 'train',
+        title: training.name,
+        ownerId: me,
+        status: 'queued',
+        progress: 0,
+        cost,
+        payload: {
             datasetId: dataset.id,
-            taskId: '',
-            modelId: null,
-            status: 'queued',
-            trigger: payload.trigger,
-            config: {
-                base: payload.base || 'SDXL 1.0',
-                rank: Number(payload.rank) || 32,
-                steps: Number(payload.steps) || 3000,
-                lr: Number(payload.lr) || 0.0001,
-                batch: Number(payload.batch) || 2,
-                resolution: payload.resolution || '1024',
-                optimizer: 'AdamW8bit',
-                scheduler: 'cosine'
-            },
-            loss: [],
-            createdAt: now(),
-            finishedAt: null,
-            durationMin: 0,
-            error: null,
-            autoPublish: !!payload.autoPublish
-        };
-        const cost = 120;
-        spendCredits(db, me, cost, `LoRA 训练 · ${training.name}`, training.id);
-        const task = {
-            id: uid('t'),
-            type: 'train',
-            title: training.name,
-            ownerId: me,
-            status: 'queued',
-            progress: 0,
-            cost,
-            payload: { datasetId: dataset.id, trainingId: training.id, base: training.config.base, rank: training.config.rank },
-            outputs: [],
-            logs: [{ t: clock(), level: 'info', msg: `训练任务已排队（${dataset.count} 张样本）` }],
-            createdAt: now(),
-            startedAt: null,
-            finishedAt: null,
-            error: null,
-            refId: training.id
-        };
-        training.taskId = task.id;
-        db.trainings.unshift(training);
-        db.tasks.unshift(task);
-        changed('training');
-        return { training, task };
+            trainingId: training.id,
+            base: config.base,
+            rank: config.rank,
+            steps: config.steps,
+            lr: config.lr
+        },
+        outputs: [],
+        logs: [
+            { t: clock(), level: 'info', msg: `训练任务已排队（${dataset.count} 张样本 · ${config.epochs} epoch · 预算 ${cost} 算力）` },
+            { t: clock(), level: 'info', msg: `预计 ${config.estimateMin} 分钟 · 显存估算 ${config.vramGb} GB · 权重约 ${config.weightMb} MB` }
+        ],
+        createdAt: now(),
+        startedAt: null,
+        finishedAt: null,
+        error: null,
+        refId: training.id
+    };
+    training.taskId = task.id;
+    db.trainings.unshift(training);
+    db.tasks.unshift(task);
+    changed('training');
+    return { training, task };
+}
+
+export async function createTraining(payload) {
+    return respond(() => submitTraining(getDb(), currentUserId(), payload));
+}
+
+/** 以既有训练的配置为模板重开一轮（改参数重试，不复制模型资产） */
+export async function restartTraining(trainingId, overrides = {}) {
+    return respond(() => {
+        const db = getDb();
+        const me = currentUserId();
+        const src = db.trainings.find((t) => t.id === trainingId);
+        if (!src) throw new ApiError('训练记录不存在', 'NOT_FOUND', 404);
+        if (src.ownerId !== me) throw new ApiError('无权操作该训练', 'FORBIDDEN', 403);
+        const config = { ...src.config, ...overrides };
+        ['estimateCost', 'estimateMin', 'samplesPerSec', 'vramGb', 'vramLimitGb', 'weightMb', 'perEpochRows', 'stepsPerEpoch', 'datasetCount', 'repeat', 'warmupSteps', 'lossPoints'].forEach((k) => delete config[k]);
+        return submitTraining(db, me, {
+            name: overrides.name || src.name,
+            trigger: src.trigger,
+            datasetId: overrides.datasetId || src.datasetId,
+            autoPublish: src.autoPublish,
+            config
+        });
     });
 }
 

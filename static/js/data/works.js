@@ -554,7 +554,7 @@ export const WORKS = [
         prompt: 'soft portrait photography, creamy skin tones, natural window light, 85mm',
         stats: { views: 5600, likes: 486, favorites: 242, comments: 31, remixes: 92 },
         price: { mode: 'credits', amount: 20 },
-        meta: { base: 'SDXL 1.0', trigger: 'lxportrait', rank: 32, steps: 42000, size: '24 MB', downloads: 318, loss: 0.058 },
+        meta: { base: 'SDXL 1.0', trigger: 'lxportrait', rank: 32, alpha: 16, steps: 2520, epochs: 20, lr: 0.0001, optimizer: 'AdamW8bit', scheduler: 'cosine', precision: 'bf16', resolution: '1024', datasetName: '人像精选集', recommendedWeight: 0.8, size: '21 MB', downloads: 318, loss: 0.0403, trainingId: 'tr_001' },
         params: { model: 'sdxl', steps: 30, cfg: 5.5, seed: 231208 }
     }),
     work({

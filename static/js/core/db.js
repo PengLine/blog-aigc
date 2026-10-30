@@ -18,7 +18,8 @@ export function getDb() {
     return cache;
 }
 
-function persist() {
+/** 将当前内存库写回 localStorage */
+export function persist() {
     writeLocal(KEYS.db, cache);
 }
 

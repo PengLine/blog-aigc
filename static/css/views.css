@@ -59,7 +59,7 @@
 
 .hero-actions .btn-primary {
     background: #fff;
-    color: var(--brand-700);
+    color: #1d4ed8;
     border-color: #fff;
 }
 
@@ -1088,7 +1088,7 @@
     position: relative;
 }
 
-.dataset-tag {
+.dataset-card .dataset-tag {
     position: absolute;
     top: 5px;
     left: 5px;
@@ -1097,10 +1097,11 @@
     font-size: 10.5px;
     font-weight: 600;
     color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
     background: rgba(15, 23, 42, 0.62);
 }
 
-.dataset-tag.official {
+.dataset-card .dataset-tag.official {
     background: var(--brand);
 }
 
@@ -1178,8 +1179,8 @@
     position: relative;
     padding: 22px;
     background:
-        radial-gradient(circle at 1px 1px, #dbe3f0 1px, transparent 0) 0 0 / 18px 18px,
-        #fbfdff;
+        radial-gradient(circle at 1px 1px, var(--canvas-dot) 1px, transparent 0) 0 0 / 18px 18px,
+        var(--canvas-bg);
     display: flex;
     flex-direction: column;
     gap: 0;
@@ -1204,8 +1205,8 @@
 }
 
 .wf-node.done {
-    border-color: #86efac;
-    background: #f6fefa;
+    border-color: var(--ok);
+    background: var(--ok-bg);
 }
 
 .wf-node .nd-head {
@@ -1284,17 +1285,19 @@
 }
 
 .profile-head {
-    display: flex;
-    align-items: flex-end;
-    gap: 16px;
-    padding: 0 22px 18px;
-    margin-top: -38px;
+    /* 头像绝对定位上叠封面，文字始终落在卡片底色上（两种主题均可读） */
+    display: block;
     position: relative;
-    flex-wrap: wrap;
+    padding: 14px 22px 18px 122px;
+    margin-top: 0;
 }
 
 .profile-head .avatar-xl {
+    position: absolute;
+    left: 22px;
+    top: -56px;
     border: 4px solid var(--surface);
+    background: var(--surface);
     box-shadow: var(--shadow-sm);
 }
 
@@ -1441,7 +1444,7 @@
     border: 1px solid var(--border-strong);
     border-radius: 12px;
     padding: 14px;
-    background: #fff;
+    background: var(--surface);
     text-align: center;
     cursor: pointer;
     transition: all var(--t-fast);
@@ -1470,12 +1473,12 @@
 }
 
 .package .p-bonus {
-    position: absolute;
-    top: -9px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--brand);
-    color: #fff;
+    /* 改为文档流内居中小标签，避免与右上角「最划算」徽标在窄列重叠 */
+    display: block;
+    width: max-content;
+    margin: 6px auto 0;
+    background: var(--brand-50);
+    color: var(--brand-600);
     font-size: 10.5px;
     padding: 1px 8px;
     border-radius: var(--r-full);
@@ -1486,7 +1489,7 @@
     border: 1px solid var(--border);
     border-radius: var(--r-lg);
     padding: 18px;
-    background: #fff;
+    background: var(--surface);
 }
 
 .plan-card.current {
@@ -1521,12 +1524,12 @@
     gap: 12px;
     padding: 14px 16px;
     border-bottom: 1px solid var(--border);
-    background: #fff;
+    background: var(--surface);
     position: relative;
 }
 
 .notif-item.unread {
-    background: #f8fbff;
+    background: var(--brand-50);
 }
 
 .notif-item.unread::before {
@@ -1597,7 +1600,7 @@
 }
 
 .admin-stat {
-    background: #fff;
+    background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--r-lg);
     padding: 14px 16px;
@@ -1645,6 +1648,16 @@
 @media (max-width: 720px) {
     .quick-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    /* 窄屏改为头像居中上叠封面、文字在下 */
+    .profile-head {
+        padding: 12px 16px 16px;
+    }
+
+    .profile-head .avatar-xl {
+        position: static;
+        margin: -46px 0 8px;
     }
 
     .work-grid {

@@ -4,7 +4,7 @@
  * 与真实服务保持一致的接口形态：异步、分页、错误码、延迟。
  * 视图层只依赖本模块，未来替换为 fetch 即可无缝切换到真实后端。
  */
-import { getDb, mutate, findUser, publicUser, addNotification, addTransaction, spendCredits, resetDb, unreadCount } from './db.js';
+import { getDb, mutate, persist, findUser, publicUser, addNotification, addTransaction, spendCredits, resetDb, unreadCount } from './db.js';
 import { currentUserId } from './auth.js';
 import { emit, EVENTS } from './bus.js';
 import { TASK_TYPES, taskCost, PLAN_MAP, RECHARGE_PACKAGES, MODEL_MAP } from './constants.js';
@@ -23,6 +23,8 @@ const NET_MIN = 120;
 const NET_MAX = 340;
 
 function changed(scope) {
+    // 任何数据变更都先落盘再广播，避免视图跳转后从 localStorage 读到旧数据（新建内容“消失”）
+    if (getDb()) persist();
     emit(EVENTS.dataChange, { scope, at: Date.now() });
 }
 

@@ -31,7 +31,7 @@
     --text: #0f172a;
     --text-2: #334155;
     --muted: #64748b;
-    --muted-2: #94a3b8;
+    --muted-2: #7c8ba3;
     --nav-bg: #0b1220;
     --nav-bg-2: #111c33;
     --nav-text: #c8d3e5;
@@ -41,6 +41,9 @@
     /* 表面变体：raised 用于选中态/键帽，需与卡片拉开层次 */
     --raised: #ffffff;
     --topbar-bg: rgba(255, 255, 255, 0.86);
+    --canvas-bg: #fbfdff;
+    --canvas-dot: #dbe3f0;
+    --on-danger: #ffffff;
     --scroll-thumb: #cbd5e1;
     --scroll-thumb-hover: #94a3b8;
 
@@ -123,6 +126,9 @@
 
     --raised: #2c3b58;
     --topbar-bg: rgba(16, 24, 42, 0.82);
+    --canvas-bg: #0d1524;
+    --canvas-dot: #263449;
+    --on-danger: #2a0a0d;
     --scroll-thumb: #2c3b58;
     --scroll-thumb-hover: #3d5074;
 
@@ -173,6 +179,9 @@
 
         --raised: #2c3b58;
         --topbar-bg: rgba(16, 24, 42, 0.82);
+        --canvas-bg: #0d1524;
+        --canvas-dot: #263449;
+        --on-danger: #2a0a0d;
         --scroll-thumb: #2c3b58;
         --scroll-thumb-hover: #3d5074;
 

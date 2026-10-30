@@ -400,6 +400,11 @@ function tick() {
                     task.progress = Math.max(task.progress || 0, 2);
                     running += 1;
                     log(task, 'info', '已分配算力节点，任务开始执行');
+                    // 训练记录与任务状态保持同步，否则训练页徽章会一直停在「排队中」
+                    if (task.type === 'train') {
+                        const training = db.trainings.find((t) => t.id === task.payload.trainingId);
+                        if (training && training.status === 'queued') training.status = 'running';
+                    }
                     snapshot = task;
                     return;
                 }

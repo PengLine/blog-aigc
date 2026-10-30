@@ -206,9 +206,12 @@ export function lossAt(cfg, stepIndex, total) {
     if (cfg.scheduler === 'constant') return Number((start - (start - floor) * p * 0.75 + jitter).toFixed(4));
     if (cfg.scheduler === 'linear') return Number((start - (start - floor) * p + jitter).toFixed(4));
     if (cfg.scheduler === 'cosine_with_restarts') {
+        // 每轮从当轮起点退火到谷底，重启瞬间跳回起点（起点逐轮降低，整体仍收敛）
         const cycles = 3;
-        const phase = (p % (1 / cycles)) * cycles;
-        return Number((floor + (start - floor) * Math.pow(Math.sin(Math.PI * phase / 2), 0.7) + jitter).toFixed(4));
+        const cycle = Math.min(cycles - 1, Math.floor(p * cycles));
+        const phase = Math.min(1, p * cycles - cycle);
+        const cycleStart = start - (start - floor) * (cycle / cycles) * 0.85;
+        return Number((floor + (cycleStart - floor) * (0.5 + 0.5 * Math.cos(Math.PI * phase)) + jitter).toFixed(4));
     }
     return Number((floor + (start - floor) * (0.5 + 0.5 * Math.cos(Math.PI * p)) + jitter).toFixed(4));
 }

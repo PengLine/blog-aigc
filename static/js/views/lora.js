@@ -33,6 +33,8 @@ export async function render(host, ctx) {
 
     const officialCount = datasets.filter((d) => d.isOfficial).length;
     const running = trainings.filter((t) => ['queued', 'running'].includes(t.status));
+    const doneCount = trainings.filter((t) => t.status === 'succeeded').length;
+    const avgMin = avgDuration(trainings);
 
     host.innerHTML = `
         <div class="page-head">
@@ -47,10 +49,10 @@ export async function render(host, ctx) {
         </div>
 
         <div class="grid cols-4" style="margin-bottom:16px">
-            ${statCard('数据集', datasets.length, `官方 ${officialCount} · 我的 ${datasets.length - officialCount}`, 'database')}
-            ${statCard('训练任务', trainings.length, `${trainings.filter((t) => t.status === 'succeeded').length} 个已完成 · ${running.length} 个进行中`, 'cpu')}
-            ${statCard('平均耗时', trainings.filter((t) => t.durationMin).length ? `${Math.round(trainings.filter((t) => t.durationMin).reduce((s, t) => s + t.durationMin, 0) / trainings.filter((t) => t.durationMin).length)} 分钟` : '—', '标准配置 2400 步', 'clock')}
-            ${statCard('本次预算', '<span id="statBudget">—</span>', '随参数实时预估，中断按进度结算', 'credit', true)}
+            ${statCard('ds', '数据集', datasets.length, `官方 ${officialCount} · 我的 ${datasets.length - officialCount}`, 'database')}
+            ${statCard('jobs', '训练任务', trainings.length, `${doneCount} 个已完成 · ${running.length} 个进行中`, 'cpu')}
+            ${statCard('time', '平均耗时', avgMin, '历史训练实际用时', 'clock')}
+            ${statCard('budget', '本次预算', '<span id="statBudget">—</span>', '随参数实时预估，中断按进度结算', 'credit', true)}
         </div>
 
         <div class="train-wrap">
@@ -104,8 +106,8 @@ export async function render(host, ctx) {
                                 <select class="select" id="tRank">${RANKS.map((r) => `<option value="${r}" ${r === preset.rank ? 'selected' : ''}>${r}</option>`).join('')}</select>
                             </div>
                             <div class="field">
-                                <label class="label" for="tAlpha">Alpha
-                                    <span class="hint-inline"><label class="row small" style="gap:5px;cursor:pointer"><span class="switch on" id="alphaAuto" style="width:32px;height:18px"></span>自动 ½·Rank</label></span></label>
+                                <div class="label">Alpha
+                                    <span class="hint-inline"><label class="row small" style="gap:5px;cursor:pointer" id="swAlpha"><span class="switch on" id="alphaAuto" style="width:32px;height:18px"></span>自动 ½·Rank</label></span></div>
                                 <input class="input" type="number" id="tAlpha" min="1" max="128" step="1" value="${Math.round(preset.rank / 2)}" ${state.alphaAuto ? 'disabled' : ''}>
                             </div>
                             <div class="field">
@@ -156,11 +158,11 @@ export async function render(host, ctx) {
                                 </div>
                                 <div class="field span-2">
                                     <label class="label" for="tSeed">随机种子 <span class="hint-inline">-1 表示每次随机</span></label>
-                                    <input class="input mono" type="number" id="tSeed" value="-1">
+                                    <input class="input mono" type="number" id="tSeed" min="-1" max="2147483647" step="1" value="-1">
                                 </div>
                                 <div class="field span-2 row" style="gap:22px;flex-wrap:wrap">
-                                    <label class="row small" style="gap:6px;cursor:pointer"><span class="switch on" id="tNoise"></span> Noise Offset（改善暗部层次）</label>
-                                    <label class="row small" style="gap:6px;cursor:pointer"><span class="switch" id="tTextEnc"></span> 训练文本编码器（更吃显存）</label>
+                                    <label class="row small" style="gap:6px;cursor:pointer" id="swNoise"><span class="switch on" id="tNoise"></span> Noise Offset（改善暗部层次）</label>
+                                    <label class="row small" style="gap:6px;cursor:pointer" id="swTextEnc"><span class="switch" id="tTextEnc"></span> 训练文本编码器（更吃显存）</label>
                                 </div>
                             </div>
                         </details>
@@ -177,7 +179,7 @@ export async function render(host, ctx) {
                                 <span>${icon('info', 13)} <span id="modeHint">${escapeHtml(preset.hint)}</span></span>
                             </div>
                             <div class="row" style="gap:12px">
-                                <label class="row small" style="gap:6px;cursor:pointer">
+                                <label class="row small" style="gap:6px;cursor:pointer" id="swPublish">
                                     <span class="switch" id="autoPublish"></span> 完成后自动发布
                                 </label>
                                 <button class="btn btn-outline" id="fillExample">${icon('wand', 15)}填充示例配置</button>
@@ -195,7 +197,7 @@ export async function render(host, ctx) {
                     <div class="card-head">
                         <div class="card-title">训练任务</div>
                         <div class="spacer"></div>
-                        <span class="badge">${trainings.length}</span>
+                        <span class="badge" id="jobCount">${trainings.length}</span>
                     </div>
                     <div class="card-body col" style="gap:10px" id="jobList">
                         ${trainings.length ? trainings.map(jobCard).join('') : emptyState({ title: '还没有训练任务', desc: '选择数据集并配置参数后开始第一次训练。' })}
@@ -209,7 +211,7 @@ export async function render(host, ctx) {
                         <div class="row" style="gap:8px;align-items:flex-start">${icon('check', 14)}<span>显存不够时优先加「梯度累积」而不是降 Rank，收敛更稳。</span></div>
                         <div class="row" style="gap:8px;align-items:flex-start">${icon('check', 14)}<span>触发词用罕见短词，避免与底模已有概念冲突。</span></div>
                         <div class="row" style="gap:8px;align-items:flex-start">${icon('alert', 14)}<span>训练失败会自动退还算力；中断可按已完成进度结算。</span></div>
-                        <div class="row" style="gap:8px;align-items:flex-start">${icon('alert', 14)}<span>演示环境把训练时长压缩约 40×，进度与日志口径与真实一致。</span></div>
+                        <div class="row" style="gap:8px;align-items:flex-start">${icon('alert', 14)}<span>演示环境会压缩训练时长，进度、日志与 loss 口径与真实训练一致。</span></div>
                     </div>
                 </div>
             </div>
@@ -227,6 +229,29 @@ export async function render(host, ctx) {
         const el = $(sel);
         return el ? el.value : fallback;
     };
+
+    /** 重拉列表后统一刷新：卡片 + 计数徽标 + 顶部指标（否则提交/完成后会停在旧值） */
+    function applyList(list) {
+        trainings.length = 0;
+        list.forEach((t) => trainings.push(t));
+        jobList.innerHTML = trainings.length
+            ? trainings.map(jobCard).join('')
+            : emptyState({ title: '还没有训练任务', desc: '选择数据集并配置参数后开始第一次训练。' });
+        paintStats();
+    }
+
+    function paintStats() {
+        const done = trainings.filter((t) => t.status === 'succeeded').length;
+        const live = trainings.filter((t) => ['queued', 'running'].includes(t.status)).length;
+        const setText = (sel, text) => {
+            const el = $(sel);
+            if (el) el.textContent = text;
+        };
+        setText('#jobCount', String(trainings.length));
+        setText('#stat-jobs-v', num(trainings.length));
+        setText('#stat-jobs-t', `${done} 个已完成 · ${live} 个进行中`);
+        setText('#stat-time-v', avgDuration(trainings));
+    }
 
     function currentInput() {
         return {
@@ -322,6 +347,9 @@ export async function render(host, ctx) {
         $('#tOpt').value = p.optimizer;
         $('#tSch').value = p.scheduler;
         $('#tNoise').classList.toggle('on', !!p.noiseOffset);
+        // 预设同时重定安全基线：否则残留的 fp16 + 文本编码器会把“必然失败”的组合带进下一轮
+        $('#tPrec').value = 'bf16';
+        $('#tTextEnc').classList.remove('on');
         state.epochs = suggestEpochs({ mode, batch: p.batch, gradAccum: p.gradAccum }, dataset);
         $('#tEpochs').value = state.epochs;
         host.querySelectorAll('#modeTabs .chip').forEach((el) => el.classList.toggle('active', el.dataset.mode === mode));
@@ -345,13 +373,23 @@ export async function render(host, ctx) {
         paintEstimate();
     });
 
-    host.querySelector('#alphaAuto').addEventListener('click', (e) => {
+    // 开关行统一绑在 label 上，点文字与点开关都能切换（preventDefault 避免 label 默认行为再触发一次）
+    $('#swAlpha').addEventListener('click', (e) => {
+        e.preventDefault();
         state.alphaAuto = !state.alphaAuto;
-        e.currentTarget.classList.toggle('on', state.alphaAuto);
+        $('#alphaAuto').classList.toggle('on', state.alphaAuto);
         const el = $('#tAlpha');
         el.disabled = state.alphaAuto;
         if (state.alphaAuto) el.value = Math.round(Number(val('#tRank')) * ((MODE_PRESETS[state.mode] || {}).alphaRatio || 0.5));
         paintEstimate();
+    });
+
+    [['#swNoise', '#tNoise'], ['#swTextEnc', '#tTextEnc'], ['#swPublish', '#autoPublish']].forEach(([rowSel, swSel]) => {
+        $(rowSel)?.addEventListener('click', (e) => {
+            e.preventDefault();
+            $(swSel).classList.toggle('on');
+            paintEstimate();
+        });
     });
 
     host.querySelector('#tRank').addEventListener('change', () => {
@@ -366,22 +404,18 @@ export async function render(host, ctx) {
         el.addEventListener('change', paintEstimate);
     });
 
-    ['#tNoise', '#tTextEnc', '#autoPublish'].forEach((sel) => {
-        host.querySelector(sel)?.addEventListener('click', (e) => {
-            e.currentTarget.classList.toggle('on');
-            paintEstimate();
-        });
-    });
-
     host.querySelector('#advBox')?.addEventListener('toggle', () => {
         $('#advBadge').textContent = host.querySelector('#advBox').open ? '' : ' · 已按预设配置';
     });
 
     host.querySelector('#fillExample').addEventListener('click', () => {
         const dataset = datasets.find((d) => d.id === state.datasetId);
-        const seedName = dataset?.name?.slice(-4) || 'demo';
-        $('#tName').value = `${seedName} · 风格模型`;
-        $('#tTrigger').value = `lx_${(seedName + Date.now()).replace(/[^a-z0-9]/gi, '').slice(-5).toLowerCase()}`;
+        // 从数据集名称里收出主词，避免截尾巴截出「筑参考集」这类碎片名
+        const clean = String(dataset?.name || 'demo').replace(/^(官方|我的)\s*[·、]\s*/, '').replace(/[（(].*?[)）]/g, '').trim();
+        const base = (clean.replace(/(参考集|基础集|精选集|素材集|素材库|数据集)$/, '') || clean).slice(0, 8);
+        const digits = (String(dataset?.id || '').match(/\d+/) || ['0'])[0];
+        $('#tName').value = `${base} · 风格模型`.slice(0, 24);
+        $('#tTrigger').value = `lx_${digits}${String(Date.now()).slice(-2)}`;
         applyPreset('standard');
         $('#tSave').value = 3;
         $('#tSeed').value = 20260213;
@@ -410,8 +444,7 @@ export async function render(host, ctx) {
             const next = await getAccount();
             state.credits = next.credits;
             balanceText.textContent = num(next.credits);
-            const fresh = await listTrainings();
-            jobList.innerHTML = fresh.trainings.map(jobCard).join('');
+            applyList((await listTrainings()).trainings);
             watch(training.id);
         } catch (err) {
             toast(err.message, 'error');
@@ -443,7 +476,7 @@ export async function render(host, ctx) {
                     const [next, fresh] = await Promise.all([getAccount(), listTrainings()]);
                     state.credits = next.credits;
                     balanceText.textContent = num(next.credits);
-                    jobList.innerHTML = fresh.trainings.map(jobCard).join('');
+                    applyList(fresh.trainings);
                 }
             } catch (err) {
                 console.warn(err);
@@ -611,9 +644,7 @@ export async function render(host, ctx) {
             await cancelTask(taskId);
             toast('训练已中断，未消耗算力已退回', 'success');
             const [fresh, next] = await Promise.all([listTrainings(), getAccount()]);
-            trainings.length = 0;
-            fresh.trainings.forEach((t) => trainings.push(t));
-            jobList.innerHTML = fresh.trainings.map(jobCard).join('');
+            applyList(fresh.trainings);
             state.credits = next.credits;
             balanceText.textContent = num(next.credits);
             watch(trainingId);
@@ -643,9 +674,7 @@ export async function render(host, ctx) {
                         const { training: fresh } = await restartTraining(training.id, opt.overrides);
                         toast(`已按「${opt.title}」重新提交`, 'success');
                         const list = await listTrainings();
-                        trainings.length = 0;
-                        list.trainings.forEach((t) => trainings.push(t));
-                        jobList.innerHTML = list.trainings.map(jobCard).join('');
+                        applyList(list.trainings);
                         watch(fresh.id);
                     } catch (err) {
                         toast(err.message, 'error');
@@ -730,15 +759,21 @@ export async function render(host, ctx) {
 
 /* ============================ 纯展示函数 ============================ */
 
-function statCard(label, value, sub, iconName, raw = false) {
+function statCard(id, label, value, sub, iconName, raw = false) {
     return `<div class="metric">
         <div class="row" style="gap:8px">
             <span style="width:28px;height:28px;border-radius:8px;background:var(--brand-50);color:var(--brand-600);display:inline-flex;align-items:center;justify-content:center">${icon(iconName, 14)}</span>
             <span class="metric-label">${escapeHtml(label)}</span>
         </div>
-        <div class="metric-value">${raw ? value : (typeof value === 'number' ? num(value) : escapeHtml(String(value)))}</div>
-        <div class="metric-trend">${escapeHtml(sub)}</div>
+        <div class="metric-value" id="stat-${id}-v">${raw ? value : (typeof value === 'number' ? num(value) : escapeHtml(String(value)))}</div>
+        <div class="metric-trend" id="stat-${id}-t">${escapeHtml(sub)}</div>
     </div>`;
+}
+
+/** 已完成训练的平均实际耗时（分钟） */
+function avgDuration(list) {
+    const done = list.filter((t) => t.durationMin);
+    return done.length ? `${Math.round(done.reduce((s, t) => s + t.durationMin, 0) / done.length)} 分钟` : '—';
 }
 
 function jobCard(training) {
@@ -832,5 +867,5 @@ function lossChart(points, cfg = {}) {
         <path d="${path} L${lx.toFixed(1)},${h} L0,${h} Z" fill="var(--brand-50)" opacity=".7"/>
         <circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="2.6" fill="var(--brand)"/>
     </svg>
-    <div class="chart-axis"><span>step ${num(cfg.steps || points[points.length - 1].step)}</span><span>${min} → ${max}</span></div>`;
+    <div class="chart-axis"><span>step 1 → ${num(cfg.steps || points[points.length - 1].step)}</span><span>loss ${min} ~ ${max}</span></div>`;
 }

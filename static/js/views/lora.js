@@ -230,14 +230,39 @@ export async function render(host, ctx) {
         return el ? el.value : fallback;
     };
 
-    /** 重拉列表后统一刷新：卡片 + 计数徽标 + 顶部指标（否则提交/完成后会停在旧值） */
-    function applyList(list) {
+    /**
+     * 重拉列表后刷新：卡片 + 计数徽标 + 顶部指标。
+     * patch = true 时仅在有状态发生变化的那一行做局部替换，
+     * 进度微调只补进度条与最新日志，避免整列重绘打断 hover / 滚动 / 进度条动画。
+     */
+    function applyList(list, patch = false) {
+        const before = trainings.map((t) => `${t.id}:${t.status}`).join(',');
         trainings.length = 0;
         list.forEach((t) => trainings.push(t));
+        const after = trainings.map((t) => `${t.id}:${t.status}`).join(',');
+        if (patch && before === after && jobList.children.length === trainings.length) {
+            patchJobs();
+            paintStats();
+            return;
+        }
         jobList.innerHTML = trainings.length
             ? trainings.map(jobCard).join('')
             : emptyState({ title: '还没有训练任务', desc: '选择数据集并配置参数后开始第一次训练。' });
         paintStats();
+    }
+
+    /** 进行中的卡片只补进度与日志两处 */
+    function patchJobs() {
+        trainings.forEach((t) => {
+            if (!['queued', 'running'].includes(t.status)) return;
+            const card = jobList.querySelector(`[data-job="${t.id}"]`);
+            if (!card) return;
+            const bar = card.querySelector('.progress i');
+            if (bar) bar.style.width = `${Math.max(0, Math.min(100, Math.round(t.task?.progress || 0)))}%`;
+            const line = card.querySelector('.job-log');
+            const msg = t.task?.logs?.slice(-1)[0]?.msg || '等待调度';
+            if (line && line.textContent !== msg) line.textContent = msg;
+        });
     }
 
     function paintStats() {
@@ -249,7 +274,7 @@ export async function render(host, ctx) {
         };
         setText('#jobCount', String(trainings.length));
         setText('#stat-jobs-v', num(trainings.length));
-        setText('#stat-jobs-t', `${done} 个已完成 · ${live} 个进行中`);
+        setText('#stat-jobs-t', `${done} 个已完成 · ${live} 个运行中`);
         setText('#stat-time-v', avgDuration(trainings));
     }
 
@@ -454,6 +479,17 @@ export async function render(host, ctx) {
         }
     });
 
+    /* 列表跟随引擎：提交后 queued → running 的转换由引擎完成，
+     * 面板轮询只在打开过程时跑，因此需要一个不依赖面板的轻量列表同步 */
+    on(EVENTS.taskUpdate, (payload) => {
+        const task = payload?.task;
+        if (!task || task.type !== 'train') return;
+        if (!trainings.some((t) => ['queued', 'running'].includes(t.status))) return;
+        listTrainings()
+            .then(({ trainings: fresh }) => applyList(fresh, true))
+            .catch((err) => console.warn(err));
+    });
+
     /* ------------------------- 过程监控 ------------------------- */
     function stopWatch() {
         if (state.polling) clearInterval(state.polling);
@@ -504,7 +540,7 @@ export async function render(host, ctx) {
                     <div class="card-title row" style="gap:8px">${escapeHtml(training.name)}
                         <span class="badge ${st.tone ? `badge-${st.tone}` : ''}">${st.label}</span>
                     </div>
-                    <div class="card-sub">${escapeHtml(cfg.base)} · Rank ${cfg.rank}/${cfg.alpha} · ${cfg.epochs} epoch · ${num(cfg.steps)} 步 · 消耗 ${num(task.cost || cfg.estimateCost)} 算力</div>
+                    <div class="card-sub">${escapeHtml(cfg.base)} · Rank ${cfg.rank}/${cfg.alpha} · ${cfg.epochs} epoch · ${num(cfg.steps)} 步 · ${costText(task, cfg)}</div>
                 </div>
                 <div class="spacer"></div>
                 ${active ? `<button class="btn btn-sm btn-outline" data-act="cancel" data-id="${task.id || ''}">${icon('stop', 13)}中断训练</button>` : ''}
@@ -515,7 +551,7 @@ export async function render(host, ctx) {
                 <div style="margin:12px 0 4px">${progressBar(progress, training.status === 'failed' ? 'danger' : training.status === 'succeeded' ? 'ok' : '', active)}</div>
                 <div class="row between small muted" style="margin-bottom:12px">
                     <span>第 ${Math.round((progress / 100) * cfg.steps)} / ${num(cfg.steps)} 步 · Epoch ${Math.min(cfg.epochs, Math.floor((progress / 100) * cfg.epochs))} / ${cfg.epochs}</span>
-                    <span>${progress >= 100 ? '已结束' : `剩余约 ${Math.max(0, Math.ceil((cfg.estimateMin || 0) * (1 - progress / 100)))} 分钟`}</span>
+                    <span>${active ? `剩余约 ${Math.max(0, Math.ceil((cfg.estimateMin || 0) * (1 - progress / 100)))} 分钟` : '已结束'}</span>
                 </div>
 
                 <div class="live-grid">
@@ -553,7 +589,7 @@ export async function render(host, ctx) {
                     <span class="spacer"></span>
                     <button class="btn btn-sm btn-outline" data-act="retry" data-training="${training.id}">${icon('refresh', 13)}改参数重试</button>
                 </div>` : ''}
-                ${training.status === 'canceled' ? `<div class="small muted" style="margin-top:12px">训练已中断，按已完成 ${Math.round(progress)}% 结算，剩余算力已退回账户。</div>` : ''}
+                ${training.status === 'canceled' ? `<div class="small muted" style="margin-top:12px">训练已中断，按已完成 ${Math.round(progress)}% 结算：${costText(task, cfg)}。</div>` : ''}
             </div>
         </div>`;
         const log = progressBox.querySelector('#liveLog');
@@ -712,7 +748,7 @@ export async function render(host, ctx) {
                     <dt>显存 / 吞吐</dt><dd>${cfg.vramGb} GB（上限 ${cfg.vramLimitGb}）· ${cfg.samplesPerSec} samples/s</dd>
                     <dt>创建 / 耗时</dt><dd>${timeAgo(training.createdAt)} · ${training.durationMin ? `${training.durationMin} 分钟` : '—'}</dd>
                     <dt>最终 loss</dt><dd>${loss.length ? loss[loss.length - 1].loss : '—'}</dd>
-                    <dt>消耗算力</dt><dd>${num(training.task?.cost || cfg.estimateCost || 0)} 积分</dd>
+                    <dt>消耗算力</dt><dd>${settledCost(training.task, cfg).text} 积分</dd>
                 </dl>
                 ${loss.length ? `<div>
                     <div class="label" style="margin-bottom:6px">Loss 曲线</div>
@@ -759,6 +795,28 @@ export async function render(host, ctx) {
 
 /* ============================ 纯展示函数 ============================ */
 
+/**
+ * 实际计费：名义消耗扣除退还部分（中断按比例退、失败全额退）。
+ * 不这样做的话，已取消的任务会同时显示「消耗 150」和「已退 129」两个矛盾数字。
+ */
+function settledCost(task, cfg = {}) {
+    const cost = Number(task?.cost ?? cfg.estimateCost) || 0;
+    const refund = Number(task?.refund) || 0;
+    const paid = Math.max(0, cost - refund);
+    return {
+        cost,
+        refund,
+        paid,
+        text: refund > 0 ? `${num(paid)}（名义 ${num(cost)}，已退 ${num(refund)}）` : num(cost)
+    };
+}
+
+/** 面板与详情用的计费文案 */
+function costText(task, cfg) {
+    const c = settledCost(task, cfg);
+    return c.refund > 0 ? `实付 ${c.text} 算力` : `消耗 ${num(c.cost)} 算力`;
+}
+
 function statCard(id, label, value, sub, iconName, raw = false) {
     return `<div class="metric">
         <div class="row" style="gap:8px">
@@ -798,7 +856,7 @@ function jobCard(training) {
         </div>
         ${['queued', 'running'].includes(training.status) ? `
             <div style="margin:8px 0 4px">${progressBar(task?.progress || 0, '', true)}</div>
-            <div class="small muted ellipsis">${escapeHtml(lastLog)}</div>
+            <div class="small muted ellipsis job-log">${escapeHtml(lastLog)}</div>
             <div class="row" style="gap:6px;margin-top:8px">
                 <button class="btn btn-sm btn-primary" data-open="${training.id}">${icon('eye', 13)}查看过程</button>
                 <button class="btn btn-sm btn-ghost" data-cancel="${training.id}" data-task="${task?.id || ''}">${icon('stop', 13)}中断</button>

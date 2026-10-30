@@ -372,6 +372,8 @@ function failTask(db, task, reason) {
         log(task, 'warn', '已保存中断前的 loss 与 checkpoint，可在训练详情中「改参数重试」');
     }
     if (task.cost > 0) {
+        // 失败全额退还，同样记到任务上，任务中心才能展示「实际消耗 0」
+        task.refund = task.cost;
         addTransaction(db, task.ownerId, { type: 'refund', amount: task.cost, title: `任务失败退款 · ${task.title}`, refId: task.id });
     }
     addNotification(db, {

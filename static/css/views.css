@@ -1431,7 +1431,8 @@
 /* 实时指标 */
 .live-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+    /* 6 个指标格固定 3 列：auto-fit 会按宽度排出 5 列，把第 6 格孤零零甩到第二行 */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
     margin: 14px 0;
 }
@@ -2253,6 +2254,10 @@
 
     .live-charts {
         grid-template-columns: minmax(0, 1fr);
+    }
+
+    .live-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .wf-layout {

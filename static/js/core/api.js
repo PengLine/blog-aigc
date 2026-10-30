@@ -579,6 +579,8 @@ export async function cancelTask(id) {
             // 训练按时结算：已跑完的进度不予退还，其余按比例退回（比全退更接近真实计费）
             const ratio = task.type === 'train' ? 1 - Math.min(100, task.progress || 0) / 100 : 1;
             const refund = Math.max(0, Math.round(task.cost * ratio));
+            // 记录实退金额：页面据此算「实际消耗」，避免中断任务仍显示名义全额
+            task.refund = refund;
             if (refund > 0) {
                 addTransaction(db, me, { type: 'refund', amount: refund, title: `任务取消退款 · ${task.title}`, refId: task.id });
                 task.logs.push({ t: clock(), level: 'info', msg: `按已完成 ${Math.round(task.progress || 0)}% 结算，退还 ${refund} / ${task.cost} 算力` });

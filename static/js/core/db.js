@@ -5,6 +5,20 @@ import { emit, EVENTS } from './bus.js';
 
 let cache = null;
 
+/**
+ * 多标签页数据一致性
+ * ------------------------------------------------------------------
+ * 本模块是「整库内存缓存 + 全量覆盖写」：两个标签页各持一份 cache 时，
+ * 后写的一方会把对方刚新增的记录（任务、流水、训练）整片抹掉。
+ * 收到其他标签页的 storage 事件就作废本地缓存，下次访问重新读盘；
+ * 本地所有写入都在同一同步事务里立刻 persist，不存在未落盘的中间态。
+ */
+if (typeof window !== 'undefined') {
+    window.addEventListener('storage', (e) => {
+        if (e.key === KEYS.db || e.key === null) cache = null;
+    });
+}
+
 /** 读取数据库（首次访问自动写入种子数据） */
 export function getDb() {
     if (cache) return cache;

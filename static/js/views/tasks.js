@@ -112,6 +112,13 @@ export async function render(host, ctx) {
         });
     }
 
+    /** 实际计费：中断按比例退、失败全额退，不能继续挂着名义全额 */
+    function costLabel(task) {
+        const cost = Number(task.cost) || 0;
+        const refund = Number(task.refund) || 0;
+        return refund > 0 ? `实付 ${Math.max(0, cost - refund)} 算力（已退 ${refund}）` : `消耗 ${cost} 算力`;
+    }
+
     function rowHtml(task) {
         const st = statusMeta(task.status);
         const type = TASK_TYPES[task.type] || { name: '任务', icon: 'zap' };
@@ -122,7 +129,7 @@ export async function render(host, ctx) {
                 <div class="task-title">${escapeHtml(task.title)}
                     <span class="badge ${st.tone ? `badge-${st.tone}` : ''}">${st.label}</span>
                 </div>
-                <div class="task-sub">${type.name} · 消耗 ${task.cost} 算力 · ${timeAgo(task.createdAt)}
+                <div class="task-sub">${type.name} · ${costLabel(task)} · ${timeAgo(task.createdAt)}
                     ${task.outputs?.length ? ` · ${task.outputs.length} 个产物` : ''}</div>
                 ${running ? `<div class="task-bar">${progressBar(task.progress)}
                     <span class="small muted">${escapeHtml((task.logs || []).slice(-1)[0]?.msg || '等待调度')}</span></div>` : ''}
@@ -187,7 +194,7 @@ export async function render(host, ctx) {
                     <div class="row wrap" style="gap:8px">
                         <span class="badge ${st.tone ? `badge-${st.tone}` : ''}">${st.label}</span>
                         <span class="tag">${task.id}</span>
-                        <span class="tag">${task.cost} 算力</span>
+                        <span class="tag">${costLabel(task)}</span>
                         <span class="tag">${fmtDate(task.createdAt, true)}</span>
                     </div>
                     <div>

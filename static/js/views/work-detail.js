@@ -24,6 +24,7 @@ import {
     emptyState
 } from '../core/ui.js';
 import { escapeHtml, num, timeAgo, fmtDate } from '../core/format.js';
+import { artCover, POSTER_SECOND } from '../core/cover.js';
 
 export async function render(host, ctx) {
     setPageTitle('作品详情');
@@ -103,8 +104,8 @@ export async function render(host, ctx) {
                 <div class="card" style="overflow:hidden">
                     <div class="media-stage">
                         ${isVideo
-                        ? `<video controls poster="${escapeHtml(work.cover)}" src="${escapeHtml(work.mediaUrl || '')}">您的浏览器不支持视频播放</video>`
-                        : imgTag(work.cover, work.title)}
+                        ? `<video controls preload="metadata" poster="${escapeHtml(artCover({ title: work.title, prompt: work.prompt, kind: 'video', second: POSTER_SECOND }))}" src="${escapeHtml(work.mediaUrl || '')}">您的浏览器不支持视频播放</video>`
+                        : imgTag(work.cover, work.title, '', `data-fb-prompt="${escapeHtml(work.prompt || '')}"`)}
                     </div>
                     <div class="card-body">
                         <p style="font-size:13.5px;color:var(--text-2);line-height:1.8">${escapeHtml(work.desc || '作者暂未填写作品描述。')}</p>

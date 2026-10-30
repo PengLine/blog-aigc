@@ -3,6 +3,7 @@
  */
 import { escapeHtml, num, timeAgo, placeholder, avatarFallback, fmtDuration } from './format.js';
 import { kindMeta, statusMeta } from './constants.js';
+import { artCover, POSTER_SECOND, useArtCover } from './cover.js';
 
 /* ------------------------------ 图标 ------------------------------ */
 const ICONS = {
@@ -27,6 +28,8 @@ const ICONS = {
     'chevron-right': '<path d="m9 6 6 6-6 6"/>',
     'arrow-left': '<path d="M20 12H4"/><path d="m10 6-6 6 6 6"/>',
     'arrow-right': '<path d="M4 12h16"/><path d="m14 6 6 6-6 6"/>',
+    'arrow-up': '<path d="M12 20V4"/><path d="m6 10 6-6 6 6"/>',
+    'arrow-down': '<path d="M12 4v16"/><path d="m6 14 6 6 6-6"/>',
     heart: '<path d="M12 20s-7-4.4-7-9.3A4.2 4.2 0 0 1 12 7a4.2 4.2 0 0 1 7 3.7C19 15.6 12 20 12 20Z"/>',
     star: '<path d="m12 3 2.7 5.6 6.3.9-4.5 4.4 1 6.1-5.5-2.9-5.5 2.9 1-6.1L3 9.5l6.3-.9L12 3Z"/>',
     comment: '<path d="M21 12a8 8 0 0 1-8 8H7l-4 3V12a8 8 0 0 1 8-8h2a8 8 0 0 1 8 8Z"/>',
@@ -84,15 +87,19 @@ export function icon(name, size = 16) {
 }
 
 /* ------------------------------ 基础渲染 ------------------------------ */
+const IMG_FALLBACK = "this.onerror=null;if(window.__coverFallback)this.src=window.__coverFallback(this.dataset.fbTitle,this.dataset.fbPrompt,this.dataset.fbKind)";
 export function imgTag(src, alt = '', cls = '', extra = '') {
-    const fallback = placeholder(alt || 'AIGC');
-    const safeSrc = src ? escapeHtml(src) : fallback;
-    return `<img src="${safeSrc}" alt="${escapeHtml(alt)}" class="${cls}" loading="lazy" onerror="this.onerror=null;this.src='${fallback}'" ${extra}>`;
+    const fallback = escapeHtml(alt || 'AIGC');
+    // 空 src / 失效演示图床 → 直接确定性封面；否则先试真图，失败回退
+    const effective = useArtCover(src) ? artCover({ title: alt || 'AIGC' }) : src;
+    const safeSrc = escapeHtml(effective);
+    return `<img src="${safeSrc}" alt="${escapeHtml(alt)}" class="${cls}" loading="lazy" data-fb-title="${fallback}" onerror="${IMG_FALLBACK}" ${extra}>`;
 }
 
 export function avatarTag(user, size = '', extraClass = '') {
     const name = user?.name || '匿名';
-    const src = user?.avatar || avatarFallback(name);
+    // 失效演示图床的头像（所有人同一张占位图）降级为彩色首字母头像
+    const src = user?.avatar && !useArtCover(user.avatar) ? user.avatar : avatarFallback(name);
     return `<img src="${escapeHtml(src)}" alt="${escapeHtml(name)}" class="avatar ${size} ${extraClass}" loading="lazy" onerror="this.onerror=null;this.src='${avatarFallback(name)}'">`;
 }
 
@@ -157,6 +164,44 @@ export function skeletonRows(count = 5) {
 }
 
 /* ------------------------------ 作品卡片 ------------------------------ */
+/**
+ * 媒体缩略图：
+ * - 视频：用 seek 到第 3 秒的 <video> 真实帧（显示不需 CORS），未加载时先显示 poster=artCover；
+ *   由 cover.js 的 IntersectionObserver 惰性接管。
+ * - 图片：优先真图，失败回退 artCover。
+ */
+export function mediaThumb(work, cls = '') {
+    const isVideo = (work.mediaType === 'video' || work.kind === 'video')
+        && !!work.mediaUrl && /^https?:/i.test(work.mediaUrl);
+    // 卡片媒体框为 4:3，封面同比例生成避免 object-fit:cover 裁掉标题
+    const fb = artCover({
+        title: work.title,
+        prompt: work.prompt,
+        kind: isVideo ? 'video' : 'image',
+        second: isVideo ? POSTER_SECOND : null,
+        width: 512,
+        height: 384
+    });
+    if (isVideo) {
+        return `<video class="vid-thumb ${cls}" muted playsinline preload="none" tabindex="-1" aria-hidden="true"
+            poster="${escapeHtml(fb)}" data-thumb-src="${escapeHtml(work.mediaUrl)}" data-thumb-at="${POSTER_SECOND}"></video>`;
+    }
+    const cover = useArtCover(work.cover) ? fb : work.cover;
+    return `<img src="${escapeHtml(cover)}" alt="${escapeHtml(work.title)}" class="${cls}" loading="lazy"
+        data-fb-title="${escapeHtml(work.title)}" data-fb-prompt="${escapeHtml(work.prompt || '')}" data-fb-kind="image"
+        onerror="${IMG_FALLBACK}">`;
+}
+
+/** 可播放的视频舞台：无有效封面时用 artCover 兑底，避免黑底 */
+export function videoStage(output, opts = {}) {
+    const src = output.url || output.mediaUrl || '';
+    const poster = (output.poster && !/text_to_image/.test(output.poster))
+        ? output.poster
+        : artCover({ title: opts.title || output.title || '', prompt: opts.prompt || '', kind: 'video', second: POSTER_SECOND });
+    return `<video controls preload="metadata" class="${opts.cls || ''}" poster="${escapeHtml(poster)}" src="${escapeHtml(src)}"
+        ${opts.extra || 'style="width:100%;display:block"'}>您的浏览器不支持视频播放</video>`;
+}
+
 export function workCard(work, options = {}) {
     const { showStatus = false, showAuthor = true, showStats = true, actions = '' } = options;
     const meta = kindMeta(work.kind);
@@ -164,7 +209,7 @@ export function workCard(work, options = {}) {
     const statusHtml = showStatus && work.status !== 'published' ? statusBadge(work.status) : '';
     return `<article class="work-card" data-work-id="${escapeHtml(work.id)}">
         <div class="work-media">
-            ${imgTag(work.cover, work.title)}
+            ${mediaThumb(work)}
             <div class="media-badges">
                 <span class="media-badge">${icon(meta.icon, 11)} ${escapeHtml(meta.name)}</span>
                 ${isVideo ? `<span class="media-badge">${fmtDuration(work.duration || 0)}</span>` : ''}

@@ -1,7 +1,7 @@
 import { listTasks, getTask, cancelTask, retryTask, createWork } from '../core/api.js';
 import { TASK_TYPES, KINDS, statusMeta } from '../core/constants.js';
 import { url, setPageTitle } from '../core/shell.js';
-import { icon, toast, emptyState, renderPagination, skeletonRows, confirmDialog, openModal, closeModal, copyText } from '../core/ui.js';
+import { icon, toast, emptyState, renderPagination, skeletonRows, confirmDialog, openModal, closeModal, copyText, videoStage, imgTag } from '../core/ui.js';
 import { escapeHtml, num, timeAgo, fmtDate } from '../core/format.js';
 import { on, EVENTS } from '../core/bus.js';
 
@@ -112,6 +112,13 @@ export async function render(host, ctx) {
         });
     }
 
+    /** 实际计费：中断按比例退、失败全额退，不能继续挂着名义全额 */
+    function costLabel(task) {
+        const cost = Number(task.cost) || 0;
+        const refund = Number(task.refund) || 0;
+        return refund > 0 ? `实付 ${Math.max(0, cost - refund)} 算力（已退 ${refund}）` : `消耗 ${cost} 算力`;
+    }
+
     function rowHtml(task) {
         const st = statusMeta(task.status);
         const type = TASK_TYPES[task.type] || { name: '任务', icon: 'zap' };
@@ -122,7 +129,7 @@ export async function render(host, ctx) {
                 <div class="task-title">${escapeHtml(task.title)}
                     <span class="badge ${st.tone ? `badge-${st.tone}` : ''}">${st.label}</span>
                 </div>
-                <div class="task-sub">${type.name} · 消耗 ${task.cost} 算力 · ${timeAgo(task.createdAt)}
+                <div class="task-sub">${type.name} · ${costLabel(task)} · ${timeAgo(task.createdAt)}
                     ${task.outputs?.length ? ` · ${task.outputs.length} 个产物` : ''}</div>
                 ${running ? `<div class="task-bar">${progressBar(task.progress)}
                     <span class="small muted">${escapeHtml((task.logs || []).slice(-1)[0]?.msg || '等待调度')}</span></div>` : ''}
@@ -187,7 +194,7 @@ export async function render(host, ctx) {
                     <div class="row wrap" style="gap:8px">
                         <span class="badge ${st.tone ? `badge-${st.tone}` : ''}">${st.label}</span>
                         <span class="tag">${task.id}</span>
-                        <span class="tag">${task.cost} 算力</span>
+                        <span class="tag">${costLabel(task)}</span>
                         <span class="tag">${fmtDate(task.createdAt, true)}</span>
                     </div>
                     <div>
@@ -199,9 +206,9 @@ export async function render(host, ctx) {
                         <div class="label" style="margin-bottom:6px">产物</div>
                         <div class="result-grid">
                             ${task.outputs.map((o) => o.type === 'image'
-                    ? `<img src="${escapeHtml(o.url)}" alt="${escapeHtml(o.title || '产物')}" loading="lazy">`
+                    ? imgTag(o.url, o.title || '产物')
                     : o.type === 'video'
-                        ? `<video controls poster="${escapeHtml(o.poster || '')}" src="${escapeHtml(o.url)}" style="width:100%;border-radius:10px"></video>`
+                        ? videoStage(o, { title: task.title, prompt: task.payload?.prompt || '', extra: 'style="width:100%;border-radius:10px"' })
                         : `<div class="result-box small" style="white-space:pre-wrap">${escapeHtml(o.text || o.title || o.workId || '')}</div>`).join('')}
                         </div>
                     </div>` : ''}

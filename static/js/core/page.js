@@ -2,6 +2,7 @@ import { renderShell, setPageTitle } from './shell.js';
 import { startEngine } from './engine.js';
 import { queryParams, escapeHtml } from './format.js';
 import { icon } from './ui.js';
+import { startThumbWatcher } from './cover.js';
 
 /**
  * 页面挂载器：渲染全局外壳 → 启动任务引擎 → 调用视图渲染函数
@@ -22,6 +23,8 @@ export async function mount({ nav = 'gallery', title = '工作台', params = {},
 
     try {
         await render(content, ctx);
+        // 统一接管视频缩略图的惰性 seek（含分页/筛选等后续局部重渲染）
+        startThumbWatcher(content);
     } catch (err) {
         console.error('[page] 渲染失败', err);
         content.innerHTML = `<div class="card" style="margin-top:40px">

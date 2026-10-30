@@ -3,6 +3,7 @@ import { USERS } from './users.js';
 import { WORKS } from './works.js';
 import { APPS } from './apps.js';
 import { WORKFLOWS, DATASETS } from './workflows.js';
+import { normalizeConfig, buildTrainPlan, lossAt, samplePrompt } from '../core/training.js';
 import { daysAgo, img } from './media.js';
 
 const ME = 'u_me';
@@ -12,14 +13,6 @@ function hhmm(offsetMinutes = 0) {
     const d = new Date(Date.now() - offsetMinutes * 60000);
     const pad = (n) => String(n).padStart(2, '0');
     return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-}
-
-function lossCurve(start = 0.24, points = 36) {
-    return Array.from({ length: points }, (_, i) => {
-        const base = start * Math.exp(-i / 11) + 0.052;
-        const noise = (Math.sin(i * 2.7) + Math.cos(i * 1.3)) * 0.006;
-        return { step: (i + 1) * 100, loss: Number(Math.max(0.038, base + noise).toFixed(3)) };
-    });
 }
 
 function clockOf(iso) {
@@ -160,39 +153,108 @@ export function buildSeed() {
 
     const models = works.filter((w) => w.kind === 'model');
 
-    const trainings = [
-        {
+    /*
+     * 训练历史直接用与前端/引擎同一套领域函数生成（配置归一化 → 阶段计划 → loss / checkpoint / 样张），
+     * 避免种子数据里出现与真实训练不一致的魔法数字。
+     */
+    function trainFixture(spec) {
+        const ds = DATASETS.find((d) => d.id === spec.datasetId) || { count: 42, tagged: 42 };
+        const config = normalizeConfig(spec.config, ds);
+        // 种子流水（tx_004 / tx_007）里的金额已纳入余额链，因此历史训练固定按 120 计费
+        if (spec.cost) config.estimateCost = spec.cost;
+        const plan = buildTrainPlan(config, ds, spec.trigger);
+        const points = config.lossPoints;
+        const cut = spec.status === 'failed' ? Math.max(1, Math.round(points * (spec.failedPct || 36) / 100)) : points;
+        const loss = Array.from({ length: cut }, (_, i) => ({
+            step: Math.round((config.steps * (i + 1)) / points),
+            loss: lossAt(config, i, points)
+        }));
+        const atStepLoss = (step) => lossAt(config, Math.round((step / Math.max(1, config.steps)) * (points - 1)), points);
+        const reached = loss.length ? loss[loss.length - 1].step : 0;
+        const checkpoints = plan
+            .filter((i) => i.kind === 'ckpt')
+            .filter((i) => i.step <= reached)
+            .map((i) => ({ step: i.step, epoch: i.epoch, name: i.label, sizeMb: config.weightMb, loss: atStepLoss(i.step) }));
+        const samples = plan
+            .filter((i) => i.kind === 'sample' || i.kind === 'finalSample')
+            .filter((i) => (i.step || config.steps) <= reached)
+            .map((i) => {
+                const step = i.step || config.steps;
+                const prompt = samplePrompt(config, { trigger: spec.trigger }, i.kind);
+                return { step, kind: i.kind === 'finalSample' ? 'final' : 'epoch', label: i.kind === 'finalSample' ? '终版对比' : `step ${step}`, loss: atStepLoss(step), prompt, image: img(prompt, 'square') };
+            });
+        const cutAt = spec.status === 'failed' ? spec.failedPct || 36 : 100;
+        // 日志时刻按 createdAt → finishedAt 均匀铺开，与这条历史记录的真实时间线对齐
+        const reachedPlan = plan.filter((i) => i.at <= cutAt);
+        const from = new Date(spec.createdAt).getTime();
+        const to = new Date(spec.finishedAt || Date.now()).getTime();
+        const logs = reachedPlan.map((i, idx) => ({
+            t: clockOf(new Date(from + (to - from) * (reachedPlan.length > 1 ? idx / (reachedPlan.length - 1) : 1))),
+            level: i.level || 'info',
+            msg: i.msg
+        }));
+        const epochDone = reachedPlan.filter((i) => i.kind === 'epoch').map((i) => i.epoch);
+        return {
+            id: spec.id,
+            name: spec.name,
+            ownerId: ME,
+            datasetId: spec.datasetId,
+            taskId: spec.taskId,
+            modelId: spec.modelId || null,
+            status: spec.status,
+            trigger: spec.trigger,
+            config,
+            loss,
+            samples,
+            checkpoints,
+            epochsDone: epochDone.length ? Math.max(...epochDone) : 0,
+            emitted: logs.length,
+            createdAt: spec.createdAt,
+            finishedAt: spec.finishedAt,
+            durationMin: spec.durationMin,
+            estimateMin: config.estimateMin,
+            failedAtPct: spec.status === 'failed' ? spec.failedPct || 36 : null,
+            error: spec.error || null,
+            autoPublish: !!spec.autoPublish,
+            _logs: logs
+        };
+    }
+
+    const trainingFixtures = [
+        trainFixture({
             id: 'tr_001',
             name: '灵犀人像 LoRA',
-            ownerId: ME,
             datasetId: 'ds_001',
             taskId: 't_003',
             modelId: 'm_008',
             status: 'succeeded',
             trigger: 'lxportrait',
-            config: { base: 'SDXL 1.0', rank: 32, steps: 4200, lr: 0.0001, batch: 2, resolution: '1024', optimizer: 'AdamW8bit', scheduler: 'cosine' },
-            loss: lossCurve(0.26, 36),
+            cost: 120,
+            config: { base: 'SDXL 1.0', mode: 'standard', rank: 32, alpha: 16, lr: 0.0001, batch: 2, gradAccum: 1, resolution: '1024', epochs: 20, dropout: 0.1, optimizer: 'AdamW8bit', scheduler: 'cosine', precision: 'bf16', seed: 20260213, clipSkip: 2, noiseOffset: true, savePerEpoch: 4, trainTextEncoder: false },
             createdAt: daysAgo(20, 5),
             finishedAt: daysAgo(20, 1),
-            durationMin: 236
-        },
-        {
+            durationMin: 236,
+            autoPublish: true
+        }),
+        trainFixture({
             id: 'tr_002',
             name: '赛博街景 LoRA',
-            ownerId: ME,
             datasetId: 'ds_002',
             taskId: 't_008',
-            modelId: null,
             status: 'failed',
+            failedPct: 36,
+            cost: 120,
             trigger: 'cyberstreet',
-            config: { base: 'SD 1.5', rank: 16, steps: 3000, lr: 0.0002, batch: 2, resolution: '768', optimizer: 'AdamW8bit', scheduler: 'linear' },
-            loss: lossCurve(0.31, 14),
+            config: { base: 'SD 1.5', mode: 'quick', rank: 16, alpha: 8, lr: 0.0002, batch: 4, gradAccum: 1, resolution: '1216', epochs: 12, dropout: 0.15, optimizer: 'AdamW8bit', scheduler: 'linear', precision: 'fp16', seed: -1, clipSkip: 1, noiseOffset: false, savePerEpoch: 4, trainTextEncoder: false },
             createdAt: daysAgo(7, 3),
             finishedAt: daysAgo(7, 2),
             durationMin: 68,
             error: 'CUDA out of memory：显存不足，请降低 batch size 或分辨率后重试'
-        }
+        })
     ];
+
+    const trainings = trainingFixtures.map(({ _logs, ...rest }) => rest);
+    const trainingTaskLogs = { t_003: trainingFixtures[0]._logs, t_008: trainingFixtures[1]._logs };
 
     const tasks = [
         {
@@ -268,13 +330,9 @@ export function buildSeed() {
             status: 'succeeded',
             progress: 100,
             cost: 120,
-            payload: { datasetId: 'ds_001', trainingId: 'tr_001', base: 'SDXL 1.0', rank: 32 },
+            payload: { datasetId: 'ds_001', trainingId: 'tr_001', base: 'SDXL 1.0', rank: 32, steps: trainings[0].config.steps, lr: trainings[0].config.lr },
             outputs: [{ type: 'model', url: '', title: '灵犀人像 LoRA', workId: 'm_008' }],
-            logs: [
-                { t: '20:12:04', level: 'info', msg: '数据集校验通过：42 张，标签完整度 100%' },
-                { t: '20:12:30', level: 'info', msg: '开始训练：rank=32，steps=4200' },
-                { t: '00:08:02', level: 'ok', msg: '训练完成，最终 loss 0.058，已生成模型资产' }
-            ],
+            logs: trainingTaskLogs.t_003,
             createdAt: daysAgo(20, 5),
             startedAt: daysAgo(20, 5),
             finishedAt: daysAgo(20, 1),
@@ -309,6 +367,8 @@ export function buildSeed() {
             status: 'failed',
             progress: 100,
             cost: 6,
+            // 失败全额退还，与流水 tx_005b / tx_005c 成对（净额 0）
+            refund: 6,
             payload: { prompt: 'ancient ruins in tropical rainforest, god rays', model: 'lingxi-xl' },
             outputs: [],
             logs: [
@@ -352,6 +412,8 @@ export function buildSeed() {
             status: 'canceled',
             progress: 68,
             cost: 6,
+            // 非训练任务取消为全额退还，与流水 tx_006c / tx_006d 一出一进对齐
+            refund: 6,
             payload: { prompt: 'girl among stars, concept art', model: 'sd15' },
             outputs: [],
             logs: [
@@ -372,12 +434,10 @@ export function buildSeed() {
             status: 'failed',
             progress: 36,
             cost: 120,
-            payload: { datasetId: 'ds_002', trainingId: 'tr_002', base: 'SD 1.5', rank: 16 },
+            refund: 120,
+            payload: { datasetId: 'ds_002', trainingId: 'tr_002', base: 'SD 1.5', rank: 16, steps: trainings[1].config.steps, lr: trainings[1].config.lr },
             outputs: [],
-            logs: [
-                { t: '18:20:00', level: 'info', msg: '数据集校验通过：28 张，21 张已打标' },
-                { t: '18:21:10', level: 'err', msg: 'CUDA out of memory，训练中断' }
-            ],
+            logs: [...trainingTaskLogs.t_008, { t: clockOf(daysAgo(7, 2)), level: 'err', msg: 'CUDA out of memory，训练中断' }],
             createdAt: daysAgo(7, 3),
             startedAt: daysAgo(7, 3),
             finishedAt: daysAgo(7, 2),
@@ -389,14 +449,22 @@ export function buildSeed() {
     // 平台历史任务与「我的」任务合并后按时间倒序，与真实后端的任务表行为一致
     const allTasks = [...tasks, ...buildPlatformTasks(users)].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    // 流水按时间倒序，balanceAfter 沿时间轴连续推演，末笔余额与账户 credits（1280）对齐
+    // 流水按时间倒序，balanceAfter 沿时间轴连续推演，末笔余额与账户 credits（1160）对齐
+    // 失败 / 中断训练把「扣除」与「退还」两笔都入账，钱包里能看到完整计费链路（一出一进，净额不变）
     const transactions = [
-        { id: 'tx_010', userId: ME, type: 'consume', amount: -6, balanceAfter: 1280, title: '图片生成 · 夜市小摊封面图', refId: 't_run', createdAt: new Date(Date.now() - 3 * 60000).toISOString() },
-        { id: 'tx_009', userId: ME, type: 'consume', amount: -9, balanceAfter: 1286, title: '应用运行 · 电商主图工坊', refId: 't_004', createdAt: daysAgo(2, 5) },
-        { id: 'tx_008', userId: ME, type: 'consume', amount: -42, balanceAfter: 1295, title: '批量出图 · 分镜 4 张', refId: 't_006', createdAt: daysAgo(5, 2) },
-        { id: 'tx_007', userId: ME, type: 'refund', amount: 120, balanceAfter: 1337, title: '训练失败退款 · 赛博街景 LoRA', refId: 't_008', createdAt: daysAgo(7, 2) },
+        { id: 'tx_010', userId: ME, type: 'consume', amount: -6, balanceAfter: 1160, title: '图片生成 · 夜市小摊封面图', refId: 't_run', createdAt: new Date(Date.now() - 3 * 60000).toISOString() },
+        { id: 'tx_009', userId: ME, type: 'consume', amount: -9, balanceAfter: 1166, title: '应用运行 · 电商主图工坊', refId: 't_004', createdAt: daysAgo(2, 5) },
+        { id: 'tx_008', userId: ME, type: 'consume', amount: -42, balanceAfter: 1175, title: '批量出图 · 分镜 4 张', refId: 't_006', createdAt: daysAgo(5, 2) },
+        { id: 'tx_007', userId: ME, type: 'refund', amount: 120, balanceAfter: 1217, title: '训练失败退款 · 赛博街景 LoRA', refId: 't_008', createdAt: daysAgo(7, 2) },
+        { id: 'tx_006b', userId: ME, type: 'consume', amount: -120, balanceAfter: 1097, title: 'LoRA 训练 · 赛博街景', refId: 't_008', createdAt: daysAgo(7, 3) },
         { id: 'tx_006', userId: ME, type: 'consume', amount: -15, balanceAfter: 1217, title: '应用运行 · 短剧分镜工坊', refId: 't_004', createdAt: daysAgo(9, 2) },
+        // 已取消的图片任务：先扣除再全额退回，钱包里能看到成对记录（净额 0）
+        { id: 'tx_006c', userId: ME, type: 'consume', amount: -6, balanceAfter: 1211, title: '图片生成 · 星河少女概念图', refId: 't_007', createdAt: daysAgo(6, 7) },
+        { id: 'tx_006d', userId: ME, type: 'refund', amount: 6, balanceAfter: 1217, title: '任务取消退款 · 星河少女 · 概念图', refId: 't_007', createdAt: daysAgo(6, 7) },
         { id: 'tx_005', userId: ME, type: 'consume', amount: -18, balanceAfter: 1232, title: '工作流 · 文生图标准流', refId: 't_006', createdAt: daysAgo(11, 2) },
+        // 审核未通过的图片任务：扣除后即时全额退还，保证「已自动退还」在流水里可查
+        { id: 'tx_005b', userId: ME, type: 'consume', amount: -6, balanceAfter: 1244, title: '图片生成 · 雨林遗迹场景探索', refId: 't_005', createdAt: daysAgo(15, 6) },
+        { id: 'tx_005c', userId: ME, type: 'refund', amount: 6, balanceAfter: 1250, title: '任务失败退款 · 雨林遗迹 · 场景探索', refId: 't_005', createdAt: daysAgo(15, 6) },
         { id: 'tx_004', userId: ME, type: 'consume', amount: -120, balanceAfter: 1250, title: 'LoRA 训练 · 灵犀人像', refId: 't_003', createdAt: daysAgo(20, 5) },
         { id: 'tx_003', userId: ME, type: 'consume', amount: -30, balanceAfter: 1370, title: '视频生成 · 星际信使预览', refId: 't_002', createdAt: daysAgo(26, 8) },
         { id: 'tx_002', userId: ME, type: 'recharge', amount: 1200, balanceAfter: 1400, title: '充值 1200 算力积分', refId: 'pkg_1200', createdAt: daysAgo(120, 3) },
@@ -406,10 +474,10 @@ export function buildSeed() {
     const notifications = [
         { id: 'n_001', userId: ME, type: 'review', tone: 'ok', title: '作品审核通过', body: '「赛博少女·零」已通过审核并发布到作品广场。', link: 'assets/character-detail.html?id=m_001', read: false, createdAt: daysAgo(1, 4) },
         { id: 'n_002', userId: ME, type: 'review', tone: 'danger', title: '作品未通过审核', body: '「雨林遗迹」疑似包含真实文保地标，请调整提示词后重新提交。', link: 'assets/scenic-detail.html?id=m_007', read: false, createdAt: daysAgo(14) },
-        { id: 'n_003', userId: ME, type: 'task', tone: 'ok', title: 'LoRA 训练完成', body: '「灵犀人像 LoRA」训练完成，最终 loss 0.058，已生成模型资产。', link: 'lora-train.html?training=tr_001', read: false, createdAt: daysAgo(20, 1) },
+        { id: 'n_003', userId: ME, type: 'task', tone: 'ok', title: 'LoRA 训练完成', body: `「灵犀人像 LoRA」跑完 ${trainings[0].config.epochs} epoch / ${trainings[0].config.steps} 步，最终 loss ${trainings[0].loss[trainings[0].loss.length - 1].loss}，已生成模型资产。`, link: 'lora-train.html?training=tr_001', read: false, createdAt: daysAgo(20, 1) },
         { id: 'n_004', userId: ME, type: 'social', tone: 'brand', title: '沈知夏 赞了你的作品', body: '「赛博少女·零」收到 1 个新点赞。', link: 'assets/character-detail.html?id=m_001', read: true, createdAt: daysAgo(1, 5) },
         { id: 'n_005', userId: ME, type: 'social', tone: 'brand', title: '白露 关注了你', body: '你们都喜欢「亲子」「绘本」相关内容。', link: 'profile.html?uid=u_bailu', read: true, createdAt: daysAgo(30) },
-        { id: 'n_006', userId: ME, type: 'billing', tone: 'warn', title: '算力积分到账', body: '专业版月度 3000 积分将于 12 天后重置，当前余额 1280。', link: 'wallet.html', read: true, createdAt: daysAgo(18) },
+        { id: 'n_006', userId: ME, type: 'billing', tone: 'warn', title: '算力积分到账', body: '专业版月度 3000 积分将于 12 天后重置，当前余额 1160。', link: 'wallet.html', read: true, createdAt: daysAgo(18) },
         { id: 'n_007', userId: ME, type: 'system', tone: 'brand', title: '平台公告：工作流 v2 上线', body: '新增节点级重试与产物对比，历史工作流自动升级。', link: 'ai-workflow-execute.html?workflow=wf_001', read: true, createdAt: daysAgo(9) }
     ];
 

@@ -5,6 +5,20 @@ import { emit, EVENTS } from './bus.js';
 
 let cache = null;
 
+/**
+ * 多标签页数据一致性
+ * ------------------------------------------------------------------
+ * 本模块是「整库内存缓存 + 全量覆盖写」：两个标签页各持一份 cache 时，
+ * 后写的一方会把对方刚新增的记录（任务、流水、训练）整片抹掉。
+ * 收到其他标签页的 storage 事件就作废本地缓存，下次访问重新读盘；
+ * 本地所有写入都在同一同步事务里立刻 persist，不存在未落盘的中间态。
+ */
+if (typeof window !== 'undefined') {
+    window.addEventListener('storage', (e) => {
+        if (e.key === KEYS.db || e.key === null) cache = null;
+    });
+}
+
 /** 读取数据库（首次访问自动写入种子数据） */
 export function getDb() {
     if (cache) return cache;
@@ -140,4 +154,28 @@ export function spendCredits(db, userId, amount, title, refId = '') {
 
 export function nowIso() {
     return new Date().toISOString();
+}
+
+/**
+ * 写回作品封面（抽帧成功后调用）。
+ * 只改内存 + persist，不触发全局 dataChange，避免列表整屏重绘；
+ * 视图自行用返回的 cover 就地更新对应 <img>。
+ */
+export function setWorkCover(workId, cover) {
+    const db = getDb();
+    const work = (db.works || []).find((w) => w.id === workId);
+    if (!work) return null;
+    work.cover = cover;
+    persist();
+    return work;
+}
+
+/** 写回任务某个视频产物的封面 */
+export function setOutputCover(taskId, index, poster) {
+    const db = getDb();
+    const task = (db.tasks || []).find((t) => t.id === taskId);
+    if (!task || !task.outputs || !task.outputs[index]) return null;
+    task.outputs[index].poster = poster;
+    persist();
+    return task;
 }

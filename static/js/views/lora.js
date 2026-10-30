@@ -816,16 +816,15 @@ export async function render(host, ctx) {
 function settledCost(task, cfg = {}) {
     const cost = Number(task?.cost ?? cfg.estimateCost) || 0;
     const refund = Number(task?.refund) || 0;
+    const paid = Math.max(0, cost - refund);
     return {
         cost,
         refund,
-        paid: Math.max(0, cost - refund),
+        paid,
         /** 统一拼成一句完整文案，避免调用方拼后缀时多出空格 */
-        phrase(unit = '算力') {
-            return refund > 0
-                ? `实付 ${num(this.paid)} ${unit}（名义 ${num(cost)}，已退 ${num(refund)}）`
-                : `消耗 ${num(cost)} ${unit}`;
-        }
+        phrase: (unit = '算力') => (refund > 0
+            ? `实付 ${num(paid)} ${unit}（名义 ${num(cost)}，已退 ${num(refund)}）`
+            : `消耗 ${num(cost)} ${unit}`)
     };
 }
 

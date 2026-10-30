@@ -246,7 +246,18 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.6s var(--ease);
+    transition: transform 0.6s var(--ease), opacity 0.4s var(--ease);
+}
+
+/* 视频缩略图：未 seek 时显示 poster(artCover)，seek 后淡入真实第 3 秒帧 */
+.work-media .vid-thumb {
+    pointer-events: none;
+    background: var(--surface-3);
+    opacity: 0.92;
+}
+
+.work-media .vid-thumb.is-ready {
+    opacity: 1;
 }
 
 .work-card:hover .work-media img {
@@ -1177,26 +1188,65 @@
 
 .wf-canvas {
     position: relative;
-    padding: 22px;
     background:
         radial-gradient(circle at 1px 1px, var(--canvas-dot) 1px, transparent 0) 0 0 / 18px 18px,
         var(--canvas-bg);
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    align-items: center;
     overflow: auto;
+    height: clamp(440px, 56vh, 620px);
+    touch-action: none;
+    cursor: default;
+}
+
+/* 世界层：按节点包围盒定尺寸，绝对定位节点 + SVG 连线覆盖其上 */
+.wf-world {
+    position: relative;
+    min-width: 100%;
+    min-height: 100%;
+}
+
+.wf-links {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    overflow: visible;
+    z-index: 1;
+}
+
+.wf-edge {
+    fill: none;
+    stroke: var(--border-strong);
+    stroke-width: 2;
+    transition: stroke var(--t-fast);
+}
+
+.wf-edge.active {
+    stroke: var(--brand);
 }
 
 .wf-node {
-    width: min(300px, 100%);
+    position: absolute;
+    z-index: 2;
+    width: 210px;
     background: var(--surface);
     border: 1px solid var(--border-strong);
     border-radius: 12px;
     box-shadow: var(--shadow-xs);
-    padding: 11px 13px;
-    position: relative;
-    transition: all var(--t-fast);
+    padding: 10px 12px;
+    cursor: grab;
+    user-select: none;
+    transition: box-shadow var(--t-fast), border-color var(--t-fast), background var(--t-fast);
+}
+
+.wf-node:hover {
+    border-color: var(--brand-300);
+}
+
+.wf-node.is-dragging {
+    cursor: grabbing;
+    box-shadow: var(--shadow-md);
+    z-index: 6;
+    transition: none;
 }
 
 .wf-node.active {
@@ -1223,33 +1273,85 @@
     margin-top: 4px;
     line-height: 1.55;
     word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .wf-node .nd-status {
     margin-left: auto;
     font-size: 10.5px;
     color: var(--muted-2);
+    flex: none;
 }
 
-.wf-connector {
-    width: 2px;
-    height: 22px;
-    background: var(--border-strong);
-    position: relative;
-}
-
-.wf-connector.active {
-    background: var(--brand);
-}
-
-.wf-connector::after {
-    content: '';
+/* 节点删除按钮：悬停/选中时浮现于右上角 */
+.wf-node .wf-del {
     position: absolute;
-    bottom: -1px;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 4px solid transparent;
-    border-top-color: var(--border-strong);
+    top: -8px;
+    right: -8px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--danger);
+    color: var(--on-danger);
+    border: 2px solid var(--surface);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 3;
+    padding: 0;
+    line-height: 0;
+}
+
+.wf-node:hover .wf-del,
+.wf-node.active .wf-del {
+    display: flex;
+}
+
+.wf-node .wf-del:hover {
+    filter: brightness(1.08);
+}
+
+/* 拖拽抓把点阵（左上角） */
+.wf-node .nd-grip {
+    color: var(--muted-2);
+    flex: none;
+    margin-right: -2px;
+}
+
+.wf-add-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 20;
+    min-width: 190px;
+    background: var(--raised);
+    border: 1px solid var(--border-strong);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    padding: 6px;
+    max-height: 320px;
+    overflow: auto;
+}
+
+.wf-add-menu button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 9px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text-2);
+    text-align: left;
+}
+
+.wf-add-menu button:hover {
+    background: var(--brand-50);
+    color: var(--text);
 }
 
 .wf-inspector {

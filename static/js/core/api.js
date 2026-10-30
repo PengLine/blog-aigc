@@ -967,14 +967,71 @@ export async function runWorkflow(workflowId, overrides = {}) {
     return task;
 }
 
+/** 小版本号 +1：v1.4 → v1.5，无纯数字时回退 v2 */
+function bumpVersion(v) {
+    const m = /^v?(\d+)\.(\d+)$/i.exec(String(v || '').trim());
+    if (!m) return 'v2.0';
+    return `v${m[1]}.${Number(m[2]) + 1}`;
+}
+
+/**
+ * 保存工作流编辑（节点增删改、拖拽坐标、名称/描述）。
+ * 仅落盘不广播 dataChange：编辑器自持内存态，广播会触发整屏重绘打断操作。
+ */
+export async function patchWorkflow(workflowId, patch = {}) {
+    return respond(() => {
+        const wf = mutate((d) => {
+            const target = d.workflows.find((x) => x.id === workflowId);
+            if (!target) throw new ApiError('工作流不存在', 'NOT_FOUND', 404);
+            if (Array.isArray(patch.nodes)) target.nodes = patch.nodes;
+            if (typeof patch.name === 'string' && patch.name.trim()) target.name = patch.name.trim();
+            if (typeof patch.desc === 'string') target.desc = patch.desc;
+            target.updatedAt = now();
+            if (patch.bumpVersion) target.version = bumpVersion(target.version);
+            return { ...target };
+        });
+        return { workflow: wf };
+    });
+}
+
+/** 复制工作流为“我的草稿”，返回新对象（官方/他人模板被编辑时用） */
+export async function duplicateWorkflow(workflowId) {
+    return respond(() => {
+        const me = currentUserId();
+        const copy = mutate((d) => {
+            const src = d.workflows.find((x) => x.id === workflowId);
+            if (!src) throw new ApiError('工作流不存在', 'NOT_FOUND', 404);
+            const id = uid('wf');
+            const next = {
+                ...src,
+                id,
+                ownerId: me,
+                name: `${src.name} · 副本`,
+                template: false,
+                isMine: true,
+                runs: 0,
+                version: 'v0.1',
+                createdAt: now(),
+                updatedAt: now(),
+                nodes: src.nodes.map((n) => ({ ...n, params: { ...n.params }, pos: n.pos ? { ...n.pos } : undefined }))
+            };
+            d.workflows.unshift(next);
+            return { ...next };
+        });
+        changed(`workflow:${copy.id}`);
+        return { workflow: copy };
+    });
+}
+
 /* ============================ 创作者 / 社交 ============================ */
 
 export async function getCreator(userId) {
     return respond(() => {
         const db = getDb();
         const me = currentUserId();
-        const user = findUser(db, userId);
-        if (!user) throw new ApiError('用户不存在', 'NOT_FOUND', 404);
+        // 严格查找：findUser 对缺失作者会兜底到首个用户，个人中心需要真正的 404
+        const user = (db.users || []).find((u) => u.id === userId);
+        if (!user) throw new ApiError('用户不存在或已注销', 'NOT_FOUND', 404);
         const works = db.works.filter((w) => w.authorId === userId && w.status === 'published');
         const likes = works.reduce((sum, w) => sum + w.stats.likes, 0);
         return {

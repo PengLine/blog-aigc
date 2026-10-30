@@ -141,3 +141,27 @@ export function spendCredits(db, userId, amount, title, refId = '') {
 export function nowIso() {
     return new Date().toISOString();
 }
+
+/**
+ * 写回作品封面（抽帧成功后调用）。
+ * 只改内存 + persist，不触发全局 dataChange，避免列表整屏重绘；
+ * 视图自行用返回的 cover 就地更新对应 <img>。
+ */
+export function setWorkCover(workId, cover) {
+    const db = getDb();
+    const work = (db.works || []).find((w) => w.id === workId);
+    if (!work) return null;
+    work.cover = cover;
+    persist();
+    return work;
+}
+
+/** 写回任务某个视频产物的封面 */
+export function setOutputCover(taskId, index, poster) {
+    const db = getDb();
+    const task = (db.tasks || []).find((t) => t.id === taskId);
+    if (!task || !task.outputs || !task.outputs[index]) return null;
+    task.outputs[index].poster = poster;
+    persist();
+    return task;
+}

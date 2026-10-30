@@ -63,6 +63,82 @@
     border-color: #fff;
 }
 
+/* 近 7 天生成趋势 */
+.hero-trend {
+    position: relative;
+    z-index: 1;
+    min-width: 260px;
+    padding: 12px 14px 10px;
+    border-radius: var(--r-lg);
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(6px);
+}
+
+.ht-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.ht-head b {
+    font-size: 18px;
+    color: #fff;
+    letter-spacing: -0.4px;
+}
+
+.ht-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 54px;
+    margin-top: 8px;
+}
+
+.ht-bar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    height: 100%;
+}
+
+.ht-bar i {
+    width: 100%;
+    max-width: 18px;
+    border-radius: 4px 4px 2px 2px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.42));
+    transition: height var(--t-base);
+}
+
+.ht-bar:hover i {
+    background: #fff;
+}
+
+.ht-bar span {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.62);
+    line-height: 1;
+}
+
+.ht-foot {
+    margin-top: 6px;
+    font-size: 11.5px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+@media (max-width: 960px) {
+    .hero-trend {
+        margin-top: 16px;
+        width: 100%;
+    }
+}
+
 .quick-grid {
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -71,7 +147,7 @@
 }
 
 .quick-tile {
-    background: #fff;
+    background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--r-lg);
     padding: 13px;
@@ -139,7 +215,7 @@
 }
 
 .work-card {
-    background: #fff;
+    background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--r-lg);
     overflow: hidden;
@@ -666,7 +742,7 @@
     border: 1px solid var(--border-strong);
     border-radius: 10px;
     padding: 7px 9px;
-    background: #fff;
+    background: var(--surface);
     min-height: 42px;
 }
 
@@ -689,7 +765,7 @@
     display: flex;
     gap: 13px;
     align-items: center;
-    background: #fff;
+    background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--r-lg);
     padding: 14px;
@@ -752,7 +828,7 @@
     gap: 12px;
     padding: 10px 12px;
     border-bottom: 1px solid var(--border);
-    background: #fff;
+    background: var(--surface);
 }
 
 .asset-row:last-child {
@@ -800,7 +876,7 @@
 
 /* ---------- AI 应用 ---------- */
 .app-card {
-    background: #fff;
+    background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--r-lg);
     padding: 16px;
@@ -904,7 +980,7 @@
 }
 
 .run-panel {
-    background: #fff;
+    background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--r-lg);
     overflow: hidden;
@@ -980,7 +1056,7 @@
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 12px;
-    background: #fff;
+    background: var(--surface);
     cursor: pointer;
     transition: all var(--t-fast);
 }
@@ -1009,6 +1085,23 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 4px;
     margin-bottom: 8px;
+    position: relative;
+}
+
+.dataset-tag {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    padding: 1px 6px;
+    border-radius: var(--r-full);
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #fff;
+    background: rgba(15, 23, 42, 0.62);
+}
+
+.dataset-tag.official {
+    background: var(--brand);
 }
 
 .dataset-thumbs img {
@@ -1036,7 +1129,7 @@
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 14px;
-    background: #fff;
+    background: var(--surface);
     margin-bottom: 12px;
 }
 
@@ -1053,7 +1146,7 @@
     border: 1px solid var(--border);
     border-radius: var(--r-lg);
     overflow: hidden;
-    background: #fff;
+    background: var(--surface-2);
     min-height: 560px;
 }
 
@@ -1077,7 +1170,7 @@
 }
 
 .wf-node-library .lib-item:hover {
-    background: #fff;
+    background: var(--surface);
     border-color: var(--border-strong);
 }
 
@@ -1096,7 +1189,7 @@
 
 .wf-node {
     width: min(300px, 100%);
-    background: #fff;
+    background: var(--surface);
     border: 1px solid var(--border-strong);
     border-radius: 12px;
     box-shadow: var(--shadow-xs);
@@ -1161,7 +1254,7 @@
 .wf-inspector {
     border-left: 1px solid var(--border);
     padding: 14px;
-    background: #fff;
+    background: var(--surface);
 }
 
 .wf-toolbar {
@@ -1170,7 +1263,7 @@
     gap: 8px;
     padding: 10px 12px;
     border-bottom: 1px solid var(--border);
-    background: #fff;
+    background: var(--surface);
     flex-wrap: wrap;
 }
 
@@ -1201,7 +1294,7 @@
 }
 
 .profile-head .avatar-xl {
-    border: 4px solid #fff;
+    border: 4px solid var(--surface);
     box-shadow: var(--shadow-sm);
 }
 
@@ -1245,7 +1338,7 @@
     align-items: flex-start;
     padding: 14px;
     border-bottom: 1px solid var(--border);
-    background: #fff;
+    background: var(--surface);
 }
 
 .task-row:last-child {
@@ -1398,7 +1491,7 @@
 
 .plan-card.current {
     border-color: var(--brand);
-    background: linear-gradient(180deg, var(--brand-50), #fff);
+    background: linear-gradient(180deg, var(--brand-50), var(--surface));
 }
 
 .plan-card ul {

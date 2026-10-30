@@ -38,8 +38,15 @@ export async function render(host, ctx) {
         }
     }
 
+    // 支持从任务详情「再创作」携带 ?prompt= / ?model= / ?negative= 直接进入创作台
+    const preset = {
+        prompt: String(ctx.query.prompt || '').slice(0, 800),
+        negative: String(ctx.query.negative || '').slice(0, 300),
+        model: MODEL_MAP[ctx.query.model] ? String(ctx.query.model) : ''
+    };
+
     const defaults = {
-        model: source?.params?.model || 'lingxi-xl',
+        model: preset.model || source?.params?.model || 'lingxi-xl',
         steps: source?.params?.steps || 28,
         cfg: source?.params?.cfg || 6.5,
         seed: source?.params?.seed || Math.floor(Math.random() * 900000) + 100000,
@@ -57,7 +64,7 @@ export async function render(host, ctx) {
         priceMode: editing?.price?.mode || 'free',
         priceAmount: editing?.price?.amount || 10,
         visibility: editing?.visibility || 'public',
-        params: { ...defaults, ...(source?.params || {}), ...(editing?.params || {}) },
+        params: { ...defaults, ...(source?.params || {}), ...(editing?.params || {}), ...(preset.model ? { model: preset.model } : {}) },
         duration: editing?.duration || 5
     };
     if (state.cover) state.outputs = [{ type: kind === 'video' ? 'video' : 'image', url: state.cover, title: '当前封面' }];
@@ -70,8 +77,15 @@ export async function render(host, ctx) {
         });
     }
 
+    const switchQuery = ctx.query.edit
+        ? `?edit=${encodeURIComponent(ctx.query.edit)}`
+        : ctx.query.from
+            ? `?from=${encodeURIComponent(ctx.query.from)}`
+            : preset.prompt
+                ? `?prompt=${encodeURIComponent(preset.prompt)}${preset.model ? `&model=${encodeURIComponent(preset.model)}` : ''}`
+                : '';
     const typeSwitch = `<div class="chips" style="margin-bottom:16px">
-        ${CREATE_KINDS.map((k) => `<a class="chip ${k === kind ? 'active' : ''}" href="${url(KINDS[k].create)}${ctx.query.edit ? `?edit=${ctx.query.edit}` : ctx.query.from ? `?from=${ctx.query.from}` : ''}">
+        ${CREATE_KINDS.map((k) => `<a class="chip ${k === kind ? 'active' : ''}" href="${url(KINDS[k].create)}${switchQuery}">
             ${icon(KINDS[k].icon, 14)}${KINDS[k].name}
         </a>`).join('')}
     </div>`;
@@ -152,11 +166,11 @@ export async function render(host, ctx) {
                                 <label class="label" for="fPrompt">提示词 <span class="req">*</span>
                                     <span class="hint-inline">支持中文，越具体越好</span>
                                 </label>
-                                <textarea class="textarea" id="fPrompt" placeholder="描述主体、环境、光线与风格">${escapeHtml(editing?.prompt || source?.prompt || copy.prompt)}</textarea>
+                                <textarea class="textarea" id="fPrompt" placeholder="描述主体、环境、光线与风格">${escapeHtml(editing?.prompt || source?.prompt || preset.prompt || copy.prompt)}</textarea>
                             </div>
                             <div class="field">
                                 <label class="label" for="fNegative">负面提示词</label>
-                                <input class="input" id="fNegative" value="${escapeHtml(editing?.negative || source?.negative || 'low quality, blurry, watermark, extra fingers')}">
+                                <input class="input" id="fNegative" value="${escapeHtml(editing?.negative || source?.negative || preset.negative || 'low quality, blurry, watermark, extra fingers')}">
                             </div>
                             <div class="form-grid">
                                 <div class="field">
@@ -327,7 +341,7 @@ export async function render(host, ctx) {
             return;
         }
         box.innerHTML = state.outputs.map((out, i) => `<div class="gen-item ${out.url === state.cover ? 'active' : ''}" data-out="${i}">
-            ${out.type === 'text' ? `<div class="gen-placeholder" style="border:none;background:#fff"><span class="small">${escapeHtml(out.title)}<br>文本结果</span></div>` : imgTag(out.url, out.title || '生成结果')}
+            ${out.type === 'text' ? `<div class="gen-placeholder" style="border:none;background:var(--surface)"><span class="small">${escapeHtml(out.title)}<br>文本结果</span></div>` : imgTag(out.url, out.title || '生成结果')}
             <span class="pick">${out.url === state.cover ? '已选为封面' : '设为封面'}</span>
         </div>`).join('');
         box.querySelectorAll('[data-out]').forEach((el) => {

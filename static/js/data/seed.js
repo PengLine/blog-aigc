@@ -22,6 +22,71 @@ function lossCurve(start = 0.24, points = 36) {
     });
 }
 
+function clockOf(iso) {
+    const d = new Date(iso);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+// 平台任务模板：用于生成近 7 天其他创作者的历史任务，让首页趋势、后台统计与任务表口径一致
+const PLATFORM_JOBS = [
+    { type: 'image', cost: 6, subject: 'neon cyberpunk portrait, rim light', titles: ['图片生成 · 霓虹人像', '图片生成 · 雨夜街角'] },
+    { type: 'image', cost: 12, subject: 'traditional chinese architecture ink mood', titles: ['批量出图 · 国风场景 4 张'] },
+    { type: 'video', cost: 30, subject: 'cinematic drone shot over snow mountains', titles: ['视频生成 · 雪山旅行短片', '视频生成 · 城市夜跑预告'] },
+    { type: 'workflow', cost: 18, subject: 'rainy cyberpunk street wide shot', titles: ['工作流 · 文生图标准流', '工作流 · 短剧分镜出图'] },
+    { type: 'app', cost: 9, subject: 'ecommerce product banner layout', titles: ['应用运行 · 电商主图工坊', '应用运行 · 小红书文案助手', '应用运行 · 短剧分镜工坊'] },
+    { type: 'train', cost: 120, subject: 'soft portrait photography style', titles: ['LoRA 训练 · 日系柔光', 'LoRA 训练 · 水墨国风场景'] }
+];
+
+/** 生成平台历史任务（仅 succeeded / failed，避免被本地任务引擎重新执行） */
+function buildPlatformTasks(users) {
+    let acc = 20261030;
+    const rand = () => {
+        acc = (acc * 1103515245 + 12345) % 2147483648;
+        return acc / 2147483648;
+    };
+    const pick = (arr) => arr[Math.floor(rand() * arr.length)];
+    const owners = users.filter((u) => u.role !== 'ops' && u.id !== ME);
+    const list = [];
+    for (let day = 6; day >= 0; day -= 1) {
+        const count = 3 + Math.floor(rand() * 4);
+        for (let i = 0; i < count; i += 1) {
+            const job = pick(PLATFORM_JOBS);
+            const owner = pick(owners);
+            const failed = rand() > 0.9;
+            const hours = Math.floor(rand() * 11) + 1;
+            const createdAt = daysAgo(day, hours);
+            const outputs = failed || job.type === 'train'
+                ? (failed ? [] : [{ type: 'model', title: pick(job.titles).replace('LoRA 训练 · ', '') + ' LoRA', workId: '', url: '' }])
+                : Array.from({ length: job.type === 'workflow' ? 2 : 1 }, (_, k) => ({
+                    type: job.type === 'video' ? 'video' : 'image',
+                    url: img(`${job.subject}, take ${day}${i}-${k}`),
+                    title: `output_${day}${i}_0${k + 1}.${job.type === 'video' ? 'mp4' : 'png'}`
+                }));
+            list.push({
+                id: `t_p${day}${i}`,
+                type: job.type,
+                title: pick(job.titles),
+                ownerId: owner.id,
+                status: failed ? 'failed' : 'succeeded',
+                progress: 100,
+                cost: job.cost,
+                payload: { prompt: job.subject },
+                outputs,
+                logs: [
+                    { t: clockOf(createdAt), level: 'info', msg: '任务已进入队列并分配算力节点' },
+                    { t: clockOf(daysAgo(day, Math.max(0, hours - 1))), level: failed ? 'error' : 'info', msg: failed ? '显存不足，任务中断' : '产物已写入资产存储' }
+                ],
+                createdAt,
+                startedAt: createdAt,
+                finishedAt: daysAgo(day, Math.max(0, hours - 1)),
+                error: failed ? '显存不足，任务失败，积分已自动退还' : ''
+            });
+        }
+    }
+    return list;
+}
+
 function buildUsers(works) {
     return USERS.map((u) => {
         const published = works.filter((w) => w.authorId === u.id && w.status === 'published');
@@ -321,6 +386,9 @@ export function buildSeed() {
         }
     ];
 
+    // 平台历史任务与「我的」任务合并后按时间倒序，与真实后端的任务表行为一致
+    const allTasks = [...tasks, ...buildPlatformTasks(users)].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
     // 流水按时间倒序，balanceAfter 沿时间轴连续推演，末笔余额与账户 credits（1280）对齐
     const transactions = [
         { id: 'tx_010', userId: ME, type: 'consume', amount: -6, balanceAfter: 1280, title: '图片生成 · 夜市小摊封面图', refId: 't_run', createdAt: new Date(Date.now() - 3 * 60000).toISOString() },
@@ -355,7 +423,7 @@ export function buildSeed() {
         workflows: WORKFLOWS,
         datasets: DATASETS,
         trainings,
-        tasks,
+        tasks: allTasks,
         comments,
         reactions,
         follows,

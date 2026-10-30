@@ -1,4 +1,4 @@
-import { listApps, toggleAppFavorite } from '../core/api.js';
+import { listApps, toggleAppFavorite, getOverview } from '../core/api.js';
 import { APP_CATEGORIES } from '../core/constants.js';
 import { url, setPageTitle } from '../core/shell.js';
 import { icon, toast, emptyState, renderPagination, skeletonCards, metricCard } from '../core/ui.js';
@@ -12,7 +12,8 @@ const SORTS = [
 ];
 
 export async function render(host, ctx) {
-    const mineOnly = !!ctx.query.mine;
+    // 支持 ?mine=1 与页面级 params.mine（assets/my-assets-app.html）两种入口
+    const mineOnly = !!(ctx.query.mine || ctx.params?.mine);
     setPageTitle(mineOnly ? '我的应用' : 'AI 应用');
     const state = {
         category: ctx.query.category || 'all',
@@ -23,7 +24,12 @@ export async function render(host, ctx) {
         mine: mineOnly
     };
 
-    const mine = await listApps({ pageSize: 100, mine: true }).catch(() => ({ items: [] }));
+    const [mine, overall, overview] = await Promise.all([
+        listApps({ pageSize: 100, mine: true }).catch(() => ({ items: [], total: 0 })),
+        listApps({ pageSize: 1 }).catch(() => ({ total: 0 })),
+        getOverview().catch(() => null)
+    ]);
+    const platform = overview?.platform || null;
 
     host.innerHTML = `
         <div class="page-head">
@@ -38,16 +44,16 @@ export async function render(host, ctx) {
         </div>
 
         <div class="grid cols-3" style="margin-bottom:16px">
-            ${metricCard({ label: '上架应用', value: num(100 + (mine.items.length || 0)), sub: '覆盖图像、视频、文案与设计', iconName: 'sparkles' })}
-            ${metricCard({ label: '我创建的应用', value: String(mine.items.filter((a) => a.isMine).length), sub: '可在创建页继续迭代版本', iconName: 'layers' })}
-            ${metricCard({ label: '今日运行量', value: num(8642), sub: '平台全量统计', iconName: 'zap' })}
+            ${metricCard({ label: '上架应用', value: num(platform ? platform.apps : overall.total), sub: '覆盖图像、视频、文案与设计', iconName: 'sparkles' })}
+            ${metricCard({ label: '我创建的应用', value: String(mine.total), sub: '可在创建页继续迭代版本', iconName: 'layers' })}
+            ${metricCard({ label: '累计运行量', value: platform ? num(platform.totalRuns) : '—', sub: '平台内所有应用运行次数', iconName: 'zap' })}
         </div>
 
         <div class="card" style="padding:12px 14px;margin-bottom:14px">
             <div class="asset-toolbar">
                 <div class="chips" id="catFilter">
                     <a class="chip ${!mineOnly ? 'active' : ''}" href="${url('app/ai-apps.html')}">全部应用</a>
-                    <a class="chip ${mineOnly ? 'active' : ''}" href="${url('assets/my-assets-app.html')}">我创建的</a>
+                    <a class="chip ${mineOnly ? 'active' : ''}" href="${url('app/ai-apps.html')}?mine=1">我创建的</a>
                     <span style="width:1px;height:20px;background:var(--border);margin:0 4px"></span>
                     ${APP_CATEGORIES.filter((c) => c.id !== 'all').map((c) => `<button class="chip ${state.category === c.id ? 'active' : ''}" data-cat="${c.id}">${c.name}</button>`).join('')}
                 </div>
@@ -78,7 +84,7 @@ export async function render(host, ctx) {
                     desc: '换个关键词或切换分类看看，也可以自己创建一个应用。',
                     action: `<a class="btn btn-primary" href="${url('app/ai-app-create.html')}">${icon('plus', 14)}创建应用</a>`
                 });
-                pagerEl.innerHTML = '';
+                pagerEl.innerHTML = '<div class="small muted">共 0 条，换个关键词或分类试试。</div>';
                 return;
             }
             bodyEl.innerHTML = `<div class="grid cols-3" style="gap:14px">${res.items.map(appCard).join('')}</div>`;

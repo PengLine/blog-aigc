@@ -19,6 +19,8 @@ export async function render(host, ctx) {
         unsubscribe: null
     };
 
+    const officialCount = datasets.filter((d) => d.isOfficial).length;
+
     host.innerHTML = `
         <div class="page-head">
             <div class="page-head-main">
@@ -32,7 +34,7 @@ export async function render(host, ctx) {
         </div>
 
         <div class="grid cols-3" style="margin-bottom:16px">
-            ${statCard('数据集', datasets.length, `共 ${datasets.reduce((s, d) => s + d.count, 0)} 张样本`, 'database')}
+            ${statCard('数据集', datasets.length, `官方 ${officialCount} · 我的 ${datasets.length - officialCount}`, 'database')}
             ${statCard('训练任务', trainings.length, `${trainings.filter((t) => t.status === 'succeeded').length} 个已完成`, 'cpu')}
             ${statCard('单次成本', 120, '训练完成并生成模型资产', 'credit')}
         </div>
@@ -46,15 +48,17 @@ export async function render(host, ctx) {
                     </div>
                 </div>
                 <div class="card-body">
-                    <div class="label" style="margin-bottom:8px">训练数据集 <span class="req">*</span></div>
+                    <div class="label" style="margin-bottom:8px">训练数据集 <span class="req">*</span>
+                        <span class="hint-inline">官方数据集可直接试用，我的数据集在资产库上传素材后生成</span></div>
                     <div class="dataset-grid" id="datasetGrid">
-                        ${datasets.map((d) => `<button class="dataset-card ${state.datasetId === d.id ? 'active' : ''}" data-dataset="${d.id}">
+                        ${datasets.length ? datasets.map((d) => `<button class="dataset-card ${state.datasetId === d.id ? 'active' : ''}" data-dataset="${d.id}">
                             <div class="dataset-thumbs">
                                 ${d.thumbs.slice(0, 4).map((t) => `<img src="${escapeHtml(t)}" alt="样本" loading="lazy">`).join('')}
+                                <span class="dataset-tag ${d.isOfficial ? 'official' : ''}">${d.isOfficial ? '官方' : '我的'}</span>
                             </div>
                             <b>${escapeHtml(d.name)}</b>
                             <span>${d.count} 张 · 已打标 ${d.tagged} · ${escapeHtml(d.resolution)}</span>
-                        </button>`).join('')}
+                        </button>`).join('') : `<div class="small muted" style="padding:14px">暂无可用数据集，先上传一批素材吧。</div>`}
                     </div>
 
                     <div class="form-grid" style="margin-top:18px">

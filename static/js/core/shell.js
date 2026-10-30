@@ -1,14 +1,15 @@
 /**
  * 全局外壳：侧边导航 + 顶栏（搜索 / 通知 / 余额 / 账户）
  */
-import { escapeHtml, num, timeAgo } from './format.js';
+import { escapeHtml, num, timeAgo, queryParams } from './format.js';
 import { icon, avatarTag, toast, confirmDialog, openModal, closeModal } from './ui.js';
 import { currentPublicUser, demoAccounts, loginAs, isOps } from './auth.js';
 import { getAccount } from './db.js';
-import { PLAN_MAP } from './constants.js';
-import { getUnreadCount, listNotifications, markAllNotificationsRead } from './api.js';
+import { PLAN_MAP, KINDS, APP_CATEGORIES } from './constants.js';
+import { getUnreadCount, listNotifications, markAllNotificationsRead, search } from './api.js';
 import { on, EVENTS } from './bus.js';
 import { resetDemo } from './api.js';
+import { getThemeMode, effectiveTheme, cycleTheme, watchSystemTheme, THEME_LABEL } from './theme.js';
 
 export const ROOT = document.documentElement.dataset.root || './';
 
@@ -109,10 +110,12 @@ export function renderShell({ nav = 'gallery', title = '工作台' } = {}) {
             <div class="topbar-spacer"></div>
             <form class="search" id="globalSearch">
                 <span class="search-icon">${icon('search', 15)}</span>
-                <input type="search" name="q" placeholder="搜索作品、应用、创作者" autocomplete="off">
+                <input type="search" name="q" placeholder="搜索作品、应用、创作者" autocomplete="off" aria-label="全局搜索" aria-expanded="false" aria-controls="searchSuggest">
                 <kbd>Ctrl K</kbd>
+                <div class="suggest" id="searchSuggest" hidden></div>
             </form>
             <a class="btn btn-primary btn-sm" href="${url('assets/create-character.html')}">${icon('plus', 15)}新建</a>
+            <button class="icon-btn" id="themeBtn" aria-label="切换主题" title="切换主题">${icon('sun', 18)}</button>
             <a class="balance-chip" href="${url('wallet.html')}" title="算力积分余额">
                 ${icon('credit', 15)}<span data-credit-chip>${num(account.credits)}</span><span style="opacity:.7">算力</span>
             </a>
@@ -209,6 +212,131 @@ async function renderNotifList() {
     </a>`).join('');
 }
 
+/** 顶栏搜索：即时建议下拉（作品 / 应用 / 创作者）+ 键盘导航 */
+function bindGlobalSearch() {
+    const form = document.getElementById('globalSearch');
+    const input = form?.querySelector('input');
+    const box = document.getElementById('searchSuggest');
+    if (!form || !input || !box) return;
+
+    let timer = null;
+    // 页面带 ?q= 时回填搜索框，保持顶栏与当前筛选一致
+    const initial = queryParams().q;
+    if (initial) input.value = initial;
+
+    const hide = () => {
+        box.hidden = true;
+        input.setAttribute('aria-expanded', 'false');
+    };
+
+    const toGallery = (q) => {
+        window.location.href = `${url('index.html')}${q ? `?q=${encodeURIComponent(q)}` : ''}`;
+    };
+
+    function paint(res, q) {
+        const groups = [
+            {
+                label: '作品',
+                items: (res.works || []).map((w) => ({
+                    href: `${url(w.kind === 'app' ? 'app/ai-app-detail.html' : 'assets/detail.html')}?id=${encodeURIComponent(w.id)}`,
+                    title: w.title,
+                    sub: `${KINDS[w.kind]?.name || '作品'} · ${w.author?.name || ''} · ${num(w.stats?.views || 0)} 浏览`,
+                    icon: 'image'
+                }))
+            },
+            {
+                label: 'AI 应用',
+                items: (res.apps || []).map((a) => ({
+                    href: `${url('app/ai-app-detail.html')}?id=${encodeURIComponent(a.id)}`,
+                    title: a.name,
+                    sub: `${APP_CATEGORIES.find((c) => c.id === a.category)?.name || '应用'} · ${num(a.runs || 0)} 次运行`,
+                    icon: 'sparkles'
+                }))
+            },
+            {
+                label: '创作者',
+                items: (res.users || []).map((u) => ({
+                    href: `${url('profile.html')}?uid=${encodeURIComponent(u.id)}`,
+                    title: u.name,
+                    sub: `@${u.handle} · ${num(u.worksCount || 0)} 作品`,
+                    icon: 'user'
+                }))
+            }
+        ];
+        const html = groups
+            .filter((g) => g.items.length)
+            .map((g) => `<div class="suggest-group">${escapeHtml(g.label)}
+                ${g.items.map((it) => `<a class="suggest-item" href="${it.href}" data-href="${it.href}">
+                    <span class="si-icon">${icon(it.icon, 14)}</span>
+                    <span class="si-text"><b>${escapeHtml(it.title)}</b><span>${escapeHtml(it.sub)}</span></span>
+                </a>`).join('')}
+            </div>`).join('');
+        box.innerHTML = html || `<div class="suggest-empty">没有匹配「${escapeHtml(q)}」的内容</div>`;
+        box.hidden = false;
+        input.setAttribute('aria-expanded', 'true');
+    }
+
+    input.addEventListener('input', () => {
+        const q = input.value.trim();
+        clearTimeout(timer);
+        if (q.length < 1) {
+            hide();
+            return;
+        }
+        timer = setTimeout(async () => {
+            box.innerHTML = '<div class="suggest-empty">搜索中…</div>';
+            box.hidden = false;
+            try {
+                const res = await search(q);
+                if (input.value.trim() !== q) return;
+                paint(res, q);
+            } catch (err) {
+                box.innerHTML = '<div class="suggest-empty">搜索失败，请稍后重试</div>';
+            }
+        }, 260);
+    });
+
+    input.addEventListener('focus', () => {
+        if (!input.value.trim() || box.hidden) return;
+        box.hidden = false;
+    });
+
+    input.addEventListener('keydown', (e) => {
+        const items = box.hidden ? [] : [...box.querySelectorAll('.suggest-item')];
+        if (['ArrowDown', 'ArrowUp'].includes(e.key) && items.length) {
+            e.preventDefault();
+            const current = items.findIndex((el) => el.classList.contains('active'));
+            const next = e.key === 'ArrowDown'
+                ? (current + 1) % items.length
+                : (current <= 0 ? items.length : current) - 1;
+            items.forEach((el, i) => el.classList.toggle('active', i === next));
+            items[next].scrollIntoView({ block: 'nearest' });
+            return;
+        }
+        if (e.key === 'Escape') {
+            hide();
+            return;
+        }
+        if (e.key === 'Enter') {
+            const active = items.find((el) => el.classList.contains('active'));
+            if (active) {
+                e.preventDefault();
+                window.location.href = active.dataset.href;
+            }
+        }
+    });
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        toGallery(input.value.trim());
+    });
+
+    form.addEventListener('focusout', (e) => {
+        if (form.contains(e.relatedTarget)) return;
+        setTimeout(hide, 120);
+    });
+}
+
 function bindShellEvents({ setTitle }) {
     const sidebar = document.getElementById('sidebar');
     const scrim = document.getElementById('scrim');
@@ -220,12 +348,7 @@ function bindShellEvents({ setTitle }) {
     menuBtn?.addEventListener('click', () => openSidebar(true));
     scrim?.addEventListener('click', () => openSidebar(false));
 
-    document.getElementById('globalSearch')?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const q = String(new FormData(e.target).get('q') || '').trim();
-        window.location.href = `${url('index.html')}${q ? `?q=${encodeURIComponent(q)}` : ''}`;
-    });
-
+    bindGlobalSearch();
     document.addEventListener('keydown', (e) => {
         if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
             e.preventDefault();
@@ -253,6 +376,20 @@ function bindShellEvents({ setTitle }) {
     };
     drop('notifBtn', 'notifMenu');
     drop('userBtn', 'userMenu');
+
+    // 主题切换：跟随系统 → 浅色 → 暗色，偏好写入 localStorage
+    const themeBtn = document.getElementById('themeBtn');
+    const paintTheme = () => {
+        if (!themeBtn) return;
+        themeBtn.innerHTML = icon(effectiveTheme() === 'dark' ? 'moon' : 'sun', 18);
+        themeBtn.title = `主题：${THEME_LABEL[getThemeMode()]}（点击切换）`;
+    };
+    themeBtn?.addEventListener('click', () => {
+        cycleTheme();
+        paintTheme();
+    });
+    watchSystemTheme(paintTheme);
+    paintTheme();
     document.addEventListener('click', () => {
         document.querySelectorAll('.menu').forEach((m) => {
             m.hidden = true;

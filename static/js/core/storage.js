@@ -4,7 +4,7 @@
  */
 const NS = 'lingxi.aigc';
 // 种子数据结构变更时自增，旧数据会在下次访问自动重建
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 export const KEYS = {
     db: `${NS}.db`,
     session: `${NS}.session`,

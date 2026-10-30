@@ -7,6 +7,7 @@
     <title>我的应用 · 灵犀 AIGC</title>
     <meta name="description" content="管理我创建的 AI 应用：运行数据、版本迭代与上下架。">
     <link rel="stylesheet" href="../static/css/tokens.css">
+    <script>try{var p=JSON.parse(localStorage.getItem("lingxi.aigc.prefs")||"{}");if(p.theme==="dark"||p.theme==="light")document.documentElement.dataset.theme=p.theme}catch(e){}</script>
     <link rel="stylesheet" href="../static/css/app.css">
     <link rel="stylesheet" href="../static/css/views.css">
 </head>
@@ -17,7 +18,7 @@
         import { mount } from '../static/js/core/page.js';
         import { render } from '../static/js/views/apps.js';
 
-        mount({ nav: 'assets', title: '我的应用', render });
+        mount({ nav: 'assets', title: '我的应用', params: { mine: true }, render });
     </script>
 </body>
 

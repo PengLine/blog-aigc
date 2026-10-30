@@ -270,7 +270,7 @@ export async function render(host, ctx) {
                 ${images.map((o) => `<div style="position:relative">
                     <img src="${escapeHtml(o.url)}" alt="${escapeHtml(o.title || '生成结果')}" loading="lazy">
                     <button class="btn btn-sm btn-outline" data-save="${escapeHtml(o.url)}" data-type="image"
-                        style="position:absolute;right:6px;bottom:6px;background:rgba(255,255,255,.92)">${icon('layers', 12)}存为资产</button>
+                        style="position:absolute;right:6px;bottom:6px;background:var(--surface);color:var(--text)">${icon('layers', 12)}存为资产</button>
                 </div>`).join('')}
             </div>` : ''}
             ${videos.length ? videos.map((o) => `<div class="result-box" style="padding:0;overflow:hidden">

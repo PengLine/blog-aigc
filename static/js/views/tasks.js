@@ -1,7 +1,7 @@
-import { listTasks, getTask, cancelTask, retryTask } from '../core/api.js';
-import { TASK_TYPES, statusMeta } from '../core/constants.js';
+import { listTasks, getTask, cancelTask, retryTask, createWork } from '../core/api.js';
+import { TASK_TYPES, KINDS, statusMeta } from '../core/constants.js';
 import { url, setPageTitle } from '../core/shell.js';
-import { icon, toast, emptyState, renderPagination, skeletonRows, confirmDialog, openModal } from '../core/ui.js';
+import { icon, toast, emptyState, renderPagination, skeletonRows, confirmDialog, openModal, closeModal, copyText } from '../core/ui.js';
 import { escapeHtml, num, timeAgo, fmtDate } from '../core/format.js';
 import { on, EVENTS } from '../core/bus.js';
 
@@ -214,11 +214,84 @@ export async function render(host, ctx) {
                         </div>
                     </div>
                 </div>`,
-                footer: `<button class="btn btn-outline" data-close>关闭</button>`
+                footer: `${task.payload?.prompt ? `<button class="btn btn-outline" data-x="copy">${icon('copy', 14)}复制提示词</button>` : ''}
+                    ${task.payload?.prompt ? `<a class="btn btn-outline" href="${againHref(task)}">${icon('refresh', 14)}再创作</a>` : ''}
+                    ${hasMedia(task) ? `<button class="btn btn-primary" data-x="save">${icon('download', 14)}存为资产</button>` : ''}
+                    <button class="btn btn-ghost" data-close>关闭</button>`,
+                onMount(card) {
+                    card.querySelector('[data-x="copy"]')?.addEventListener('click', () => copyText(task.payload.prompt));
+                    card.querySelector('[data-x="save"]')?.addEventListener('click', () => saveOutput(task));
+                }
             });
         } catch (err) {
             toast(err.message, 'error');
         }
+    }
+
+    /** 产物存为资产（与运行工作台一致：先选类型与名称，落为草稿） */
+    function saveOutput(task) {
+        const out = (task.outputs || []).find((o) => ['image', 'video'].includes(o.type));
+        if (!out) {
+            toast('该任务没有可入库的图像或视频产物', 'warn');
+            return;
+        }
+        const kinds = ['character', 'prop', 'scenic'];
+        closeModal();
+        openModal({
+            title: '保存为资产',
+            size: 'sm',
+            body: `<div class="col" style="gap:12px">
+                <div class="field" style="margin:0">
+                    <label class="label">资产名称</label>
+                    <input class="input" id="svTitle" maxlength="40" value="${escapeHtml(`${task.title} · ${new Date().toLocaleDateString('zh-CN')}`)}">
+                </div>
+                <div class="field" style="margin:0">
+                    <label class="label">资产类型</label>
+                    <select class="select" id="svKind">
+                        ${kinds.map((k) => `<option value="${k}">${KINDS[k].name}</option>`).join('')}
+                    </select>
+                </div>
+                <div class="field" style="margin:0">
+                    <label class="label">备注</label>
+                    <textarea class="textarea" id="svDesc" style="min-height:64px">由任务「${escapeHtml(task.title)}」产出，可继续在创作中心迭代。</textarea>
+                </div>
+            </div>`,
+            footer: `<button class="btn btn-outline" data-close>取消</button>
+                     <button class="btn btn-primary" id="svOk">保存草稿</button>`,
+            onMount(card) {
+                card.querySelector('#svOk').addEventListener('click', async () => {
+                    const title = card.querySelector('#svTitle').value.trim();
+                    const kind = card.querySelector('#svKind').value;
+                    if (!title) {
+                        toast('请填写资产名称', 'error');
+                        return;
+                    }
+                    try {
+                        const res = await createWork({
+                            kind,
+                            title,
+                            desc: card.querySelector('#svDesc').value.trim(),
+                            subtype: 'other',
+                            cover: out.url,
+                            mediaUrl: out.type === 'video' ? out.url : null,
+                            tags: [TASK_TYPES[task.type]?.name || '任务产物'],
+                            prompt: task.payload?.prompt || '',
+                            params: { model: task.payload?.model || 'lingxi-xl' },
+                            price: { mode: 'free', amount: 0 },
+                            visibility: 'public',
+                            status: 'draft'
+                        });
+                        closeModal();
+                        toast('已保存到资产库（草稿）', 'success');
+                        window.setTimeout(() => {
+                            window.location.href = `${url(KINDS[kind].detail)}?id=${res.work.id}`;
+                        }, 600);
+                    } catch (err) {
+                        toast(err.message, 'error');
+                    }
+                });
+            }
+        });
     }
 
     tabsEl.addEventListener('click', (e) => {
@@ -265,4 +338,21 @@ function statCard(label, value, sub, iconName) {
 
 function progressBar(value, tone = '') {
     return `<div class="progress ${tone} progress-sm"><i style="width:${Math.max(2, Math.min(100, value || 0))}%"></i></div>`;
+}
+
+function hasMedia(task) {
+    return (task.outputs || []).some((o) => ['image', 'video'].includes(o.type));
+}
+
+/** 再创作：按任务类型落回对应创作台，并携带提示词与模型 */
+function againHref(task) {
+    const prompt = task.payload?.prompt || '';
+    const page = task.type === 'video'
+        ? 'assets/create-video.html'
+        : task.type === 'train'
+            ? 'lora-train.html'
+            : 'assets/create-scenic.html';
+    if (task.type === 'train') return url(page);
+    const qs = `?prompt=${encodeURIComponent(prompt)}${task.payload?.model ? `&model=${encodeURIComponent(task.payload.model)}` : ''}`;
+    return `${url(page)}${qs}`;
 }

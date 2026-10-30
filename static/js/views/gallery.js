@@ -32,7 +32,7 @@ export async function render(host, ctx) {
     }
 
     host.innerHTML = `
-        ${heroHtml(overview, state)}
+        ${heroHtml(overview)}
         <div class="card" style="padding:14px 16px;margin-bottom:14px">
             <div class="filter-bar" id="kindFilter">
                 <button class="chip ${state.kind === 'all' ? 'active' : ''}" data-kind="all">全部</button>
@@ -145,10 +145,9 @@ export async function render(host, ctx) {
     await load();
 }
 
-function heroHtml(overview, state) {
+function heroHtml(overview) {
     const hour = new Date().getHours();
     const greeting = hour < 6 ? '夜深了' : hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好';
-    const user = overview?.plan ? '' : '';
     const stats = [
         { label: '我的作品', value: overview ? overview.published : '-', sub: `草稿 ${overview?.drafts ?? 0}` },
         { label: '累计获赞', value: overview ? num(overview.likes) : '-', sub: `收藏 ${overview ? num(overview.favorites) : 0}` },
@@ -161,10 +160,7 @@ function heroHtml(overview, state) {
                 <h2>${greeting}，${escapeHtml(overview ? '欢迎回到灵犀创作台' : '欢迎来到灵犀 AIGC')}</h2>
                 <p>角色、道具、场景、短剧与模型，一套资产贯穿整个创作流程。今天平台已生成 ${overview ? num(overview.platform.todayGenerated) : '—'} 个产物。</p>
             </div>
-            <div class="small" style="color:rgba(255,255,255,.7);text-align:right">
-                <div>创作者 ${overview ? num(overview.platform.creators) : '—'}</div>
-                <div>作品 ${overview ? num(overview.platform.works) : '—'}</div>
-            </div>
+            ${trendHtml(overview)}
         </div>
         <div class="hero-actions">
             <a class="btn btn-primary" href="${url('assets/create-character.html')}">${icon('plus', 15)}开始创作</a>
@@ -187,5 +183,26 @@ function heroHtml(overview, state) {
                 <span class="qt-desc">${k.desc.slice(0, 10)}</span>
             </span>
         </a>`).join('')}
+    </div>`;
+}
+
+/** 近 7 天平台生成量柱状图（数据直接来自任务表，与后台统计同源） */
+function trendHtml(overview) {
+    const week = overview?.platform?.week || [];
+    if (!week.length) return '';
+    const max = Math.max(...week.map((d) => d.generated), 1);
+    const total = week.reduce((s, d) => s + d.generated, 0);
+    return `<div class="hero-trend">
+        <div class="ht-head">
+            <span>近 7 天平台生成</span>
+            <b>${num(total)}</b>
+        </div>
+        <div class="ht-bars">
+            ${week.map((d) => `<div class="ht-bar" title="${escapeHtml(d.label)}：${d.generated} 个产物 / ${d.tasks} 个任务">
+                <i style="height:${Math.max(8, Math.round((d.generated / max) * 100))}%"></i>
+                <span>${escapeHtml(d.label)}</span>
+            </div>`).join('')}
+        </div>
+        <div class="ht-foot">今日 ${overview.platform.todayTasks} 个任务 · 消耗 ${num(overview.platform.todayCredits)} 算力</div>
     </div>`;
 }

@@ -769,7 +769,9 @@ export async function listTrainings() {
                 dataset: db.datasets.find((d) => d.id === t.datasetId) || null,
                 task: db.tasks.find((x) => x.id === t.taskId) || null
             }));
-        const datasets = db.datasets.filter((d) => d.ownerId === me);
+        const datasets = db.datasets
+            .filter((d) => d.ownerId === me || d.ownerId === 'platform')
+            .map((d) => ({ ...d, isOfficial: d.ownerId === 'platform' }));
         return { trainings: list, datasets };
     });
 }
@@ -1191,6 +1193,33 @@ export async function search(q) {
     });
 }
 
+/** 平台级统计：近 7 天由任务表直接派生，首页 / 应用广场 / 后台共用同一口径 */
+export function platformStats(db) {
+    const week = [];
+    for (let i = 6; i >= 0; i -= 1) {
+        const d = new Date(Date.now() - i * 86400000);
+        const key = d.toDateString();
+        const list = db.tasks.filter((t) => new Date(t.createdAt).toDateString() === key);
+        week.push({
+            label: `${d.getMonth() + 1}/${d.getDate()}`,
+            tasks: list.length,
+            generated: list.reduce((s, t) => s + ((t.outputs || []).length), 0),
+            credits: list.reduce((s, t) => s + (t.cost || 0), 0)
+        });
+    }
+    const today = week[week.length - 1];
+    return {
+        creators: db.users.filter((u) => u.role === 'creator').length,
+        works: db.works.filter((w) => w.status === 'published').length,
+        apps: db.apps.filter((a) => a.status === 'published').length,
+        totalRuns: db.apps.reduce((s, a) => s + (a.runs || 0), 0),
+        todayGenerated: today.generated,
+        todayTasks: today.tasks,
+        todayCredits: today.credits,
+        week
+    };
+}
+
 export async function getOverview() {
     return respond(() => {
         const db = getDb();
@@ -1215,11 +1244,7 @@ export async function getOverview() {
             runningTasks: db.tasks.filter((t) => t.ownerId === me && ['queued', 'running'].includes(t.status)).length,
             unread: unreadCount(me),
             trendingTags: Object.entries(tagCount).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([name, count]) => ({ name, count })),
-            platform: {
-                creators: db.users.filter((u) => u.role === 'creator').length * 1284 + 360,
-                works: db.works.length * 862 + 12400,
-                todayGenerated: 1860 + new Date().getDate() * 37
-            }
+            platform: platformStats(db)
         };
     });
 }
@@ -1250,7 +1275,8 @@ export async function adminOverview() {
                 ...t,
                 ownerName: publicUser(findUser(db, t.ownerId)).name,
                 typeMeta: TASK_TYPES[t.type]
-            }))
+            })),
+            platform: platformStats(db)
         };
     });
 }

@@ -1,6 +1,6 @@
 import { getAccount, recharge, subscribePlan, toggleAutoRecharge } from '../core/api.js';
 import { url, setPageTitle } from '../core/shell.js';
-import { icon, toast, confirmDialog, emptyState } from '../core/ui.js';
+import { icon, toast, confirmDialog, emptyState, renderPagination } from '../core/ui.js';
 import { escapeHtml, num, fmtDate } from '../core/format.js';
 
 const TX_META = {
@@ -8,13 +8,24 @@ const TX_META = {
     recharge: { name: '充值', tone: 'ok', sign: '+' },
     refund: { name: '退款', tone: 'ok', sign: '+' },
     subscribe: { name: '订阅赠送', tone: 'brand', sign: '+' },
-    license: { name: '授权购买', tone: 'danger', sign: '' }
+    license: { name: '授权购买', tone: 'danger', sign: '' },
+    bonus: { name: '活动赠送', tone: 'brand', sign: '+' }
 };
+
+const TX_FILTERS = [
+    { id: 'all', name: '全部' },
+    { id: 'consume', name: '消费' },
+    { id: 'recharge', name: '充值' },
+    { id: 'refund', name: '退款' },
+    { id: 'subscribe', name: '订阅赠送' }
+];
+
+const TX_PAGE_SIZE = 10;
 
 export async function render(host, ctx) {
     setPageTitle('钱包与订阅');
     let account = await getAccount();
-    const state = { tab: ctx.query.tab === 'plans' ? 'plans' : 'recharge', filter: 'all' };
+    const state = { tab: ctx.query.tab === 'plans' ? 'plans' : ctx.query.tab === 'bills' ? 'bills' : 'recharge', filter: ctx.query.type || 'all', txPage: 1 };
 
     draw();
 
@@ -27,7 +38,7 @@ export async function render(host, ctx) {
                     <div class="page-sub">算力积分用于图片、视频、训练与工作流；订阅套餐每月自动发放额度</div>
                 </div>
                 <div class="page-actions">
-                    <a class="btn btn-outline" href="${url('tasks.html')}">${icon('clock', 15)}消费明细</a>
+                    <a class="btn btn-outline" href="${url('wallet.html')}?tab=bills">${icon('receipt', 15)}查看流水</a>
                     <a class="btn btn-primary" href="${url('assets/create-character.html')}">${icon('sparkles', 15)}去创作</a>
                 </div>
             </div>
@@ -188,32 +199,40 @@ export async function render(host, ctx) {
             return;
         }
 
-        // 流水
-        const list = account.transactions;
-        if (!list.length) {
+        // 流水：类型筛选 + 分页 + 导出 CSV
+        const all = account.transactions;
+        if (!all.length) {
             body.innerHTML = emptyState({ title: '暂无流水记录', desc: '充值、消费与退款都会记录在这里。' });
             return;
         }
-        const consume = list.filter((t) => t.type === 'consume').reduce((s, t) => s + Math.abs(t.amount), 0);
-        const income = list.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0);
+        const filtered = state.filter === 'all' ? all : all.filter((t) => t.type === state.filter);
+        const pages = Math.max(1, Math.ceil(filtered.length / TX_PAGE_SIZE));
+        state.txPage = Math.min(Math.max(1, state.txPage), pages);
+        const slice = filtered.slice((state.txPage - 1) * TX_PAGE_SIZE, state.txPage * TX_PAGE_SIZE);
+        const consume = filtered.filter((t) => t.amount < 0).reduce((s, t) => s + Math.abs(t.amount), 0);
+        const income = filtered.filter((t) => t.amount > 0).reduce((s, t) => s + t.amount, 0);
         body.innerHTML = `
             <div class="grid cols-3" style="margin-bottom:16px">
-                ${miniStat('累计消费', num(consume), '近 30 条流水', 'zap')}
-                ${miniStat('累计充值', num(income), '含赠送与订阅', 'credit')}
-                ${miniStat('退款笔数', String(list.filter((t) => t.type === 'refund').length), '任务失败自动退还', 'refresh')}
+                ${miniStat('支出合计', num(consume), '当前筛选下的消费与授权', 'zap')}
+                ${miniStat('收入合计', num(income), '充值 / 退款 / 赠送', 'credit')}
+                ${miniStat('净变动', `${income - consume >= 0 ? '+' : '-'}${num(Math.abs(income - consume))}`, `共 ${filtered.length} 条记录`, 'refresh')}
             </div>
             <div class="card">
                 <div class="card-head">
                     <div class="card-title">消费流水</div>
+                    <div class="chips" id="txFilter" style="margin-left:14px">
+                        ${TX_FILTERS.map((f) => `<button class="chip ${state.filter === f.id ? 'active' : ''}" data-filter="${f.id}">${f.name}</button>`).join('')}
+                    </div>
                     <div class="spacer"></div>
-                    <span class="small muted">共 ${list.length} 条</span>
+                    <span class="small muted">共 ${filtered.length} 条</span>
+                    <button class="btn btn-sm btn-outline" id="txExport">${icon('download', 14)}导出 CSV</button>
                 </div>
                 <div class="card-body" style="padding-top:0">
                     <div class="table-wrap">
                         <table class="table">
                             <thead><tr><th>类型</th><th>说明</th><th>变动</th><th>余额</th><th>时间</th></tr></thead>
                             <tbody>
-                                ${list.map((t) => {
+                                ${slice.length ? slice.map((t) => {
             const meta = TX_META[t.type] || { name: t.type, tone: '', sign: '' };
             return `<tr>
                                         <td><span class="badge ${meta.tone ? `badge-${meta.tone}` : ''}">${meta.name}</span></td>
@@ -222,13 +241,62 @@ export async function render(host, ctx) {
                                         <td class="mono">${num(t.balanceAfter ?? 0)}</td>
                                         <td class="small muted">${fmtDate(t.createdAt, true)}</td>
                                     </tr>`;
-        }).join('')}
+        }).join('') : `<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:26px">该类型下没有流水</td></tr>`}
                             </tbody>
                         </table>
                     </div>
+                    <div class="pagination" id="txPager" style="margin-top:14px"></div>
                 </div>
             </div>`;
+
+        body.querySelector('#txFilter')?.addEventListener('click', (e) => {
+            const chip = e.target.closest('[data-filter]');
+            if (!chip) return;
+            state.filter = chip.dataset.filter;
+            state.txPage = 1;
+            drawBody();
+        });
+
+        body.querySelector('#txExport')?.addEventListener('click', () => exportCsv(filtered));
+
+        if (pages > 1) {
+            renderPagination(body.querySelector('#txPager'), {
+                page: state.txPage,
+                pages,
+                total: filtered.length,
+                pageSize: TX_PAGE_SIZE,
+                onChange: (page) => {
+                    state.txPage = page;
+                    drawBody();
+                }
+            });
+        }
     }
+}
+
+/** 导出当前筛选的流水（带 BOM，Excel 直接双击可打开） */
+function exportCsv(list) {
+    const header = ['时间', '类型', '说明', '变动', '余额'];
+    const cell = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const rows = list.map((t) => [
+        fmtDate(t.createdAt, true),
+        (TX_META[t.type] || { name: t.type }).name,
+        t.title,
+        t.amount,
+        t.balanceAfter ?? ''
+    ].map(cell).join(','));
+    const csv = [header.map(cell).join(','), ...rows].join('\n');
+    const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8' });
+    const href = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    a.href = href;
+    a.download = `灵犀算力流水-${stamp}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(href), 1000);
+    toast(`已导出 ${list.length} 条流水`, 'success');
 }
 
 function miniStat(label, value, sub, iconName) {

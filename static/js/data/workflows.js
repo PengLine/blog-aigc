@@ -76,6 +76,34 @@ export const WORKFLOWS = [
 /** LoRA 训练数据集 */
 export const DATASETS = [
     {
+        id: 'ds_101',
+        name: '官方·人像光影基础集',
+        ownerId: 'platform',
+        desc: '平台整理的 60 张光影样张，覆盖逆光/柔光/侧光，适合新手首次训练风格 LoRA。',
+        count: 60,
+        tagged: 60,
+        resolution: '1024 × 1024',
+        createdAt: daysAgo(120),
+        thumbs: Array.from({ length: 8 }, (_, i) =>
+            img(`portrait lighting study, backlight soft key ${i + 1}, 85mm`, 'square')
+        ),
+        tags: ['官方', '人像', '光影']
+    },
+    {
+        id: 'ds_102',
+        name: '官方·场景建筑参考集',
+        ownerId: 'platform',
+        desc: '54 张建筑与城市场景，含多时段光照，适用于场景类 LoRA 与工作流测试。',
+        count: 54,
+        tagged: 48,
+        resolution: '1344 × 768',
+        createdAt: daysAgo(96),
+        thumbs: Array.from({ length: 8 }, (_, i) =>
+            img(`architecture and city scene reference ${i + 1}, golden hour`, 'square')
+        ),
+        tags: ['官方', '场景', '建筑']
+    },
+    {
         id: 'ds_001',
         name: '人像精选集',
         ownerId: 'u_me',

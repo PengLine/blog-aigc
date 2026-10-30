@@ -138,7 +138,7 @@ export async function render(host, ctx) {
                     desc: state.q || state.status !== 'all' ? '试试清空搜索条件或切换状态筛选。' : '从角色、道具或场景开始，创建你的第一个可复用资产。',
                     action: `<a class="btn btn-primary" href="${url(KINDS[kind === 'all' ? 'character' : kind].create)}">${icon('plus', 14)}立即创建</a>`
                 });
-                pagerEl.innerHTML = '';
+                pagerEl.innerHTML = '<div class="small muted">共 0 条，可尝试切换状态或清空搜索。</div>';
                 return;
             }
             if (state.view === 'grid') {

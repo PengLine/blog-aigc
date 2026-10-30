@@ -4,6 +4,7 @@ import { url, setPageTitle } from '../core/shell.js';
 import { icon, toast, progressBar, emptyState, copyText, openModal, closeModal, imgTag, confirmDialog } from '../core/ui.js';
 import { escapeHtml, num, timeAgo } from '../core/format.js';
 import { on, EVENTS } from '../core/bus.js';
+import { KEYS } from '../core/storage.js';
 import {
     BASE_PROFILES, MODE_PRESETS, OPTIMIZERS, SCHEDULERS, RANKS, LRS, BATCHES, RESOLUTIONS,
     GRAD_ACCUMS, CLIP_SKIPS, PLAN_STAGES, pickConfig, suggestEpochs, buildTrainPlan,
@@ -50,7 +51,7 @@ export async function render(host, ctx) {
 
         <div class="grid cols-4" style="margin-bottom:16px">
             ${statCard('ds', '数据集', datasets.length, `官方 ${officialCount} · 我的 ${datasets.length - officialCount}`, 'database')}
-            ${statCard('jobs', '训练任务', trainings.length, `${doneCount} 个已完成 · ${running.length} 个进行中`, 'cpu')}
+            ${statCard('jobs', '训练任务', trainings.length, `${doneCount} 个已完成 · ${running.length} 个运行中`, 'cpu')}
             ${statCard('time', '平均耗时', avgMin, '历史训练实际用时', 'clock')}
             ${statCard('budget', '本次预算', '<span id="statBudget">—</span>', '随参数实时预估，中断按进度结算', 'credit', true)}
         </div>
@@ -490,6 +491,19 @@ export async function render(host, ctx) {
             .catch((err) => console.warn(err));
     });
 
+    /* 另一个标签页写库时，db.js 已作废本地内存缓存，但列表不会自己重绘：
+     * 监听同一份 storage 的跨页写入事件，把对方提交的训练同步过来 */
+    let foreignTimer = 0;
+    window.addEventListener('storage', (e) => {
+        if (e.key !== KEYS.db) return;
+        clearTimeout(foreignTimer);
+        foreignTimer = setTimeout(() => {
+            listTrainings()
+                .then(({ trainings: fresh }) => applyList(fresh, true))
+                .catch((err) => console.warn(err));
+        }, 500);
+    });
+
     /* ------------------------- 过程监控 ------------------------- */
     function stopWatch() {
         if (state.polling) clearInterval(state.polling);
@@ -540,7 +554,7 @@ export async function render(host, ctx) {
                     <div class="card-title row" style="gap:8px">${escapeHtml(training.name)}
                         <span class="badge ${st.tone ? `badge-${st.tone}` : ''}">${st.label}</span>
                     </div>
-                    <div class="card-sub">${escapeHtml(cfg.base)} · Rank ${cfg.rank}/${cfg.alpha} · ${cfg.epochs} epoch · ${num(cfg.steps)} 步 · ${costText(task, cfg)}</div>
+                    <div class="card-sub">${escapeHtml(cfg.base)} · Rank ${cfg.rank}/${cfg.alpha} · ${cfg.epochs} epoch · ${num(cfg.steps)} 步 · ${settledCost(task, cfg).phrase('算力')}</div>
                 </div>
                 <div class="spacer"></div>
                 ${active ? `<button class="btn btn-sm btn-outline" data-act="cancel" data-id="${task.id || ''}">${icon('stop', 13)}中断训练</button>` : ''}
@@ -589,7 +603,7 @@ export async function render(host, ctx) {
                     <span class="spacer"></span>
                     <button class="btn btn-sm btn-outline" data-act="retry" data-training="${training.id}">${icon('refresh', 13)}改参数重试</button>
                 </div>` : ''}
-                ${training.status === 'canceled' ? `<div class="small muted" style="margin-top:12px">训练已中断，按已完成 ${Math.round(progress)}% 结算：${costText(task, cfg)}。</div>` : ''}
+                ${training.status === 'canceled' ? `<div class="small muted" style="margin-top:12px">训练已中断，按已完成 ${Math.round(progress)}% 结算：${settledCost(task, cfg).phrase('算力')}。</div>` : ''}
             </div>
         </div>`;
         const log = progressBox.querySelector('#liveLog');
@@ -748,7 +762,7 @@ export async function render(host, ctx) {
                     <dt>显存 / 吞吐</dt><dd>${cfg.vramGb} GB（上限 ${cfg.vramLimitGb}）· ${cfg.samplesPerSec} samples/s</dd>
                     <dt>创建 / 耗时</dt><dd>${timeAgo(training.createdAt)} · ${training.durationMin ? `${training.durationMin} 分钟` : '—'}</dd>
                     <dt>最终 loss</dt><dd>${loss.length ? loss[loss.length - 1].loss : '—'}</dd>
-                    <dt>消耗算力</dt><dd>${settledCost(training.task, cfg).text} 积分</dd>
+                    <dt>算力结算</dt><dd>${settledCost(training.task, cfg).phrase('积分')}</dd>
                 </dl>
                 ${loss.length ? `<div>
                     <div class="label" style="margin-bottom:6px">Loss 曲线</div>
@@ -807,14 +821,11 @@ function settledCost(task, cfg = {}) {
         cost,
         refund,
         paid,
-        text: refund > 0 ? `${num(paid)}（名义 ${num(cost)}，已退 ${num(refund)}）` : num(cost)
+        /** 统一拼成一句完整文案，避免调用方拼后缀时多出空格 */
+        phrase: (unit = '算力') => (refund > 0
+            ? `实付 ${num(paid)} ${unit}（名义 ${num(cost)}，已退 ${num(refund)}）`
+            : `消耗 ${num(cost)} ${unit}`)
     };
-}
-
-/** 面板与详情用的计费文案 */
-function costText(task, cfg) {
-    const c = settledCost(task, cfg);
-    return c.refund > 0 ? `实付 ${c.text} 算力` : `消耗 ${num(c.cost)} 算力`;
 }
 
 function statCard(id, label, value, sub, iconName, raw = false) {

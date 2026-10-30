@@ -449,22 +449,23 @@ export function buildSeed() {
     // 平台历史任务与「我的」任务合并后按时间倒序，与真实后端的任务表行为一致
     const allTasks = [...tasks, ...buildPlatformTasks(users)].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-    // 流水按时间倒序，balanceAfter 沿时间轴连续推演，末笔余额与账户 credits（1160）对齐
-    // 失败 / 中断训练把「扣除」与「退还」两笔都入账，钱包里能看到完整计费链路（一出一进，净额不变）
+    // 流水供钱包页直接遍历（api 不再排序），因此必须严格按时间倒序书写：
+    // 下一行 balanceAfter + 本行 amount === 上一行 balanceAfter，末笔余额与账户 credits（1160）对齐
+    // 失败 / 中断任务把「扣除」与「退还」两笔都入账，钱包里能看到完整计费链路（一出一进，净额不变）
     const transactions = [
         { id: 'tx_010', userId: ME, type: 'consume', amount: -6, balanceAfter: 1160, title: '图片生成 · 夜市小摊封面图', refId: 't_run', createdAt: new Date(Date.now() - 3 * 60000).toISOString() },
         { id: 'tx_009', userId: ME, type: 'consume', amount: -9, balanceAfter: 1166, title: '应用运行 · 电商主图工坊', refId: 't_004', createdAt: daysAgo(2, 5) },
         { id: 'tx_008', userId: ME, type: 'consume', amount: -42, balanceAfter: 1175, title: '批量出图 · 分镜 4 张', refId: 't_006', createdAt: daysAgo(5, 2) },
+        // 已取消的图片任务：先扣除再全额退回（退款时间略晚于扣除）
+        { id: 'tx_006d', userId: ME, type: 'refund', amount: 6, balanceAfter: 1217, title: '任务取消退款 · 星河少女 · 概念图', refId: 't_007', createdAt: daysAgo(6, 6) },
+        { id: 'tx_006c', userId: ME, type: 'consume', amount: -6, balanceAfter: 1211, title: '图片生成 · 星河少女概念图', refId: 't_007', createdAt: daysAgo(6, 7) },
         { id: 'tx_007', userId: ME, type: 'refund', amount: 120, balanceAfter: 1217, title: '训练失败退款 · 赛博街景 LoRA', refId: 't_008', createdAt: daysAgo(7, 2) },
         { id: 'tx_006b', userId: ME, type: 'consume', amount: -120, balanceAfter: 1097, title: 'LoRA 训练 · 赛博街景', refId: 't_008', createdAt: daysAgo(7, 3) },
         { id: 'tx_006', userId: ME, type: 'consume', amount: -15, balanceAfter: 1217, title: '应用运行 · 短剧分镜工坊', refId: 't_004', createdAt: daysAgo(9, 2) },
-        // 已取消的图片任务：先扣除再全额退回，钱包里能看到成对记录（净额 0）
-        { id: 'tx_006c', userId: ME, type: 'consume', amount: -6, balanceAfter: 1211, title: '图片生成 · 星河少女概念图', refId: 't_007', createdAt: daysAgo(6, 7) },
-        { id: 'tx_006d', userId: ME, type: 'refund', amount: 6, balanceAfter: 1217, title: '任务取消退款 · 星河少女 · 概念图', refId: 't_007', createdAt: daysAgo(6, 7) },
         { id: 'tx_005', userId: ME, type: 'consume', amount: -18, balanceAfter: 1232, title: '工作流 · 文生图标准流', refId: 't_006', createdAt: daysAgo(11, 2) },
         // 审核未通过的图片任务：扣除后即时全额退还，保证「已自动退还」在流水里可查
+        { id: 'tx_005c', userId: ME, type: 'refund', amount: 6, balanceAfter: 1250, title: '任务失败退款 · 雨林遗迹 · 场景探索', refId: 't_005', createdAt: daysAgo(15, 5) },
         { id: 'tx_005b', userId: ME, type: 'consume', amount: -6, balanceAfter: 1244, title: '图片生成 · 雨林遗迹场景探索', refId: 't_005', createdAt: daysAgo(15, 6) },
-        { id: 'tx_005c', userId: ME, type: 'refund', amount: 6, balanceAfter: 1250, title: '任务失败退款 · 雨林遗迹 · 场景探索', refId: 't_005', createdAt: daysAgo(15, 6) },
         { id: 'tx_004', userId: ME, type: 'consume', amount: -120, balanceAfter: 1250, title: 'LoRA 训练 · 灵犀人像', refId: 't_003', createdAt: daysAgo(20, 5) },
         { id: 'tx_003', userId: ME, type: 'consume', amount: -30, balanceAfter: 1370, title: '视频生成 · 星际信使预览', refId: 't_002', createdAt: daysAgo(26, 8) },
         { id: 'tx_002', userId: ME, type: 'recharge', amount: 1200, balanceAfter: 1400, title: '充值 1200 算力积分', refId: 'pkg_1200', createdAt: daysAgo(120, 3) },

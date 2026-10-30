@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-root="./">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>钱包与订阅 · 灵犀 AIGC</title>
+    <meta name="description" content="算力积分充值、订阅套餐管理与消费流水查询。">
+    <link rel="stylesheet" href="static/css/tokens.css">
+    <link rel="stylesheet" href="static/css/app.css">
+    <link rel="stylesheet" href="static/css/views.css">
+</head>
+
+<body>
+    <div class="app" id="app"></div>
+    <script type="module">
+        import { mount } from './static/js/core/page.js';
+        import { render } from './static/js/views/wallet.js';
+
+        mount({ nav: 'wallet', title: '钱包与订阅', render });
+    </script>
+</body>
+
+</html>

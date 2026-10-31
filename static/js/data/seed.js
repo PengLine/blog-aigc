@@ -4,7 +4,13 @@ import { WORKS } from './works.js';
 import { APPS } from './apps.js';
 import { WORKFLOWS, DATASETS } from './workflows.js';
 import { normalizeConfig, buildTrainPlan, lossAt, samplePrompt } from '../core/training.js';
-import { daysAgo, img } from './media.js';
+import {
+    parseScript, formatStoryboard, summaryOf, shotLabel, shotAtSecond,
+    scriptCost, videoCost, composeCost,
+    buildParsePlan, buildComposePlan, buildShotPlan
+} from '../core/drama.js';
+import { TASK_TYPES } from '../core/constants.js';
+import { daysAgo, img, VIDEO_SRC, DAY } from './media.js';
 
 const ME = 'u_me';
 const HOUR = 3600000;
@@ -19,6 +25,16 @@ function clockOf(iso) {
     const d = new Date(iso);
     const pad = (n) => String(n).padStart(2, '0');
     return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+/** 把过程计划按时间窗铺开成任务日志，与引擎真实推进的时序一致 */
+function timedLogs(plan, fromMs, toMs) {
+    const span = Math.max(1000, toMs - fromMs);
+    return (plan || []).map((item, idx) => ({
+        t: clockOf(new Date(fromMs + span * (plan.length > 1 ? idx / (plan.length - 1) : 1))),
+        level: item.level || 'info',
+        msg: item.msg
+    }));
 }
 
 // 平台任务模板：用于生成近 7 天其他创作者的历史任务，让首页趋势、后台统计与任务表口径一致
@@ -80,15 +96,46 @@ function buildPlatformTasks(users) {
     return list;
 }
 
-function buildUsers(works) {
+function buildUsers(works, meAccount = {}) {
     return USERS.map((u) => {
         const published = works.filter((w) => w.authorId === u.id && w.status === 'published');
         return {
             ...u,
+            // 演示账号的余额与本期净消耗由种子流水反推，保证钱包账本与任务计费同源
+            ...(u.id === ME ? meAccount : {}),
             worksCount: published.length,
             likesReceived: published.reduce((sum, w) => sum + (w.stats?.likes || 0), 0)
         };
     });
+}
+
+/**
+ * 账本重建：流水只写「金额 + 时间」，余额逐笔累加、id 按时间顺序下发，最后倒序输出。
+ * 钱包页直接遍历 api.getAccount 返回的 transactions（服务端不排序），
+ * 由代码推导 balanceAfter 能从结构上杜绝手写账本不闭合。
+ */
+function buildLedger(entries) {
+    const asc = entries
+        .slice()
+        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    let balance = 0;
+    const withBalance = asc.map((e, i) => {
+        balance = Math.round((balance + Number(e.amount || 0)) * 100) / 100;
+        return { id: `tx_${String(i + 1).padStart(3, '0')}`, userId: ME, ...e, balanceAfter: balance };
+    });
+    return withBalance.reverse();
+}
+
+/** 末笔余额 = 账户 credits；本期已用 = 30 天内消费与退款净额（与训练失败「一出一进」不计入净消耗保持一致） */
+function accountOf(transactions) {
+    const since = Date.now() - 30 * DAY;
+    const net = transactions
+        .filter((t) => ['consume', 'refund'].includes(t.type) && new Date(t.createdAt).getTime() >= since)
+        .reduce((sum, t) => sum + t.amount, 0);
+    return {
+        credits: transactions[0]?.balanceAfter || 0,
+        computeUsed: Math.max(0, Math.round(-net))
+    };
 }
 
 function buildRelated(works) {
@@ -112,8 +159,6 @@ export function buildSeed() {
             return w;
         })
     );
-
-    const users = buildUsers(works);
 
     const comments = [
         { id: 'c_001', workId: 'w_001', userId: 'u_suwan', content: '三视图的一致性很好，右臂结构可以直接拿去做分镜了。', likes: 24, createdAt: daysAgo(2, 4) },
@@ -256,6 +301,239 @@ export function buildSeed() {
     const trainings = trainingFixtures.map(({ _logs, ...rest }) => rest);
     const trainingTaskLogs = { t_003: trainingFixtures[0]._logs, t_008: trainingFixtures[1]._logs };
 
+    /*
+     * 长剧本短剧（>15 秒）历史项目：与前端 / 引擎共用同一套领域函数生成
+     * （剧本解析 → 逐镜头片段 → 片段合成），镜头数、时长配平、逐笔计费全部复算，
+     * 因此种子里的分镜表、任务产物和钱包流水不会与真实流水线口径打架。
+     */
+    function dramaFixture(spec) {
+        const project = {
+            id: spec.id,
+            ownerId: spec.ownerId,
+            title: spec.title,
+            script: spec.script,
+            targetSec: spec.targetSec,
+            model: spec.model,
+            tone: spec.tone,
+            ratio: spec.ratio,
+            negative: 'low quality, blurry, watermark, extra fingers, inconsistent face',
+            assetRefs: spec.assetRefs
+        };
+        const shots = parseScript(project);
+        const sum = summaryOf(shots, { model: spec.model, targetSec: spec.targetSec });
+        const parseCost = scriptCost(spec.targetSec, spec.script.length);
+        const composePrice = composeCost(sum.totalSec, sum.count);
+        const from = new Date(spec.createdAt).getTime();
+        const to = new Date(spec.finishedAt || Date.now()).getTime();
+        const span = Math.max(HOUR, to - from);
+        const at = (pct) => new Date(from + span * pct).toISOString();
+        const pad2 = (n) => String(n).padStart(2, '0');
+        const tid = (i) => (spec.taskIds && spec.taskIds[i]) || `${spec.id}_t${i}`;
+        const mine = spec.ownerId === ME;
+        const finished = spec.status === 'done';
+        // 成片封面沿用站点约定：取第 3 秒所在镜头的帧图，并与作品封面保持一致
+        const coverShot = shotAtSecond(shots, 3);
+        const workCover = spec.workId ? (works.find((w) => w.id === spec.workId) || {}).cover : '';
+        const posterOf = (shot) => (shot === coverShot && workCover) ? workCover : img(`${shot.prompt}, cinematic still`);
+        const tasks = [];
+        const ledger = [];
+        let txSeq = 0;
+        // 他人的项目不进「我的任务中心」与钱包账本，只作为广场成片的分镜来源
+        const charge = (task) => {
+            if (!mine) return;
+            txSeq += 1;
+            ledger.push({
+                type: 'consume',
+                amount: -task.cost,
+                title: `${(TASK_TYPES[task.type] || {}).name || task.type} · ${task.title}`,
+                refId: task.id,
+                createdAt: task.createdAt
+            });
+        };
+
+        // ① 长剧本解析：真实计费的独立任务，不是前端假动画
+        const parseTask = {
+            id: tid(0),
+            type: 'script',
+            title: `${spec.title} · 长剧本解析`,
+            ownerId: spec.ownerId,
+            status: 'succeeded',
+            progress: 100,
+            cost: parseCost,
+            payload: { dramaId: spec.id, targetSec: spec.targetSec, script: spec.script, model: spec.model },
+            outputs: [{ type: 'text', title: `分镜表 · ${sum.count} 个镜头 / ${sum.totalSec}s`, text: formatStoryboard({ shots }) }],
+            logs: [{ t: clockOf(spec.createdAt), level: 'info', msg: `解析任务已排队（${spec.script.length} 字 · 目标 ${spec.targetSec}s · 预算 ${parseCost} 算力）` },
+                ...timedLogs(buildParsePlan({ ...project, shots }), from, from + span * 0.14)],
+            createdAt: spec.createdAt,
+            startedAt: at(0.02),
+            finishedAt: at(0.14),
+            error: null,
+            refId: spec.id
+        };
+        if (mine) {
+            tasks.push(parseTask);
+            charge(parseTask);
+        }
+
+        // ③ 片段生成：每镜头一条独立任务，单独计费、单独取消、单独重试
+        if (finished) {
+            const pStart = 0.18;
+            const pEnd = 0.74;
+            shots.forEach((shot, i) => {
+                const s0 = pStart + (pEnd - pStart) * (i / shots.length);
+                const s1 = pStart + (pEnd - pStart) * ((i + 1) / shots.length);
+                const cost = videoCost(spec.model, shot.seconds);
+                const still = posterOf(shot);
+                shot.cost = cost;
+                shot.status = 'succeeded';
+                shot.taskId = mine ? tid(i + 1) : '';
+                shot.output = { url: VIDEO_SRC, poster: still, seconds: shot.seconds, cost, no: shot.no };
+                const task = {
+                    id: shot.taskId || `${spec.id}_sh${shot.no}`,
+                    type: 'video',
+                    title: `${spec.title} · 镜头 ${pad2(shot.no)}（${shot.seconds}s）`,
+                    ownerId: spec.ownerId,
+                    status: 'succeeded',
+                    progress: 100,
+                    cost,
+                    payload: {
+                        dramaId: spec.id,
+                        shotId: shot.id,
+                        shotNo: shot.no,
+                        prompt: shot.prompt,
+                        negative: shot.negative,
+                        model: spec.model,
+                        duration: shot.seconds,
+                        ratio: spec.ratio,
+                        kind: 'video'
+                    },
+                    outputs: [{ type: 'video', url: VIDEO_SRC, poster: still, seconds: shot.seconds, title: `${shotLabel(shot)} 片段（${shot.seconds}s）` }],
+                    logs: timedLogs(buildShotPlan(shot, spec.model, spec.tone), from + span * s0, from + span * s1),
+                    createdAt: at(s0),
+                    startedAt: at(s0 + 0.005),
+                    finishedAt: at(s1),
+                    error: null,
+                    refId: spec.id
+                };
+                if (mine) {
+                    tasks.push(task);
+                    charge(task);
+                }
+            });
+        }
+
+        // ④ 片段合成：拼接成片 + 抽帧封面，产物直接落地为一条视频作品
+        let composeTask = null;
+        if (finished) {
+            composeTask = {
+                id: tid(shots.length + 1),
+                type: 'compose',
+                title: `${spec.title} · 片段合成（${sum.totalSec}s）`,
+                ownerId: spec.ownerId,
+                status: 'succeeded',
+                progress: 100,
+                cost: composePrice,
+                payload: { dramaId: spec.id, totalSec: sum.totalSec, shotCount: sum.count, model: spec.model, tone: spec.tone, ratio: spec.ratio },
+                outputs: [{ type: 'video', url: VIDEO_SRC, poster: workCover || posterOf(coverShot || shots[0] || {}), seconds: sum.totalSec, title: `${spec.title} 成片（${sum.totalSec}s）`, workId: spec.workId }],
+                logs: timedLogs(buildComposePlan({ ...project, shots }), from + span * 0.76, to),
+                createdAt: at(0.76),
+                startedAt: at(0.77),
+                finishedAt: spec.finishedAt,
+                error: null,
+                refId: spec.id
+            };
+            if (mine) {
+                tasks.push(composeTask);
+                charge(composeTask);
+            }
+        }
+
+        const drama = {
+            ...project,
+            subtype: spec.subtype || 'story',
+            status: spec.status,
+            shots,
+            parseTaskId: mine ? parseTask.id : '',
+            composeTaskId: mine && composeTask ? composeTask.id : '',
+            workId: spec.workId || null,
+            cover: finished ? (workCover || posterOf(coverShot || shots[0] || {})) : '',
+            parseCost,
+            composeCost: finished ? composePrice : 0,
+            totalCost: parseCost + (finished ? sum.cost + composePrice : 0),
+            confirmedAt: finished ? at(0.16) : null,
+            createdAt: spec.createdAt,
+            updatedAt: finished ? spec.finishedAt : at(0.14)
+        };
+        return { drama, tasks, ledger };
+    }
+
+    const dramaFixtures = [
+        dramaFixture({
+            id: 'dr_001',
+            ownerId: 'u_suwan',
+            title: '星际信使 第01集',
+            targetSec: 90,
+            model: 'kling-v',
+            tone: 'cold',
+            ratio: '9:16',
+            subtype: 'technology',
+            workId: 'w_006',
+            status: 'done',
+            createdAt: daysAgo(2, 2),
+            finishedAt: daysAgo(1),
+            assetRefs: { character: ['w_001', 'w_015'], prop: ['w_004'], scenic: ['w_003'] },
+            script: '信使在废弃空间站的休眠舱里醒来。舱壁的警报灯仍在闪烁。'
+                + '他读到自己脑中一段不该存在的记忆。记忆属于三年前失踪的领航员。'
+                + '走廊空无一人，只剩冷光。他沿着通道走向舰桥。舱门外是静止的行星环。'
+                + '舰桥终端自动回放了最后的求救信号。信号坐标指向他自己的飞船。'
+                + '他握紧了口袋里的数据钥匙。空间站开始坠入大气层。他按下跳跃键，画面留在燃烧的舱影。'
+        }),
+        dramaFixture({
+            id: 'dr_002',
+            ownerId: ME,
+            title: '霓虹夜行',
+            targetSec: 60,
+            model: 'kling-v',
+            tone: 'neon',
+            ratio: '9:16',
+            subtype: 'story',
+            status: 'storyboard',
+            createdAt: daysAgo(1, 6),
+            finishedAt: daysAgo(1, 5),
+            taskIds: ['t_017'],
+            assetRefs: { character: ['m_001'], prop: [], scenic: ['m_007'] },
+            script: '暴雨刚停，霓虹灯牌在积水里碎成一片。少女从后巷走出来，压低帽檐。'
+                + '她要在天亮前送完最后一只包裹。街口传来追逐的引擎声。'
+                + '她拐进一间还亮着灯的修车铺。老板认出了包裹上的封条。'
+                + '两人隔着雨棚对话，谁都没有动手。远处传来警笛，她转身消失在巷尾。'
+        }),
+        dramaFixture({
+            id: 'dr_003',
+            ownerId: ME,
+            title: '老城巷口',
+            targetSec: 30,
+            model: 'kling-v',
+            tone: 'warm',
+            ratio: '16:9',
+            subtype: 'travel',
+            workId: 'm_009',
+            status: 'done',
+            createdAt: daysAgo(3, 10),
+            finishedAt: daysAgo(3, 1),
+            taskIds: ['t_010', 't_011', 't_012', 't_013', 't_014', 't_015', 't_016'],
+            assetRefs: { character: [], prop: [], scenic: [] },
+            script: '清晨的老城巷口，石板路还带着昨夜的湿意。一辆自行车斜靠在斑驳的门框边。'
+                + '店主推开木门，门轴发出一声轻响。阳光顺着屋檐滑下来，落在热气腾腾的豆浆碗上。'
+                + '巷子尽头有人转身，镜头留在空荡的石板路上。'
+        })
+    ];
+
+    const dramas = dramaFixtures.map((f) => f.drama);
+    const dramaTasks = dramaFixtures.flatMap((f) => f.tasks);
+    const dramaLedger = dramaFixtures.flatMap((f) => f.ledger);
+    const filmDone = dramas.find((d) => d.id === 'dr_003');
+    const filmReview = dramas.find((d) => d.id === 'dr_002');
+
     const tasks = [
         {
             id: 't_run',
@@ -367,7 +645,7 @@ export function buildSeed() {
             status: 'failed',
             progress: 100,
             cost: 6,
-            // 失败全额退还，与流水 tx_005b / tx_005c 成对（净额 0）
+            // 失败全额退还，与下面的退款流水成对（净额 0）
             refund: 6,
             payload: { prompt: 'ancient ruins in tropical rainforest, god rays', model: 'lingxi-xl' },
             outputs: [],
@@ -412,7 +690,7 @@ export function buildSeed() {
             status: 'canceled',
             progress: 68,
             cost: 6,
-            // 非训练任务取消为全额退还，与流水 tx_006c / tx_006d 一出一进对齐
+            // 非训练任务取消为全额退还，与下面的退款流水一出一进对齐
             refund: 6,
             payload: { prompt: 'girl among stars, concept art', model: 'sd15' },
             outputs: [],
@@ -443,34 +721,74 @@ export function buildSeed() {
             finishedAt: daysAgo(7, 2),
             error: '显存不足，任务失败，积分已自动退还',
             refId: 'tr_002'
+        },
+        {
+            id: 't_009',
+            type: 'app',
+            title: '电商主图生成 · 运行',
+            ownerId: ME,
+            status: 'succeeded',
+            progress: 100,
+            cost: 8,
+            payload: { appId: 'app_004', appName: '电商主图生成', inputs: { product: '磨砂银蓝牙耳机', scene: 'studio' } },
+            outputs: [{ type: 'image', url: img('ecommerce product banner, frosted silver bluetooth earphone, studio light'), title: 'main_0001.png' }],
+            logs: [
+                { t: '13:41:02', level: 'info', msg: '应用 app_004 开始运行' },
+                { t: '13:41:19', level: 'ok', msg: '生成完成，产物 1 个' }
+            ],
+            createdAt: daysAgo(2, 5),
+            startedAt: daysAgo(2, 5),
+            finishedAt: daysAgo(2, 5),
+            error: null,
+            refId: 'app_004'
         }
     ];
 
-    // 平台历史任务与「我的」任务合并后按时间倒序，与真实后端的任务表行为一致
-    const allTasks = [...tasks, ...buildPlatformTasks(users)].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    /*
+     * 账本由任务表反推：每一笔 consume / refund 都对应一条真实任务，
+     * 金额取 task.cost、退还取 task.refund、时刻取任务创建 / 完成时间，
+     * 不会再出现「流水有笔扣费但找不到对应任务」的演示派生数据不同步。
+     */
+    const taskLedger = tasks
+        .slice()
+        .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+        .flatMap((t) => {
+            const rows = [];
+            if (t.ownerId === ME && t.cost > 0) {
+                rows.push({
+                    type: 'consume',
+                    amount: -t.cost,
+                    title: `${(TASK_TYPES[t.type] || {}).name || t.type} · ${t.title}`,
+                    refId: t.id,
+                    createdAt: t.createdAt
+                });
+            }
+            // 失败 / 取消任务把「扣除」与「退还」都入账，钱包里能看到完整计费链路（一出一进，净额不变）
+            if (t.ownerId === ME && t.refund > 0) {
+                rows.push({
+                    type: 'refund',
+                    amount: t.refund,
+                    title: `${t.status === 'canceled' ? '任务取消退款' : '任务失败退款'} · ${t.title}`,
+                    refId: t.id,
+                    createdAt: t.finishedAt || t.createdAt
+                });
+            }
+            return rows;
+        });
 
-    // 流水供钱包页直接遍历（api 不再排序），因此必须严格按时间倒序书写：
-    // 下一行 balanceAfter + 本行 amount === 上一行 balanceAfter，末笔余额与账户 credits（1160）对齐
-    // 失败 / 中断任务把「扣除」与「退还」两笔都入账，钱包里能看到完整计费链路（一出一进，净额不变）
-    const transactions = [
-        { id: 'tx_010', userId: ME, type: 'consume', amount: -6, balanceAfter: 1160, title: '图片生成 · 夜市小摊封面图', refId: 't_run', createdAt: new Date(Date.now() - 3 * 60000).toISOString() },
-        { id: 'tx_009', userId: ME, type: 'consume', amount: -9, balanceAfter: 1166, title: '应用运行 · 电商主图工坊', refId: 't_004', createdAt: daysAgo(2, 5) },
-        { id: 'tx_008', userId: ME, type: 'consume', amount: -42, balanceAfter: 1175, title: '批量出图 · 分镜 4 张', refId: 't_006', createdAt: daysAgo(5, 2) },
-        // 已取消的图片任务：先扣除再全额退回（退款时间略晚于扣除）
-        { id: 'tx_006d', userId: ME, type: 'refund', amount: 6, balanceAfter: 1217, title: '任务取消退款 · 星河少女 · 概念图', refId: 't_007', createdAt: daysAgo(6, 6) },
-        { id: 'tx_006c', userId: ME, type: 'consume', amount: -6, balanceAfter: 1211, title: '图片生成 · 星河少女概念图', refId: 't_007', createdAt: daysAgo(6, 7) },
-        { id: 'tx_007', userId: ME, type: 'refund', amount: 120, balanceAfter: 1217, title: '训练失败退款 · 赛博街景 LoRA', refId: 't_008', createdAt: daysAgo(7, 2) },
-        { id: 'tx_006b', userId: ME, type: 'consume', amount: -120, balanceAfter: 1097, title: 'LoRA 训练 · 赛博街景', refId: 't_008', createdAt: daysAgo(7, 3) },
-        { id: 'tx_006', userId: ME, type: 'consume', amount: -15, balanceAfter: 1217, title: '应用运行 · 短剧分镜工坊', refId: 't_004', createdAt: daysAgo(9, 2) },
-        { id: 'tx_005', userId: ME, type: 'consume', amount: -18, balanceAfter: 1232, title: '工作流 · 文生图标准流', refId: 't_006', createdAt: daysAgo(11, 2) },
-        // 审核未通过的图片任务：扣除后即时全额退还，保证「已自动退还」在流水里可查
-        { id: 'tx_005c', userId: ME, type: 'refund', amount: 6, balanceAfter: 1250, title: '任务失败退款 · 雨林遗迹 · 场景探索', refId: 't_005', createdAt: daysAgo(15, 5) },
-        { id: 'tx_005b', userId: ME, type: 'consume', amount: -6, balanceAfter: 1244, title: '图片生成 · 雨林遗迹场景探索', refId: 't_005', createdAt: daysAgo(15, 6) },
-        { id: 'tx_004', userId: ME, type: 'consume', amount: -120, balanceAfter: 1250, title: 'LoRA 训练 · 灵犀人像', refId: 't_003', createdAt: daysAgo(20, 5) },
-        { id: 'tx_003', userId: ME, type: 'consume', amount: -30, balanceAfter: 1370, title: '视频生成 · 星际信使预览', refId: 't_002', createdAt: daysAgo(26, 8) },
-        { id: 'tx_002', userId: ME, type: 'recharge', amount: 1200, balanceAfter: 1400, title: '充值 1200 算力积分', refId: 'pkg_1200', createdAt: daysAgo(120, 3) },
-        { id: 'tx_001', userId: ME, type: 'bonus', amount: 200, balanceAfter: 200, title: '新用户算力礼包', refId: '', createdAt: daysAgo(430) }
-    ];
+    const transactions = buildLedger([
+        { type: 'bonus', amount: 200, title: '新用户算力礼包', refId: '', createdAt: daysAgo(430) },
+        { type: 'recharge', amount: 1200, title: '充值 1200 算力积分', refId: 'pkg_1200', createdAt: daysAgo(120, 3) },
+        ...taskLedger,
+        // 短剧流水线（>15 秒）：解析 / 逐镜头 / 合成，每一笔都是真任务真扣费
+        ...dramaLedger.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+    ]);
+
+    const account = accountOf(transactions);
+    const users = buildUsers(works, account);
+
+    // 平台历史任务与「我的」任务合并后按时间倒序，与真实后端的任务表行为一致
+    const allTasks = [...tasks, ...dramaTasks, ...buildPlatformTasks(users)].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     const notifications = [
         { id: 'n_001', userId: ME, type: 'review', tone: 'ok', title: '作品审核通过', body: '「赛博少女·零」已通过审核并发布到作品广场。', link: 'assets/character-detail.html?id=m_001', read: false, createdAt: daysAgo(1, 4) },
@@ -478,8 +796,10 @@ export function buildSeed() {
         { id: 'n_003', userId: ME, type: 'task', tone: 'ok', title: 'LoRA 训练完成', body: `「灵犀人像 LoRA」跑完 ${trainings[0].config.epochs} epoch / ${trainings[0].config.steps} 步，最终 loss ${trainings[0].loss[trainings[0].loss.length - 1].loss}，已生成模型资产。`, link: 'lora-train.html?training=tr_001', read: false, createdAt: daysAgo(20, 1) },
         { id: 'n_004', userId: ME, type: 'social', tone: 'brand', title: '沈知夏 赞了你的作品', body: '「赛博少女·零」收到 1 个新点赞。', link: 'assets/character-detail.html?id=m_001', read: true, createdAt: daysAgo(1, 5) },
         { id: 'n_005', userId: ME, type: 'social', tone: 'brand', title: '白露 关注了你', body: '你们都喜欢「亲子」「绘本」相关内容。', link: 'profile.html?uid=u_bailu', read: true, createdAt: daysAgo(30) },
-        { id: 'n_006', userId: ME, type: 'billing', tone: 'warn', title: '算力积分到账', body: '专业版月度 3000 积分将于 12 天后重置，当前余额 1160。', link: 'wallet.html', read: true, createdAt: daysAgo(18) },
-        { id: 'n_007', userId: ME, type: 'system', tone: 'brand', title: '平台公告：工作流 v2 上线', body: '新增节点级重试与产物对比，历史工作流自动升级。', link: 'ai-workflow-execute.html?workflow=wf_001', read: true, createdAt: daysAgo(9) }
+        { id: 'n_006', userId: ME, type: 'billing', tone: 'warn', title: '算力积分到账', body: `专业版月度 3000 积分将于 12 天后重置，当前余额 ${account.credits}。`, link: 'wallet.html', read: true, createdAt: daysAgo(18) },
+        { id: 'n_007', userId: ME, type: 'system', tone: 'brand', title: '平台公告：工作流 v2 上线', body: '新增节点级重试与产物对比，历史工作流自动升级。', link: 'ai-workflow-execute.html?workflow=wf_001', read: true, createdAt: daysAgo(9) },
+        { id: 'n_008', userId: ME, type: 'task', tone: 'ok', title: '短剧合成完成', body: `「${filmDone.title}」已拼接为 ${summaryOf(filmDone.shots, { model: filmDone.model }).totalSec}s 成片（${filmDone.shots.length} 个镜头），封面取第 3 秒，确认后可提交发布。`, link: `assets/create-video.html?drama=${filmDone.id}&long=1`, read: false, createdAt: daysAgo(3, 1) },
+        { id: 'n_009', userId: ME, type: 'task', tone: 'warn', title: '剧本解析完成', body: `「${filmReview.title}」已拆出 ${filmReview.shots.length} 个镜头（合计 ${summaryOf(filmReview.shots, { model: filmReview.model, targetSec: filmReview.targetSec }).totalSec}s），请在工作台审核分镜后再生成片段。`, link: `assets/create-video.html?drama=${filmReview.id}&long=1`, read: false, createdAt: daysAgo(1, 5) }
     ];
 
     return {
@@ -492,6 +812,7 @@ export function buildSeed() {
         workflows: WORKFLOWS,
         datasets: DATASETS,
         trainings,
+        dramas,
         tasks: allTasks,
         comments,
         reactions,

@@ -1,6 +1,8 @@
 /**
  * 业务字典：资产类型、状态、模型、套餐、任务成本
+ * 视频与短剧相关的时长/计费口径来自 core/drama.js（单一事实来源），本文件只做汇总透出。
  */
+import { videoCost, scriptCost, composeCost } from './drama.js';
 
 export const KINDS = {
     character: {
@@ -111,8 +113,8 @@ export const MODELS = [
     { id: 'flux-dev', name: 'FLUX.1 dev', kind: 'image', cost: 8, desc: '语义理解强，适合复杂提示词' },
     { id: 'sdxl', name: 'SDXL 1.0', kind: 'image', cost: 6, desc: '生态完善，LoRA 兼容性最好' },
     { id: 'sd15', name: 'SD 1.5', kind: 'image', cost: 3, desc: '轻量经济，适合风格化实验' },
-    { id: 'kling-v', name: 'Kling Video', kind: 'video', cost: 30, desc: '图生视频，5 秒 / 720p' },
-    { id: 'lingxi-v', name: '灵犀 Video', kind: 'video', cost: 26, desc: '文生视频，支持运镜控制' }
+    { id: 'kling-v', name: 'Kling Video', kind: 'video', cost: 30, desc: '图生视频，单镜头 ≤ 10s / 1080p' },
+    { id: 'lingxi-v', name: '灵犀 Video', kind: 'video', cost: 26, desc: '文生视频，单镜头 ≤ 8s，支持运镜控制' }
 ];
 
 export const MODEL_MAP = Object.fromEntries(MODELS.map((m) => [m.id, m]));
@@ -130,6 +132,8 @@ export const RATIOS = [
 export const TASK_TYPES = {
     image: { name: '图片生成', icon: 'image', cost: 6 },
     video: { name: '视频生成', icon: 'video', cost: 30 },
+    script: { name: '剧本解析', icon: 'scroll', cost: 9 },
+    compose: { name: '片段合成', icon: 'film', cost: 20 },
     train: { name: 'LoRA 训练', icon: 'cpu', cost: 120 },
     workflow: { name: '工作流', icon: 'workflow', cost: 18 },
     app: { name: '应用运行', icon: 'sparkles', cost: 8 },
@@ -190,7 +194,10 @@ export function taskCost(type, payload = {}) {
         const model = MODEL_MAP[payload.model];
         return model ? model.cost : TASK_TYPES.image.cost;
     }
-    if (type === 'video') return Number(payload.duration || 5) > 5 ? 45 : TASK_TYPES.video.cost;
+    // 视频按时长计费：base + perSec × 秒，5 秒档与模型标价对齐；分镜流水线里的每个镜头同样走这条公式
+    if (type === 'video') return videoCost(payload.model, payload.duration || 5);
+    if (type === 'script') return scriptCost(payload.targetSec || payload.duration || 30, String(payload.script || '').length);
+    if (type === 'compose') return composeCost(payload.totalSec || 0, payload.shotCount || 0);
     if (type === 'train') return TASK_TYPES.train.cost;
     if (type === 'workflow') return TASK_TYPES.workflow.cost;
     return 0;

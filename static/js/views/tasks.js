@@ -119,9 +119,16 @@ export async function render(host, ctx) {
         return refund > 0 ? `实付 ${Math.max(0, cost - refund)} 算力（已退 ${refund}）` : `消耗 ${cost} 算力`;
     }
 
+    /** 短剧流水线的任务（解析 / 镜头 / 合成）都要能一键回到工作台续做 */
+    function dramaHref(task) {
+        return url(`assets/create-video.html?drama=${encodeURIComponent(task.payload.dramaId)}&long=1`);
+    }
+
     function rowHtml(task) {
         const st = statusMeta(task.status);
         const type = TASK_TYPES[task.type] || { name: '任务', icon: 'zap' };
+        const isShot = Boolean(task.payload?.shotId);
+        const typeName = isShot ? '短剧镜头' : type.name;
         const running = ['queued', 'running'].includes(task.status);
         return `<div class="task-row" data-task="${task.id}">
             <span class="task-icon" style="background:var(--brand-50);color:var(--brand-600)">${icon(type.icon, 16)}</span>
@@ -129,7 +136,7 @@ export async function render(host, ctx) {
                 <div class="task-title">${escapeHtml(task.title)}
                     <span class="badge ${st.tone ? `badge-${st.tone}` : ''}">${st.label}</span>
                 </div>
-                <div class="task-sub">${type.name} · ${costLabel(task)} · ${timeAgo(task.createdAt)}
+                <div class="task-sub">${typeName} · ${costLabel(task)} · ${timeAgo(task.createdAt)}
                     ${task.outputs?.length ? ` · ${task.outputs.length} 个产物` : ''}</div>
                 ${running ? `<div class="task-bar">${progressBar(task.progress)}
                     <span class="small muted">${escapeHtml((task.logs || []).slice(-1)[0]?.msg || '等待调度')}</span></div>` : ''}
@@ -137,6 +144,7 @@ export async function render(host, ctx) {
             </div>
             <div class="task-actions">
                 <button class="btn btn-sm btn-ghost" data-act="detail" data-id="${task.id}">${icon('info', 14)}详情</button>
+                ${task.payload?.dramaId ? `<a class="btn btn-sm btn-ghost" href="${dramaHref(task)}">${icon('film', 14)}工作台</a>` : ''}
                 ${running ? `<button class="btn btn-sm btn-ghost" data-act="cancel" data-id="${task.id}">${icon('stop', 14)}取消</button>` : ''}
                 ${['failed', 'canceled'].includes(task.status) ? `<button class="btn btn-sm btn-outline" data-act="retry" data-id="${task.id}">${icon('refresh', 14)}重试</button>` : ''}
                 ${task.status === 'succeeded' && task.outputs?.length ? `<button class="btn btn-sm btn-outline" data-act="detail" data-id="${task.id}">${icon('eye', 14)}查看结果</button>` : ''}
@@ -187,6 +195,11 @@ export async function render(host, ctx) {
             const task = await getTask(id);
             const st = statusMeta(task.status);
             const type = TASK_TYPES[task.type] || { name: '任务' };
+            // 解析任务的输入是剧本、镜头任务的输入是分镜提示词，统一成一个 brief 避免两套面板
+            const brief = task.payload?.prompt || task.payload?.script || '';
+            const briefLabel = task.type === 'script' ? '剧本原文' : '提示词';
+            // 合成任务已成功建好作品记录，直接给成片入口，再允许「存为资产」会出现同一影片两份
+            const filmId = (task.outputs || []).find((o) => o.workId)?.workId || '';
             openModal({
                 title: `${type.name} · ${task.title}`,
                 size: 'lg',
@@ -201,6 +214,10 @@ export async function render(host, ctx) {
                         <div class="row between small" style="margin-bottom:6px"><span class="muted">进度</span><b>${task.progress || 0}%</b></div>
                         ${progressBar(task.progress, task.status === 'failed' ? 'danger' : task.status === 'succeeded' ? 'ok' : '')}
                     </div>
+                    ${brief ? `<div>
+                        <div class="label" style="margin-bottom:6px">${briefLabel}</div>
+                        <div class="prompt-box small" style="white-space:pre-wrap;max-height:150px;overflow:auto">${escapeHtml(brief)}</div>
+                    </div>` : ''}
                     ${task.error ? `<div class="result-box" style="color:var(--danger)">${escapeHtml(task.error)}</div>` : ''}
                     ${(task.outputs || []).length ? `<div>
                         <div class="label" style="margin-bottom:6px">产物</div>
@@ -221,12 +238,14 @@ export async function render(host, ctx) {
                         </div>
                     </div>
                 </div>`,
-                footer: `${task.payload?.prompt ? `<button class="btn btn-outline" data-x="copy">${icon('copy', 14)}复制提示词</button>` : ''}
-                    ${task.payload?.prompt ? `<a class="btn btn-outline" href="${againHref(task)}">${icon('refresh', 14)}再创作</a>` : ''}
-                    ${hasMedia(task) ? `<button class="btn btn-primary" data-x="save">${icon('download', 14)}存为资产</button>` : ''}
+                footer: `${brief ? `<button class="btn btn-outline" data-x="copy">${icon('copy', 14)}复制${briefLabel}</button>` : ''}
+                    ${brief && !task.payload?.dramaId ? `<a class="btn btn-outline" href="${againHref(task)}">${icon('refresh', 14)}再创作</a>` : ''}
+                    ${task.payload?.dramaId ? `<a class="btn btn-outline" href="${dramaHref(task)}">${icon('film', 14)}打开工作台</a>` : ''}
+                    ${filmId ? `<a class="btn btn-primary" href="${url(`assets/video-detail.html?id=${filmId}`)}">${icon('eye', 14)}查看成片</a>` : ''}
+                    ${hasMedia(task) && !filmId ? `<button class="btn btn-primary" data-x="save">${icon('download', 14)}存为资产</button>` : ''}
                     <button class="btn btn-ghost" data-close>关闭</button>`,
                 onMount(card) {
-                    card.querySelector('[data-x="copy"]')?.addEventListener('click', () => copyText(task.payload.prompt));
+                    card.querySelector('[data-x="copy"]')?.addEventListener('click', () => copyText(brief));
                     card.querySelector('[data-x="save"]')?.addEventListener('click', () => saveOutput(task));
                 }
             });

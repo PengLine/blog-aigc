@@ -9,12 +9,21 @@ import { mutate, findUser, addNotification, addTransaction } from './db.js';
 import { emit, EVENTS } from './bus.js';
 import { img, VIDEO_SRC } from '../data/media.js';
 import { buildTrainPlan, lossAt, samplePrompt } from './training.js';
+import {
+    parseScript, applyTaskResult, buildParsePlan, buildComposePlan, buildShotPlan,
+    summaryOf, formatStoryboard, shotAtSecond, shotLabel, videoCost, toneName
+} from './drama.js';
 import { uid } from './format.js';
 
 const TAB_ID = Math.random().toString(36).slice(2);
 const LOCK_KEY = `${KEYS.flag}.engine`;
 const TICK_MS = 1100;
 const MAX_CONCURRENCY = 2;
+/**
+ * 分镜镜头单独占用一路队列：一个短剧项目会同时下十几条镜头任务，
+ * 与训练 / 图片任务争用同一个并发门会等待过久。真实平台会把它们排到同一批推理集群上。
+ */
+const MAX_BATCH_CONCURRENCY = 3;
 
 let timer = null;
 
@@ -50,11 +59,18 @@ function stepFor(task) {
         workflow: [7, 12],
         app: [12, 20],
         review: [22, 34],
-        upload: [30, 50]
+        upload: [30, 50],
+        script: [9, 16],
+        compose: [7, 13]
     };
+    // 单个分镜片段比完整短剧轻很多，步长略快，但仍保证能看清逐镜推进
+    if (task.payload && task.payload.shotId) return 11 + Math.random() * 7;
     const [min, max] = map[task.type] || [10, 18];
     return min + Math.random() * (max - min);
 }
+
+const isShotTask = (task) => Boolean(task.payload && task.payload.shotId);
+const findDramaOf = (db, task) => ((db.dramas || []).find((d) => d.id === task.payload?.dramaId) || null);
 
 const STAGES = {
     image: [
@@ -70,6 +86,8 @@ const STAGES = {
         [90, 'info', '封装 MP4 并生成封面']
     ],
     train: [], // 训练日志由 buildTrainPlan 逐条驱动，不使用静态阶段表
+    script: [], // 剧本解析日志由 buildParsePlan 驱动（与工作台流程清单同源）
+    compose: [], // 合成日志由 buildComposePlan 驱动
     workflow: [
         [10, 'info', '解析工作流 DAG，6 个节点待执行'],
         [35, 'info', '节点「提示词编码」执行完成'],
@@ -88,10 +106,34 @@ const STAGES = {
     ]
 };
 
-function applyStages(task) {
-    (STAGES[task.type] || []).forEach(([threshold, level, msg]) => {
+function applyStages(task, plan) {
+    // 分镜镜头有自己的过程计划，不再叠加静态视频阶段文案（否则会看到“解析分镜”与“镜头 03 装配”并存）
+    const statics = isShotTask(task) ? [] : STAGES[task.type] || [];
+    statics.forEach(([threshold, level, msg]) => {
         if (task.progress >= threshold) log(task, level, msg);
     });
+    // 动态计划（解析 / 合成 / 单镜头）：按进度取已完成条目，log() 自己丢弃重复行
+    (plan || []).forEach((item) => {
+        if (task.progress >= item.at) log(task, item.level || 'info', item.msg);
+    });
+}
+
+/** 按任务类型取出与视图同源的过程计划 */
+function planFor(db, task) {
+    if (task.type === 'script') {
+        const drama = findDramaOf(db, task);
+        return drama ? buildParsePlan(drama) : [];
+    }
+    if (task.type === 'compose') {
+        const drama = findDramaOf(db, task);
+        return drama ? buildComposePlan(drama) : [];
+    }
+    if (isShotTask(task)) {
+        const drama = findDramaOf(db, task);
+        const shot = drama ? (drama.shots || []).find((s) => s.id === task.payload.shotId) : null;
+        return shot ? buildShotPlan(shot, drama.model, drama.tone) : [];
+    }
+    return null;
 }
 
 /**
@@ -159,6 +201,49 @@ function outputImages(prompt, count = 2) {
         url: img(`${base}, variation ${i + 1}, high detail`),
         title: `output_${String(i + 1).padStart(4, '0')}.png`
     }));
+}
+
+/**
+ * 合成完成后创建成片作品（kind: video，状态为草稿，由工作台引导提交发布）。
+ * 封面沿用站点一致约定：默认取成片第 3 秒所在镜头的帧图。
+ */
+function createFilmWork(db, drama, task) {
+    const sum = summaryOf(drama.shots || [], { model: drama.model, targetSec: drama.targetSec });
+    const coverShot = shotAtSecond(drama.shots, 3) || drama.shots[0] || {};
+    const cover = coverShot.output?.poster || img(`${coverShot.prompt || drama.title}, cinematic film still`);
+    const work = {
+        id: uid('video'),
+        kind: 'video',
+        subtype: drama.subtype || 'story',
+        title: drama.title,
+        desc: drama.desc || `由 ${sum.count} 个镜头合成的 ${sum.totalSec}s 短剧，全局影调「${toneName(drama.tone)}」，已逐镜头控制一致性。`,
+        cover,
+        mediaType: 'video',
+        mediaUrl: VIDEO_SRC,
+        duration: sum.totalSec,
+        tags: ['短剧', '分镜合成', `${sum.count} 镜头`],
+        prompt: String(drama.script || '').slice(0, 200),
+        negative: drama.negative || 'low quality, blurry, watermark',
+        params: { model: drama.model, ratio: drama.ratio, tone: drama.tone, shots: sum.count },
+        authorId: drama.ownerId,
+        status: 'draft',
+        visibility: 'private',
+        price: { mode: 'free', amount: 0 },
+        stats: { views: 0, likes: 0, favorites: 0, comments: 0, remixes: 0 },
+        createdAt: now(),
+        updatedAt: now(),
+        review: null,
+        version: 1,
+        sourceWorkId: null,
+        relatedIds: [],
+        meta: { dramaId: drama.id, shotCount: sum.count, totalSec: sum.totalSec, composeCost: task.cost },
+        assetRefs: drama.assetRefs,
+        ownerNote: ''
+    };
+    db.works.unshift(work);
+    drama.workId = work.id;
+    drama.cover = cover;
+    return work;
 }
 
 function appText(app, inputs) {
@@ -239,14 +324,78 @@ function completeTask(db, task) {
         const count = task.type === 'workflow' ? Number(task.payload.count) || 2 : 2;
         task.outputs = outputImages(task.payload.prompt || task.title, count);
     } else if (task.type === 'video') {
+        const drama = isShotTask(task) ? findDramaOf(db, task) : null;
+        const shot = drama ? (drama.shots || []).find((s) => s.id === task.payload.shotId) : null;
+        const sec = shot ? Number(shot.seconds) : Number(task.payload.duration) || 5;
+        const poster = img(`${shot ? shot.prompt : task.payload.prompt || task.title}, cinematic still`);
         task.outputs = [
             {
                 type: 'video',
                 url: VIDEO_SRC,
-                poster: img(`${task.payload.prompt || task.title}, cinematic still`),
-                title: '生成的视频片段（5s）'
+                poster,
+                seconds: sec,
+                title: shot ? `${shotLabel(shot)} 片段（${sec}s）` : `生成的视频片段（${sec}s）`
             }
         ];
+        if (shot) {
+            // 镜头产物直接回写项目：工作台据此展示片段、判定能否进入合成
+            shot.output = { url: VIDEO_SRC, poster, seconds: sec, cost: videoCost(drama.model, sec), no: shot.no };
+            shot.status = 'succeeded';
+            shot.error = null;
+            applyTaskResult(drama, task, 'succeeded');
+            if (drama.status === 'ready') {
+                addNotification(db, {
+                    userId: drama.ownerId,
+                    type: 'task',
+                    tone: 'ok',
+                    title: '短剧镜头全部就绪',
+                    body: `「${drama.title}」共 ${drama.shots.length} 个镜头已生成完成，可以回到工作台进行片段合成。`,
+                    link: `assets/create-video.html?drama=${drama.id}&long=1`
+                });
+            }
+        }
+    } else if (task.type === 'script') {
+        const drama = findDramaOf(db, task);
+        if (drama) {
+            drama.shots = parseScript({
+                script: drama.script,
+                targetSec: drama.targetSec,
+                model: drama.model,
+                tone: drama.tone,
+                ratio: drama.ratio,
+                negative: drama.negative,
+                assetRefs: drama.assetRefs
+            });
+            applyTaskResult(drama, task, 'succeeded');
+            const sum = summaryOf(drama.shots, { model: drama.model, targetSec: drama.targetSec });
+            task.outputs = [{ type: 'text', title: `分镜表 · ${sum.count} 个镜头 / ${sum.totalSec}s`, text: formatStoryboard(drama) }];
+            addNotification(db, {
+                userId: drama.ownerId,
+                type: 'task',
+                tone: 'ok',
+                title: '剧本解析完成',
+                body: `「${drama.title}」已拆出 ${sum.count} 个镜头（合计 ${sum.totalSec}s，预估 ${sum.cost} 算力），请在工作台审核分镜。`,
+                link: `assets/create-video.html?drama=${drama.id}&long=1`
+            });
+        }
+    } else if (task.type === 'compose') {
+        const drama = findDramaOf(db, task);
+        if (drama) {
+            const work = createFilmWork(db, drama, task);
+            applyTaskResult(drama, task, 'succeeded');
+            const sum = summaryOf(drama.shots, { model: drama.model, targetSec: drama.targetSec });
+            task.outputs = [
+                { type: 'video', url: VIDEO_SRC, poster: work.cover, seconds: sum.totalSec, title: `${drama.title} 成片（${sum.totalSec}s）`, workId: work.id }
+            ];
+            addNotification(db, {
+                userId: drama.ownerId,
+                type: 'task',
+                tone: 'ok',
+                title: '短剧合成完成',
+                body: `「${drama.title}」已拼接为 ${sum.totalSec}s 成片（${sum.count} 个镜头），封面取第 3 秒，确认后可提交发布。`,
+                link: `assets/create-video.html?drama=${drama.id}&long=1`
+            });
+        }
     } else if (task.type === 'app') {
         task.outputs = appOutputs(db, task);
     } else if (task.type === 'train') {
@@ -340,7 +489,7 @@ function completeTask(db, task) {
         }
     }
 
-    if (owner && task.type !== 'train') {
+    if (owner && task.type !== 'train' && !isShotTask(task) && !['script', 'compose'].includes(task.type)) {
         addNotification(db, {
             userId: task.ownerId,
             type: 'task',
@@ -360,6 +509,17 @@ function failTask(db, task, reason) {
     task.finishedAt = now();
     task.error = reason;
     log(task, 'err', reason);
+    // 短剧流水线：解析 / 镜头 / 合成失败都要把状态回写项目
+    if (task.payload?.dramaId) {
+        const drama = findDramaOf(db, task);
+        if (drama) {
+            applyTaskResult(drama, task, 'failed');
+            if (isShotTask(task)) {
+                const shot = (drama.shots || []).find((s) => s.id === task.payload.shotId);
+                if (shot) log(task, 'warn', `${shotLabel(shot)} 可在工作台单独重试，不影响其他镜头`);
+            }
+        }
+    }
     if (task.type === 'train') {
         const training = db.trainings.find((t) => t.id === task.payload.trainingId);
         if (training) {
@@ -391,28 +551,37 @@ function tick() {
     let snapshot = null;
     mutate((db) => {
         const active = db.tasks.filter((t) => t.status === 'queued' || t.status === 'running');
-        let running = active.filter((t) => t.status === 'running').length;
+        // 两条独立队列：常规任务共用 MAX_CONCURRENCY，分镜镜头另用 MAX_BATCH_CONCURRENCY
+        let running = active.filter((t) => t.status === 'running' && !isShotTask(t)).length;
+        let batchRunning = active.filter((t) => t.status === 'running' && isShotTask(t)).length;
         active
             .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
             .forEach((task) => {
                 if (task.status === 'queued') {
-                    if (running >= MAX_CONCURRENCY) return;
+                    const batch = isShotTask(task);
+                    if (batch ? batchRunning >= MAX_BATCH_CONCURRENCY : running >= MAX_CONCURRENCY) return;
                     task.status = 'running';
                     task.startedAt = now();
                     task.progress = Math.max(task.progress || 0, 2);
-                    running += 1;
+                    if (batch) batchRunning += 1;
+                    else running += 1;
                     log(task, 'info', '已分配算力节点，任务开始执行');
                     // 训练记录与任务状态保持同步，否则训练页徽章会一直停在「排队中」
                     if (task.type === 'train') {
                         const training = db.trainings.find((t) => t.id === task.payload.trainingId);
                         if (training && training.status === 'queued') training.status = 'running';
                     }
+                    if (task.payload?.dramaId && isShotTask(task)) {
+                        const drama = findDramaOf(db, task);
+                        const shot = drama ? (drama.shots || []).find((s) => s.id === task.payload.shotId) : null;
+                        if (shot) shot.status = 'running';
+                    }
                     snapshot = task;
                     return;
                 }
                 if (task.status === 'running') {
                     task.progress = Math.min(100, task.progress + stepFor(task));
-                    applyStages(task);
+                    applyStages(task, planFor(db, task));
                     let fault = null;
                     if (task.type === 'train') {
                         const training = db.trainings.find((t) => t.id === task.payload.trainingId);
@@ -423,6 +592,8 @@ function tick() {
                     } else if (task.progress >= 100) {
                         if (task.type === 'image' && String(task.payload.prompt || '').includes('__fail__')) {
                             failTask(db, task, '内容安全检查未通过');
+                        } else if (task.type === 'video' && String(task.payload.prompt || '').includes('__fail__')) {
+                            failTask(db, task, '镜头生成失败：运动幅度超出模型安全范围，已退还算力，可拆分时长后重试');
                         } else {
                             completeTask(db, task);
                         }

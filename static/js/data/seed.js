@@ -491,7 +491,7 @@ export function buildSeed() {
         dramaFixture({
             id: 'dr_002',
             ownerId: ME,
-            title: '需虹夜行',
+            title: '霓虹夜行',
             targetSec: 60,
             model: 'kling-v',
             tone: 'neon',
@@ -502,7 +502,7 @@ export function buildSeed() {
             finishedAt: daysAgo(1, 5),
             taskIds: ['t_017'],
             assetRefs: { character: ['m_001'], prop: [], scenic: ['m_007'] },
-            script: '暴雨刚停，需虹灯牌在积水里碎成一片。少女从后巷走出来，压低帽檐。'
+            script: '暴雨刚停，霓虹灯牌在积水里碎成一片。少女从后巷走出来，压低帽檐。'
                 + '她要在天亮前送完最后一只包裹。街口传来追逐的引擎声。'
                 + '她拐进一间还亮着灯的修车铺。老板认出了包裹上的封条。'
                 + '两人隔着雨棚对话，谁都没有动手。远处传来警笛，她转身消失在巷尾。'

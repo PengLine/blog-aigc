@@ -144,7 +144,7 @@ export async function render(host, ctx) {
             </div>
             <div class="task-actions">
                 <button class="btn btn-sm btn-ghost" data-act="detail" data-id="${task.id}">${icon('info', 14)}详情</button>
-                ${task.payload?.dramaId && !isShot ? `<a class="btn btn-sm btn-ghost" href="${dramaHref(task)}">${icon('film', 14)}工作台</a>` : ''}
+                ${task.payload?.dramaId ? `<a class="btn btn-sm btn-ghost" href="${dramaHref(task)}">${icon('film', 14)}工作台</a>` : ''}
                 ${running ? `<button class="btn btn-sm btn-ghost" data-act="cancel" data-id="${task.id}">${icon('stop', 14)}取消</button>` : ''}
                 ${['failed', 'canceled'].includes(task.status) ? `<button class="btn btn-sm btn-outline" data-act="retry" data-id="${task.id}">${icon('refresh', 14)}重试</button>` : ''}
                 ${task.status === 'succeeded' && task.outputs?.length ? `<button class="btn btn-sm btn-outline" data-act="detail" data-id="${task.id}">${icon('eye', 14)}查看结果</button>` : ''}

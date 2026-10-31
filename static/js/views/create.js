@@ -6,7 +6,7 @@ import { escapeHtml, num, timeAgo } from '../core/format.js';
 import { on, EVENTS } from '../core/bus.js';
 import {
     DURATION_OPTIONS, LONG_FORM_MIN, isLongForm, profileFor, videoCost, scriptCost, composeCost,
-    splitBeats, planShotCount, distributeSeconds
+    splitBeats, planShotCount, distributeSeconds, suggestDuration
 } from '../core/drama.js';
 
 const CREATE_KINDS = ['character', 'prop', 'scenic', 'video', 'model'];
@@ -70,7 +70,8 @@ export async function render(host, ctx) {
         priceAmount: editing?.price?.amount || 10,
         visibility: editing?.visibility || 'public',
         params: { ...defaults, ...(source?.params || {}), ...(editing?.params || {}), ...(preset.model ? { model: preset.model } : {}) },
-        duration: editing?.duration || 5
+        // 新建默认交给「自动推算」，只有编辑已有作品时才回显它当初的实际时长
+        duration: editing?.duration || (kind === 'video' ? 'auto' : 5)
     };
     if (state.cover) state.outputs = [{ type: kind === 'video' ? 'video' : 'image', url: state.cover, title: '当前封面' }];
     // 已经走过分镜流水线的长剧本成片：回工作台改分镜，不在快速表单里重复一套编辑入口
@@ -200,7 +201,9 @@ export async function render(host, ctx) {
                                 ${kind === 'video' ? `<div class="field">
                                     <label class="label" for="fDuration">视频时长 <span class="hint-inline" id="durationHint"></span></label>
                                     <select class="select" id="fDuration">
+                                        <option value="auto" ${state.duration === 'auto' ? 'selected' : ''}>自动 · 按剧本推算</option>
                                         ${DURATION_OPTIONS.map((d) => `<option value="${d}" ${Number(state.duration) === d ? 'selected' : ''}>${d} 秒${d > LONG_FORM_MIN ? ' · 分镜工作台' : ''}</option>`).join('')}
+                                        ${legacyDurationOption()}
                                     </select>
                                 </div>` : `<div class="field">
                                     <label class="label" for="fSteps">采样步数 <span class="hint-inline" id="stepsLabel">${state.params.steps}</span></label>
@@ -383,20 +386,30 @@ export async function render(host, ctx) {
         </div>`).join('');
     }
 
+    /** 老作品（含种子数据）的时长可能不在标准档位里，补一个原样沿用的选项，避免下拉默默改掉原值 */
+    function legacyDurationOption() {
+        const d = Number(state.duration);
+        if (!Number.isFinite(d) || d <= 0 || DURATION_OPTIONS.includes(d)) return '';
+        return `<option value="${d}" selected>${d} 秒 · 沿用原时长</option>`;
+    }
+
     /** 视频成本口径：≤ 15 秒一条任务；> 15 秒拆成「解析 + 逐镜头 + 合成」三段合计 */
     function videoEstimate() {
-        const duration = Number($('#fDuration')?.value || 5);
         const model = $('#fModel')?.value || 'kling-v';
-        if (!isLongForm(duration)) return { long: false, duration, model, cost: videoCost(model, duration) };
-        const p = profileFor(model);
+        const selected = $('#fDuration')?.value || 'auto';
         const script = ($('#fPrompt')?.value || '').trim();
+        // 「自动」档先按剧本规模推算，长/短分流由推算结果决定，而不是由用户先猜一个档位
+        const suggest = selected === 'auto' ? suggestDuration(script, model) : null;
+        const duration = suggest ? (suggest.seconds || 5) : Number(selected) || 5;
+        if (!isLongForm(duration)) return { long: false, auto: Boolean(suggest), suggest, duration, model, cost: videoCost(model, duration) };
+        const p = profileFor(model);
         const beats = script ? splitBeats(script).length : 0;
         const count = planShotCount(duration, beats || Math.max(3, Math.ceil(duration / p.maxShot)), p.maxShot);
         const secs = distributeSeconds(duration, count, p.maxShot);
         const shotCost = secs.reduce((sum, s) => sum + videoCost(model, s), 0);
         const parse = scriptCost(duration, script.length);
         const compose = composeCost(duration, count);
-        return { long: true, duration, model, count, secs, parse, shotCost, compose, cost: parse + shotCost + compose };
+        return { long: true, auto: Boolean(suggest), suggest, duration, model, count, secs, parse, shotCost, compose, cost: parse + shotCost + compose };
     }
 
     function renderSummary() {
@@ -421,10 +434,16 @@ export async function render(host, ctx) {
         $('#fPrompt').placeholder = long
             ? '1. 开场：交代时空\n2. 推进：出现阻碍\n3. 转折：关键动作\n4. 收束：留下悬念'
             : '描述主体、环境、光线与风格';
-        $('#durationHint').textContent = long ? `长剧本模式（> ${LONG_FORM_MIN} 秒）` : '';
+        $('#durationHint').textContent = est.auto
+            ? (est.suggest.seconds ? `自动推算 · ${est.duration} 秒` : '填写剧本后自动推算')
+            : (long ? `长剧本模式（> ${LONG_FORM_MIN} 秒）` : '');
         const hint = $('#scriptHint');
         hint.classList.toggle('hidden', !long);
-        hint.innerHTML = long ? `${icon('info', 13)} ${est.duration} 秒短剧会拆成约 ${est.count} 个镜头逐段生成：解析 → 审核修改 → 逐镜头下单 → 合成成片。项目在工作台里保存，成片合成后自动创建作品记录。` : '';
+        hint.innerHTML = long
+            ? `${icon('info', 13)}` +
+              `${est.auto ? ` 已按剧本推算为 ${est.duration} 秒档（${est.suggest.reason}），想更短或更长可在「视频时长」里改手动档位。<br>` : ''}` +
+              `${est.duration} 秒短剧会拆成约 ${est.count} 个镜头逐段生成：解析 → 审核修改 → 逐镜头下单 → 合成成片。项目在工作台里保存，成片合成后自动创建作品记录。`
+            : '';
         $('#genHint').textContent = long ? '解析任务会进入任务中心，可随时离开页面续做' : '生成任务会进入任务中心，可随时离开页面';
         $('#generateBtn').innerHTML = long ? `${icon('wand', 15)}解析剧本 · 进入分镜工作台` : `${icon('sparkles', 15)}AI 生成封面`;
         ['#publishBtn', '#publishBtn2', '#saveDraft', '#saveDraft2'].forEach((sel) => {
@@ -580,7 +599,8 @@ export async function render(host, ctx) {
                 cfg: Number($('#fCfg').value || 6.5),
                 seed: Number($('#fSeed').value),
                 kind,
-                duration: Number($('#fDuration')?.value || 0)
+                // 下拉选「自动」时，下单用的就是推算出来的那个秒数，与页面预估同一口径
+                duration: kind === 'video' ? videoEstimate().duration : 0
             };
             const type = kind === 'video' ? 'video' : 'image';
             const task = await createTask({
@@ -680,7 +700,7 @@ export async function render(host, ctx) {
             },
             price: { mode: state.priceMode, amount: state.priceMode === 'free' ? 0 : priceAmount },
             visibility: state.visibility,
-            duration: kind === 'video' ? Number($('#fDuration')?.value || 5) : 0,
+            duration: kind === 'video' ? videoEstimate().duration : 0,
             assetRefs: kind === 'video' ? state.assetRefs : null,
             meta: kind === 'model'
                 ? {

@@ -19,7 +19,7 @@ import {
     LONG_FORM_MIN, MIN_SHOTS, MAX_SHOTS, SHOT_MIN_SEC, DURATION_OPTIONS,
     SHOT_TYPES, CAMERA_MOVES, TONES, DRAMA_STEPS, DRAMA_STATUS,
     profileFor, videoCost, scriptCost, composeCost, shotEtaMin,
-    splitBeats, planShotCount, distributeSeconds, buildShotPrompt,
+    splitBeats, planShotCount, distributeSeconds, buildShotPrompt, suggestDuration,
     summaryOf, checkDrama, hasBlocker, autoFit, insertShotAfter, moveShot, removeShot,
     shotLabel, shotTypeName, cameraName, toneName, formatStoryboard,
     buildParsePlan, buildComposePlan, planReached, dramaStepOf
@@ -156,7 +156,11 @@ export async function render(host, ctx) {
         const d = state.drama;
         if (!d) return step === 1 ? '填写剧本并解析分镜' : '完成上一步后可进入';
         if (step === 1) return d.status === 'parsing' ? '解析任务进行中' : `已拆出 ${(d.shots || []).length} 个镜头`;
-        if (step === 2) return `${(state.draft || d.shots || []).length} 个镜头待审核`;
+        if (step === 2) {
+            const n = (state.draft || d.shots || []).length;
+            // 已确认的项目再回来看这一步，不该继续提示「待审核」
+            return d.confirmedAt ? `已确认 ${n} 个镜头` : `${n} 个镜头待审核`;
+        }
         if (step === 3) return `${summaryOf(d.shots, { model: d.model }).done}/${(d.shots || []).length} 个片段就绪`;
         return d.status === 'done' ? '成片已生成' : '等待镜头全部完成';
     }
@@ -212,14 +216,22 @@ export async function render(host, ctx) {
         draw();
     }
 
+    /** 作品记录是异步补取的：到手后若正停在第 4 步要重画一次，否则发布状态会一直停在「草稿」 */
+    function fetchFilmWork(workId) {
+        if (!workId || state.work) return;
+        getWork(workId).then((r) => {
+            if (state.drama?.workId !== workId) return;
+            state.work = r.work;
+            if (state.step === 4) draw();
+        }).catch(() => {});
+    }
+
     async function reload({ follow = true } = {}) {
         if (!state.id) return;
         try {
             const res = await getDrama(state.id);
             state.drama = res.drama;
-            if (state.drama.workId && !state.work) {
-                getWork(state.drama.workId).then((r) => { state.work = r.work; }).catch(() => {});
-            }
+            fetchFilmWork(state.drama.workId);
             if (isActive() || !state.dirty) {
                 state.draft = (state.drama.shots || []).map((s) => JSON.parse(JSON.stringify(s)));
                 state.dirty = false;
@@ -267,9 +279,10 @@ export async function render(host, ctx) {
                             </div>
                             <div class="field">
                                 <label class="label" for="nDuration">成片目标时长 <span class="req">*</span>
-                                    <span class="hint-inline">≤15 秒请走快速生成</span></label>
+                                    <span class="hint-inline" id="nDurHint">≤15 秒请走快速生成</span></label>
                                 <select class="select" id="nDuration" data-field="duration">
-                                    ${LONG_DURATIONS.map((d) => `<option value="${d}" ${d === 60 ? 'selected' : ''}>${d} 秒（约 ${planShotCount(d, 8, 10)} 个镜头）</option>`).join('')}
+                                    <option value="auto" selected>自动 · 按剧本推算</option>
+                                    ${LONG_DURATIONS.map((d) => `<option value="${d}">${d} 秒（约 ${planShotCount(d, 8, 10)} 个镜头）</option>`).join('')}
                                 </select>
                             </div>
                             <div class="field">
@@ -356,11 +369,12 @@ export async function render(host, ctx) {
 
     function newInput() {
         const script = panel.querySelector('#nScript')?.value || '';
+        const model = panel.querySelector('#nModel')?.value || 'kling-v';
         return {
             title: (panel.querySelector('#nTitle')?.value || '').trim(),
             script,
-            targetSec: Number(panel.querySelector('#nDuration')?.value || 60),
-            model: panel.querySelector('#nModel')?.value || 'kling-v',
+            targetSec: resolveNewDuration(script, model),
+            model,
             tone: panel.querySelector('#nTone')?.value || 'cold',
             ratio: panel.querySelector('#nRatio')?.value || '9:16',
             negative: (panel.querySelector('#nNegative')?.value || '').trim(),
@@ -368,8 +382,18 @@ export async function render(host, ctx) {
         };
     }
 
+    /** 目标时长下拉的取值 → 实际秒数：自动档按剧本节拍推算，并抬到快速路径上限之上 */
+    function resolveNewDuration(script, model) {
+        if ((panel.querySelector('#nDuration')?.value || 'auto') !== 'auto') {
+            return Number(panel.querySelector('#nDuration').value) || LONG_DURATIONS[0];
+        }
+        return suggestDuration(script, model, { minSec: LONG_FORM_MIN + 1 }).seconds || LONG_DURATIONS[0];
+    }
+
     function refreshNewEstimate() {
         const v = newInput();
+        const auto = (panel.querySelector('#nDuration')?.value || 'auto') === 'auto';
+        const sug = auto ? suggestDuration(v.script, v.model, { minSec: LONG_FORM_MIN + 1 }) : null;
         const beats = v.script.trim() ? splitBeats(v.script).length : 0;
         const p = profileFor(v.model);
         const count = planShotCount(v.targetSec, beats || Math.max(MIN_SHOTS, Math.ceil(v.targetSec / p.maxShot)), p.maxShot);
@@ -380,10 +404,13 @@ export async function render(host, ctx) {
         const total = parse + shotCostTotal + compose;
         const eta = Math.max(1, Math.ceil(secs.reduce((sum, s) => sum + shotEtaMin(v.model, s), 0) / 3));
         panel.querySelector('#nCount').textContent = `${v.script.length} 字 / ${beats} 个节拍`;
+        panel.querySelector('#nDurHint').textContent = auto
+            ? (sug.seconds ? `自动推算 · ${v.targetSec} 秒` : '写满 10 字后自动推算')
+            : '≤15 秒请走快速生成';
         panel.querySelector('#nParseCost').innerHTML = `${icon('credit', 13)} 解析 ${parse} 算力`;
         panel.querySelector('#nEstimate').innerHTML = [
             estTile('scroll', '预计镜头', `${count} 个`, `${p.maxShot}s/镜上限 · ${secs.slice(0, 4).join('s + ')}${secs.length > 4 ? ' …' : ''}s`),
-            estTile('clock', '成片时长', `${secs.reduce((a, b) => a + b, 0)}s`, `目标 ${v.targetSec}s · 配平误差 0s`),
+            estTile('clock', '成片时长', `${secs.reduce((a, b) => a + b, 0)}s`, sug ? `自动推算：${sug.reason}` : `目标 ${v.targetSec}s · 配平误差 0s`),
             estTile('credit', '三步合计', `${total} 算力`, `解析 ${parse} + 片段 ${shotCostTotal} + 合成 ${compose}`, total > state.credits),
             estTile('zap', '镜头耗时', `约 ${eta} 分钟`, `${v.model} · 3 路并行出片`),
             estTile('film', '生成规格', `${p.res} / ${p.fps}fps`, `${v.ratio} · ${toneName(v.tone)}`)
@@ -511,7 +538,9 @@ export async function render(host, ctx) {
                         <div class="card-body col" style="gap:12px">
                             <div class="field"><label class="label" for="rTarget">目标成片时长 <span class="hint-inline">改完请配平</span></label>
                                 <input class="input" type="number" id="rTarget" min="${LONG_FORM_MIN + 1}" max="180" step="1"
-                                    data-field="targetSec" value="${dd.targetSec}" ${locked ? 'disabled' : ''}></div>
+                                    data-field="targetSec" value="${dd.targetSec}" ${locked ? 'disabled' : ''}>
+                                <button class="btn btn-sm btn-ghost mt-8" data-act="auto-target" ${locked ? 'disabled' : ''}>
+                                    ${icon('wand', 13)}不确定多长？按剧本推算</button></div>
                             <div class="field"><label class="label" for="rTone">全局影调</label>
                                 <select class="select" id="rTone" data-field="tone" ${locked ? 'disabled' : ''}>
                                     ${TONES.map((t) => `<option value="${t.id}" ${t.id === state.edit.tone ? 'selected' : ''}>${t.name} · ${t.look}</option>`).join('')}
@@ -635,6 +664,8 @@ export async function render(host, ctx) {
         const dd = draftDrama();
         const sum = summaryOf(dd.shots, { model: dd.model, targetSec: dd.targetSec });
         const check = checkDrama(dd);
+        // 体检结果是底部提示条与确认按钮共用的判定，必须在函数顶层就算好
+        const blocked = hasBlocker(check);
         const setHtml = (sel, html) => {
             const el = panel.querySelector(sel);
             if (el) el.innerHTML = html;
@@ -657,7 +688,6 @@ export async function render(host, ctx) {
         });
         const note = panel.querySelector('#dBarNote');
         if (note) {
-            const blocked = hasBlocker(check);
             note.innerHTML = state.dirty
                 ? `<span style="color:var(--warn)">${icon('alert', 13)} 有 ${dd.shots.length} 个镜头待保存</span>`
                 : blocked ? `<span style="color:var(--danger)">${icon('alert', 13)} 体检未通过，需先修正阻断项</span>`
@@ -667,7 +697,7 @@ export async function render(host, ctx) {
         if (confirmBtn) {
             const pending = dd.shots.filter((s) => !ACTIVE.includes(s.status) && s.status !== 'succeeded');
             const cost = pending.reduce((a, s) => a + videoCost(dd.model, s.seconds), 0);
-            confirmBtn.disabled = blocked || hasBlocker(checkDrama(dd)) || pending.length === 0 || (cost > state.credits);
+            confirmBtn.disabled = blocked || pending.length === 0 || cost > state.credits;
             confirmBtn.innerHTML = `${icon('zap', 15)}确认并生成 ${pending.length} 个片段 · ${cost} 算力`;
         }
     }
@@ -1044,6 +1074,18 @@ export async function render(host, ctx) {
             setTimeout(() => card.classList.remove('flash'), 1200);
             return;
         }
+        if (act === 'auto-target') {
+            // 沿用领域层的推算入口径，与新建面板、创建页、引擎拆镜头用的是同一个函数
+            const sug = suggestDuration(state.drama.script, state.drama.model, { minSec: LONG_FORM_MIN + 1 });
+            if (!sug.seconds) return toast('剧本太短，暂时推算不出时长，请再写几句', 'warn');
+            state.edit.targetSec = sug.seconds;
+            panel.querySelector('#rTarget').value = sug.seconds;
+            autoFit(state.draft, sug.seconds, state.drama.model);
+            state.dirty = true;
+            redrawShots();
+            refreshLive();
+            return toast(`已按 ${sug.beats} 个节拍推算为 ${sug.seconds} 秒，镜头时长一并配平`, 'success');
+        }
         if (act === 'fit') {
             autoFit(state.draft, state.edit.targetSec, state.drama.model);
             state.dirty = true;
@@ -1276,12 +1318,11 @@ export async function render(host, ctx) {
         state.work = null;
         const res = await getDrama(id);
         state.drama = res.drama;
-        if (state.drama.workId) getWork(state.drama.workId).then((r) => { state.work = r.work; }).catch(() => {});
+        fetchFilmWork(state.drama.workId);
         syncFromDrama();
         host.querySelector('#dStatus').innerHTML = dramaBadge(state.drama);
         host.querySelector('.page-title').childNodes[0].nodeValue = `${state.drama.title} `;
-        if (!host.querySelector('[data-act="new"]')) draw();
-        else draw();
+        draw();
     }
 
     function resetToNew() {
@@ -1333,7 +1374,7 @@ export async function render(host, ctx) {
         const card = e.target.closest('.d-shot');
         if (!card || state.dragFrom === null) return;
         e.preventDefault();
-        const to = Number(card.dataset.drag);
+        const to = Number(card.dataset.index);
         const from = state.dragFrom;
         state.dragFrom = null;
         host.querySelectorAll('.d-shot').forEach((x) => x.classList.remove('dragging', 'drop-over'));
@@ -1360,8 +1401,6 @@ export async function render(host, ctx) {
         if (el) el.textContent = num(state.credits);
     });
 
-    if (state.drama) {
-        if (state.drama.workId) getWork(state.drama.workId).then((r) => { state.work = r.work; }).catch(() => {});
-    }
+    if (state.drama) fetchFilmWork(state.drama.workId);
     draw();
 }

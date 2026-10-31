@@ -23,6 +23,9 @@ export const MAX_SHOTS = 24;
 /** 单镜头时长下限（低于 2 秒的片段在真实剪辑里几乎不可用） */
 export const SHOT_MIN_SEC = 2;
 
+/** 自动推算档：一个叙事节拍按约 5 秒画面估（一句台词/一个动作恰好一个镜头） */
+export const SEC_PER_BEAT = 5;
+
 /** 视频模型档案：单镜头时长上限 + 计费口径（base + perSec × 秒，5 秒档与模型标价对齐） */
 export const VIDEO_PROFILES = {
     'kling-v': { maxShot: 10, base: 15, perSec: 3, fps: 24, res: '1080p', etaPerSec: 0.8, note: '图生视频，主体一致性强' },
@@ -128,11 +131,29 @@ export function shotEtaMin(model, seconds) {
     return Math.max(1, Math.round(Number(seconds) * p.etaPerSec));
 }
 
+/**
+ * 剥掉剧本里手写的序号（「1.」「1、」「二、」「3␣」）。
+ * 两条约束容易误伤，故单独抽出：
+ * 中文数字只在紧跟分隔符时才剥，否则「一辆自行车」会被吞成「辆自行车」；
+ * 阿拉伯数字后是空白时，空白后不能是量词，否则「3 个少年」会被吞成「个少年」。
+ */
+function stripEnumerate(text) {
+    const head = String(text).replace(/^[\s\t　]+/, '');
+    const cn = head.match(/^[一二三四五六七八九十]{1,3}[、.．)）,，]\s*/);
+    if (cn) return head.slice(cn[0].length);
+    const ar = head.match(/^(\d{1,2})([、.．)）]\s*|[ \t　]+)/);
+    if (ar) {
+        const rest = head.slice(ar[0].length);
+        if (/^[、.．)）]/.test(ar[2]) || !/^[个年天秒米岁次位件张条本杯种人]/.test(rest)) return rest;
+    }
+    return head;
+}
+
 /** 逐句切分剧本为叙事节拍；空文本时用画面骨架兜底，保证解析永远有产出 */
 export function splitBeats(script) {
     const raw = String(script || '')
         .split(/[\n。！？；!?;]+/)
-        .map((s) => s.replace(/^[\s\t　]*[\d一二三四五六七八九十]+[、.．)）]?\s*/, '').trim())
+        .map((s) => stripEnumerate(s).trim())
         .filter((s) => s.length >= 2);
     if (raw.length) return raw;
     return ['开场：主角进入场景，交代环境', '推进：出现第一个阻碍', '收束：留下悬念'];
@@ -144,6 +165,27 @@ export function planShotCount(targetSec, beatCount, maxShot) {
     const min = Math.max(MIN_SHOTS, Math.ceil(target / maxShot));
     const max = Math.min(MAX_SHOTS, Math.max(min, Math.round(target / SHOT_MIN_SEC)));
     return Math.max(min, Math.min(max, Number(beatCount) || min));
+}
+
+/**
+ * 用户不知道该做多少秒时，按剧本规模推算时长档位。
+ * 口径与解析完全同源：节拍数取 splitBeats 的句读切分结果，每节拍约 SEC_PER_BEAT 秒，
+ * 再就近取到 DURATION_OPTIONS 的档位上——于是「自动推算」得到的时长，与用户手选档位
+ * 得到的是同一个数字，页面预估、引擎下单、账本扣费、种子历史四方仍然对得上。
+ * @param {string} script 剧本原文
+ * @param {string} model 视频模型（单镜头上限影响镜头数）
+ * @param {{minSec?: number}} opts 时长下限：工作台传 LONG_FORM_MIN + 1，只在长剧本档位里取
+ * @returns {{seconds: number, beats: number, reason: string}} seconds 为 0 表示剧本太短，不给建议
+ */
+export function suggestDuration(script, model, opts = {}) {
+    const raw = String(script || '').trim();
+    const tiers = DURATION_OPTIONS.filter((d) => d >= (Number(opts.minSec) || DURATION_OPTIONS[0]));
+    if (raw.length < 10 || !tiers.length) return { seconds: 0, beats: 0, reason: '剧本写满 10 个字后自动推算' };
+    const beats = splitBeats(raw).length;
+    const rough = beats * SEC_PER_BEAT;
+    const seconds = tiers.reduce((best, d) => (Math.abs(d - rough) < Math.abs(best - rough) ? d : best), tiers[0]);
+    const count = planShotCount(seconds, beats, profileFor(model).maxShot);
+    return { seconds, beats, reason: `${beats} 个节拍 × 每节拍约 ${SEC_PER_BEAT} 秒 ≈ ${seconds} 秒档（拆 ${count} 个镜头）` };
 }
 
 /**

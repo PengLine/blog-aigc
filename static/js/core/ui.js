@@ -402,23 +402,35 @@ export function likeButton(work) {
     </button>`;
 }
 
+/** 兼容路径：剪贴板 API 不可用（非安全上下文）或被拒（页面未获得焦点）时退回 execCommand */
+function legacyCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.top = '-999px';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    const done = document.execCommand('copy');
+    ta.remove();
+    return done;
+}
+
 export async function copyText(text, successMessage = '已复制到剪贴板') {
     try {
         if (navigator.clipboard && window.isSecureContext) {
             await navigator.clipboard.writeText(text);
-        } else {
-            const ta = document.createElement('textarea');
-            ta.value = text;
-            ta.style.position = 'fixed';
-            ta.style.opacity = '0';
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            ta.remove();
+        } else if (!legacyCopy(text)) {
+            throw new Error('execCommand 被拒绝');
         }
         toast(successMessage, 'success');
     } catch (err) {
-        toast('复制失败，请手动选择文本', 'error');
+        // 页面失焦等原因导致 writeText 被拒，不等于不能复制，退回旧接口再试一次
+        if (legacyCopy(text)) {
+            toast(successMessage, 'success');
+        } else {
+            toast('复制失败，请手动选择文本', 'error');
+        }
     }
 }
 

@@ -120,12 +120,41 @@ export function placeholder(text = 'AIGC', w = 640, h = 480) {
     return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
+/**
+ * 首字母头像的配色（图床不可用时的本地兜底）。
+ * 24 色均为中深调，保证白字对比度；旧版只有 6 色且只按首字取模，
+ * 「沈知夏 / 陆见山」这类首字编码同余的用户会撞成同一底色。
+ * 现改为：整串名字 FNV 哈希取底色，另取一个错开的哈希频段作斜角副色，
+ * 即使两人名撞中同一底色，双色组合仍然不同，视觉上不再混淆。
+ */
+const AVATAR_COLORS = [
+    '#1d4ed8', '#3730a3', '#4c1d95', '#6d28d9',
+    '#7e22ce', '#a21caf', '#86198f', '#be185d',
+    '#9d174d', '#be123c', '#9f1239', '#b91c1c',
+    '#c2410c', '#9a3412', '#b45309', '#854d0e',
+    '#4d7c0f', '#3f6212', '#15803d', '#047857',
+    '#0f766e', '#0e7490', '#0369a1', '#334155'
+];
+
 export function avatarFallback(name = 'U') {
-    const ch = String(name).trim().charAt(0) || 'U';
-    const colors = ['#2563eb', '#7c3aed', '#0891b2', '#d97706', '#e11d48', '#059669'];
-    const color = colors[ch.charCodeAt(0) % colors.length];
+    const label = String(name).trim();
+    const ch = label.charAt(0) || 'U';
+    // FNV-1a：名字长度与后续字都进入哈希，不同用户同首字也不会再同底色
+    let h = 2166136261;
+    for (let i = 0; i < label.length; i += 1) {
+        h ^= label.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+    }
+    const n = AVATAR_COLORS.length;
+    const color = AVATAR_COLORS[Math.abs(h) % n];
+    // 错开 11 位并用另一段位域，使副色与底色统计独立
+    let accent = AVATAR_COLORS[(Math.abs(h >>> 7) + 11) % n];
+    // 副色与底色重合时斜角会隐形，退化成纯色；顺移 5 位保证始终双色
+    if (accent === color) accent = AVATAR_COLORS[(AVATAR_COLORS.indexOf(color) + 5) % n];
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96">
         <rect width="100%" height="100%" fill="${color}"/>
+        <path d="M0 0 L96 0 L0 96 Z" fill="${accent}" opacity=".5"/>
+        <path d="M96 0 L96 96 L0 96 Z" fill="#000" opacity=".1"/>
         <text x="50%" y="54%" fill="#fff" font-family="sans-serif" font-size="42"
             text-anchor="middle" dominant-baseline="middle">${escapeHtml(ch)}</text>
     </svg>`;

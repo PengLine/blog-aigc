@@ -154,6 +154,7 @@ export function renderShell({ nav = 'gallery', title = '工作台' } = {}) {
             </div>
         </header>
         <main class="page" id="page-content"></main>
+        ${footerHtml()}
     </div>`;
 
     bindShellEvents({ setTitle: (t) => setTitle(t) });
@@ -168,6 +169,27 @@ export function renderShell({ nav = 'gallery', title = '工作台' } = {}) {
     }
 
     return { content: document.getElementById('page-content'), setTitle, app };
+}
+
+/**
+ * 全站通用底部栏：由外壳统一注入，所有页面共用同一条版权与入口，
+ * 视图只负责页面内容，不得自行再画页脚（否则会出现两套版权）。
+ * 版权中的作者名本身就是博客外链，右侧菜单不再重复放同名链接。
+ */
+function footerHtml() {
+    return `<footer class="app-foot">
+        <div class="app-foot-left">
+            <span>© ${new Date().getFullYear()} <a class="app-foot-brand" href="https://pengline.cn" target="_blank" rel="noopener" title="前往博客 pengline.cn">余一叶知秋尽</a> 版权所有</span>
+            <span class="app-foot-sep">·</span>
+            <span>灵犀 AIGC 创作台，演示数据仅保存在本机浏览器</span>
+        </div>
+        <nav class="app-foot-links" aria-label="页脚导航">
+            <a class="app-foot-link" href="${url('index.html')}">发现广场</a>
+            <a class="app-foot-link" href="${url('assets/create-character.html')}">开始创作</a>
+            <a class="app-foot-link" href="${url('tasks.html')}">任务中心</a>
+            <a class="app-foot-link" href="${url('wallet.html')}">钱包与订阅</a>
+        </nav>
+    </footer>`;
 }
 
 function updateCredits(credits, quota = 3000) {

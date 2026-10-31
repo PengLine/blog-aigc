@@ -6,18 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>创建短剧 · 灵犀 AIGC</title>
     <meta name="description" content="组合角色、道具与景点，产出可发布的竖屏或横屏短剧；超过 15 秒自动进入长剧本分镜工作台。">
-    <link rel="stylesheet" href="../static/css/tokens.css">
+    <link rel="stylesheet" href="../static/css/tokens.css?v=2026.10.31">
     <script>try { var p = JSON.parse(localStorage.getItem("lingxi.aigc.prefs") || "{}"); if (p.theme === "dark" || p.theme === "light") document.documentElement.dataset.theme = p.theme } catch (e) { }</script>
-    <link rel="stylesheet" href="../static/css/app.css">
-    <link rel="stylesheet" href="../static/css/views.css">
+    <link rel="stylesheet" href="../static/css/app.css?v=2026.10.31">
+    <link rel="stylesheet" href="../static/css/views.css?v=2026.10.31">
 </head>
 
 <body>
     <div class="app" id="app"></div>
     <script type="module">
-        import { mount } from '../static/js/core/page.js';
-        import { render as renderCreate } from '../static/js/views/create.js';
-        import { render as renderStudio } from '../static/js/views/drama-studio.js';
+        import { mount } from '../static/js/core/page.js?v=2026.10.31';
+        import { render as renderCreate } from '../static/js/views/create.js?v=2026.10.31';
+        import { render as renderStudio } from '../static/js/views/drama-studio.js?v=2026.10.31';
 
         // 同一个入口按参数分流：≤ 15 秒走单任务快速生成，> 15 秒走四步分镜流水线
         mount({

@@ -78,6 +78,8 @@ const ICONS = {
     pause: '<rect x="7" y="5" width="3" height="14" rx="1"/><rect x="14" y="5" width="3" height="14" rx="1"/>',
     stop: '<rect x="6" y="6" width="12" height="12" rx="2"/>',
     terminal: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3M13 15h4"/>',
+    scroll: '<path d="M7 3h11a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5"/><path d="M6 5a2 2 0 0 0-3 2v9a2 2 0 0 1 2-2h1"/><path d="M11 8h6M11 12h6M11 16h3"/>',
+    film: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 12h18"/><path d="M3 8h4M3 16h4M17 8h4M17 16h4"/>',
     wand: '<path d="m15 4 5 5"/><path d="M4 20 15 9"/><path d="M14 3h.01M21 10h.01M19 18h.01M6 4h.01"/>'
 };
 

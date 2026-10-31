@@ -5,9 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>创建短剧 · 灵犀 AIGC</title>
-    <meta name="description" content="组合角色、道具与景点，产出可发布的竖屏或横屏短剧。">
+    <meta name="description" content="组合角色、道具与景点，产出可发布的竖屏或横屏短剧；超过 15 秒自动进入长剧本分镜工作台。">
     <link rel="stylesheet" href="../static/css/tokens.css">
-    <script>try{var p=JSON.parse(localStorage.getItem("lingxi.aigc.prefs")||"{}");if(p.theme==="dark"||p.theme==="light")document.documentElement.dataset.theme=p.theme}catch(e){}</script>
+    <script>try { var p = JSON.parse(localStorage.getItem("lingxi.aigc.prefs") || "{}"); if (p.theme === "dark" || p.theme === "light") document.documentElement.dataset.theme = p.theme } catch (e) { }</script>
     <link rel="stylesheet" href="../static/css/app.css">
     <link rel="stylesheet" href="../static/css/views.css">
 </head>
@@ -16,9 +16,16 @@
     <div class="app" id="app"></div>
     <script type="module">
         import { mount } from '../static/js/core/page.js';
-        import { render } from '../static/js/views/create.js';
+        import { render as renderCreate } from '../static/js/views/create.js';
+        import { render as renderStudio } from '../static/js/views/drama-studio.js';
 
-        mount({ nav: 'create', title: '创建短剧', params: { kind: 'video' }, render });
+        // 同一个入口按参数分流：≤ 15 秒走单任务快速生成，> 15 秒走四步分镜流水线
+        mount({
+            nav: 'create',
+            title: '创建短剧',
+            params: { kind: 'video' },
+            render: (host, ctx) => (ctx.query.drama || ctx.query.long ? renderStudio : renderCreate)(host, ctx)
+        });
     </script>
 </body>
 

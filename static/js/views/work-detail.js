@@ -24,7 +24,11 @@ import {
     emptyState
 } from '../core/ui.js';
 import { escapeHtml, num, timeAgo, fmtDate } from '../core/format.js';
+import { shotTypeName, cameraName, formatStoryboard } from '../core/drama.js';
 import { artCover, POSTER_SECOND } from '../core/cover.js';
+
+/** 镜头级状态：任务状态里的 pending 是「审核中」，在这里必须说「未下单」 */
+const SHOT_STATE = { pending: '未下单', queued: '排队中', running: '生成中', failed: '生成失败', canceled: '已取消' };
 
 export async function render(host, ctx) {
     setPageTitle('作品详情');
@@ -55,7 +59,7 @@ export async function render(host, ctx) {
         return;
     }
 
-    const { work, comments, related, source, versions } = data;
+    const { work, comments, related, source, versions, storyboard } = data;
     const meta = kindMeta(work.kind);
     setPageTitle(work.title);
     draw();
@@ -173,6 +177,8 @@ export async function render(host, ctx) {
                     </div>
                 </div>
 
+                ${storyboardCard()}
+
                 <div class="card" id="commentsCard">
                     <div class="card-head">
                         <div class="card-title">评论 ${num(comments.length)}</div>
@@ -285,6 +291,51 @@ export async function render(host, ctx) {
         return `<a class="btn btn-outline" href="${url(`${meta.create}?edit=${work.id}`)}">${icon('edit', 15)}编辑</a>`;
     }
 
+    /** 长剧本成片：把逐镜头拆解摊开展示，让读者看到成片是怎么拼出来的 */
+    function storyboardCard() {
+        const shots = storyboard || [];
+        if (!shots.length) return '';
+        const totalSec = shots.reduce((s, x) => s + (Number(x.seconds) || 0), 0);
+        const totalCost = shots.reduce((s, x) => s + (Number(x.cost) || 0), 0);
+        const ready = shots.filter((x) => x.status === 'succeeded').length;
+        return `<div class="card">
+            <div class="card-head">
+                <div>
+                    <div class="card-title">分镜表</div>
+                    <div class="card-sub">${shots.length} 个镜头 · 合计 ${totalSec}s · ${ready}/${shots.length} 段已产出，累计 ${totalCost} 算力</div>
+                </div>
+                <div class="spacer"></div>
+                <button class="btn btn-sm btn-outline" id="copyBoard">${icon('copy', 14)}复制分镜表</button>
+                ${work.isMine && work.meta?.dramaId ? `<a class="btn btn-sm btn-primary" href="${url(`assets/create-video.html?drama=${encodeURIComponent(work.meta.dramaId)}&long=1`)}">${icon('film', 14)}打开工作台</a>` : ''}
+            </div>
+            <div class="card-body">
+                <div class="sb-list">
+                    ${shots.map((s, i) => `<div class="sb-row">
+                        <div class="sb-thumb">
+                            ${s.poster ? imgTag(s.poster, `镜头 ${i + 1} 画面`) : `<span class="sb-missing">${icon('film', 18)}</span>`}
+                            <span class="sb-sec">${Number(s.seconds) || 0}s</span>
+                        </div>
+                        <div class="sb-main">
+                            <div class="sb-head">
+                                <span class="sb-no">${String(s.no || i + 1).padStart(2, '0')}</span>
+                                <b class="sb-name">${escapeHtml(s.name || shotTypeName(s.typeId))}</b>
+                                <span class="tag">${escapeHtml(shotTypeName(s.typeId))}</span>
+                                <span class="tag">${escapeHtml(cameraName(s.cameraId))}</span>
+                                ${s.status === 'succeeded' ? '' : `<span class="badge badge-warn">${SHOT_STATE[s.status] || s.status}</span>`}
+                            </div>
+                            <div class="sb-beat">${escapeHtml(s.beat || '（无节拍描述）')}</div>
+                            <div class="sb-prompt">${escapeHtml(s.prompt || '')}</div>
+                        </div>
+                        <div class="sb-cost">${num(Number(s.cost) || 0)}<span>算力</span></div>
+                    </div>`).join('')}
+                </div>
+                <div class="small muted" style="margin-top:10px;line-height:1.7">
+                    该成片由长剧本分镜流水线产出：剧本解析 → 分镜审核 → 逐镜头生成 → 拼接合成，封面取全片第 ${POSTER_SECOND} 秒。
+                </div>
+            </div>
+        </div>`;
+    }
+
     function commentHtml(c) {
         return `<div class="comment">
             <a href="${url(`profile.html?uid=${c.user.id}`)}">${avatarTag(c.user)}</a>
@@ -334,6 +385,7 @@ export async function render(host, ctx) {
         });
 
         host.querySelector('#copyPrompt')?.addEventListener('click', () => copyText(work.prompt || '', '提示词已复制'));
+        host.querySelector('#copyBoard')?.addEventListener('click', () => copyText(formatStoryboard({ shots: storyboard || [] }), '分镜表已复制'));
         host.querySelector('#copyParams')?.addEventListener('click', () => {
             const text = [
                 `提示词：${work.prompt}`,

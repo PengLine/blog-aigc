@@ -5,7 +5,8 @@
 const NS = 'lingxi.aigc';
 // 种子数据结构变更时自增，旧数据会在下次访问自动重建
 // v6：训练流水补齐「失败训练扣除」记录，余额与逐笔 balanceAfter 重新对账
-export const SCHEMA_VERSION = 6;
+// v7：新增 dramas 集合与逐镜头任务（>15 秒短剧分镜流水线），流水改由任务表反推，旧 v6 账本与任务不再对齐
+export const SCHEMA_VERSION = 7;
 export const KEYS = {
     db: `${NS}.db`,
     session: `${NS}.session`,

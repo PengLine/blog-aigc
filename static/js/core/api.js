@@ -9,6 +9,11 @@ import { currentUserId } from './auth.js';
 import { emit, EVENTS } from './bus.js';
 import { TASK_TYPES, taskCost, PLAN_MAP, RECHARGE_PACKAGES, MODEL_MAP } from './constants.js';
 import { normalizeConfig, predictFault, configWarnings } from './training.js';
+import {
+    LONG_FORM_MIN, MAX_SHOTS, SHOT_MIN_SEC, SHOT_TYPES, CAMERA_MOVES,
+    isLongForm, videoCost, scriptCost, composeCost, summaryOf, checkDrama, hasBlocker,
+    normalizeDramaInput, renumber, dramaStepOf, applyTaskResult
+} from './drama.js';
 import { uid, sleep, fmtDate } from './format.js';
 
 export class ApiError extends Error {
@@ -163,10 +168,27 @@ export async function getWork(id) {
             .filter(Boolean)
             .map((w) => enrichWork(db, w, me));
         const source = work.sourceWorkId ? db.works.find((w) => w.id === work.sourceWorkId) : null;
+        // 长剧本成片：附带分镜表（只透出展示字段），详情页据此展示逐镜头拆解
+        const project = work.meta?.dramaId ? (db.dramas || []).find((d) => d.id === work.meta.dramaId) : null;
+        const storyboard = project
+            ? (project.shots || []).map((s) => ({
+                no: s.no,
+                name: s.name,
+                typeId: s.typeId,
+                cameraId: s.cameraId,
+                seconds: s.seconds,
+                beat: s.beat,
+                prompt: s.prompt,
+                cost: s.cost,
+                status: s.status,
+                poster: s.output?.poster || ''
+            }))
+            : null;
         return {
             work: enrichWork(db, work, me),
             comments,
             related,
+            storyboard,
             source: source ? enrichWork(db, source, me) : null,
             versions: Array.from({ length: work.version || 1 }, (_, i) => ({
                 version: i + 1,
@@ -575,6 +597,11 @@ export async function cancelTask(id) {
                 training.error = '用户手动中断训练';
             }
         }
+        // 短剧流水线：剧本解析 / 镜头 / 合成任务被中断时，把状态回写到项目与对应镜头
+        if (task.payload?.dramaId) {
+            const drama = (db.dramas || []).find((d) => d.id === task.payload.dramaId);
+            if (drama) applyTaskResult(drama, task, 'canceled');
+        }
         if (task.cost > 0) {
             // 训练按时结算：已跑完的进度不予退还，其余按比例退回（比全退更接近真实计费）
             const ratio = task.type === 'train' ? 1 - Math.min(100, task.progress || 0) / 100 : 1;
@@ -598,7 +625,7 @@ export async function retryTask(id) {
     const task = db.tasks.find((t) => t.id === id);
     if (!task) throw new ApiError('任务不存在', 'NOT_FOUND', 404);
     if (task.type === 'train') throw new ApiError('训练任务请在训练页使用「改参数重试」，以保留新的训练记录', 'USE_TRAINING_RETRY', 400);
-    return createTask({
+    const fresh = await createTask({
         type: task.type,
         title: task.title,
         payload: task.payload,
@@ -606,6 +633,39 @@ export async function retryTask(id) {
         cost: task.cost,
         retryOf: task.id
     });
+    // 短剧镜头从任务中心重试时，项目里的镜头状态要一起回到排队，否则工作台会一直停在「已失败」
+    if (task.payload?.shotId) {
+        const drama = (db.dramas || []).find((d) => d.id === task.payload.dramaId);
+        const shot = drama ? (drama.shots || []).find((s) => s.id === task.payload.shotId) : null;
+        if (shot) {
+            mutate(() => {
+                shot.status = 'queued';
+                shot.taskId = fresh.id;
+                shot.error = null;
+                shot.output = null;
+                drama.status = 'generating';
+                drama.updatedAt = now();
+            });
+        }
+        return fresh;
+    }
+    // 解析 / 合成任务重做时把项目指针移到新任务，否则工作台仍读得到已取消的旧任务
+    if (task.payload?.dramaId && ['script', 'compose'].includes(task.type)) {
+        const drama = (db.dramas || []).find((d) => d.id === task.payload.dramaId);
+        if (drama) {
+            mutate(() => {
+                if (task.type === 'script') {
+                    drama.parseTaskId = fresh.id;
+                    drama.status = 'parsing';
+                } else {
+                    drama.composeTaskId = fresh.id;
+                    drama.status = 'composing';
+                }
+                drama.updatedAt = now();
+            });
+        }
+    }
+    return fresh;
 }
 
 export async function listTasks(query = {}) {
@@ -1000,6 +1060,380 @@ export async function createModelAsset({ trainingId, title, desc, cover, price, 
         training.modelId = work.id;
         changed('work');
         return enrichWork(db, work, me);
+    });
+}
+
+/* ============================ 长剧本短剧 · 分镜流水线 ============================ */
+
+/**
+ * >15 秒的短剧不再「一条任务一把梭」，而是四步项目制流水线：
+ * 剧本解析（script 任务）→ 分镜审核（纯本地编辑 + 落库）→ 片段生成（每镜头一条 video 任务）
+ * → 片段合成（compose 任务，产出成片与封面）。
+ * 解析规则 / 计费 / 校验全部来自 core/drama.js，与引擎、工作台、种子数据同源。
+ */
+
+const DRAMA_ACTIVE = ['queued', 'running'];
+
+function dramasOf(db) {
+    if (!Array.isArray(db.dramas)) db.dramas = [];
+    return db.dramas;
+}
+
+function findDrama(db, id) {
+    const drama = dramasOf(db).find((d) => d.id === id);
+    if (!drama) throw new ApiError('短剧项目不存在', 'NOT_FOUND', 404);
+    if (drama.ownerId !== currentUserId()) throw new ApiError('无权操作该短剧项目', 'FORBIDDEN', 403);
+    return drama;
+}
+
+/** 统一建单：先扣费再入队，与 createTask / submitTraining 保持同一口径 */
+function pushTask(db, me, spec) {
+    const cost = Number(spec.cost) || 0;
+    const task = {
+        id: uid('t'),
+        type: spec.type,
+        title: spec.title,
+        ownerId: me,
+        status: 'queued',
+        progress: 0,
+        cost,
+        payload: spec.payload || {},
+        outputs: [],
+        logs: spec.logs || [{ t: clock(), level: 'info', msg: '任务已创建，等待调度器分配算力' }],
+        createdAt: now(),
+        startedAt: null,
+        finishedAt: null,
+        error: null,
+        refId: spec.refId || ''
+    };
+    if (cost > 0) spendCredits(db, me, cost, `${TASK_TYPES[spec.type].name} · ${spec.title}`, task.id);
+    db.tasks.unshift(task);
+    return task;
+}
+
+/** 镜头状态由任务状态反推（视图不直接读库，保持与任务中心一致） */
+function withTasks(db, drama) {
+    const shots = (drama.shots || []).map((s) => {
+        const task = s.taskId ? db.tasks.find((t) => t.id === s.taskId) : null;
+        return {
+            ...s,
+            task: task
+                ? {
+                    id: task.id,
+                    status: task.status,
+                    progress: Math.round(task.progress || 0),
+                    cost: task.cost,
+                    refund: task.refund || 0,
+                    error: task.error || null,
+                    msg: (task.logs || []).slice(-1)[0]?.msg || ''
+                }
+                : null
+        };
+    });
+    const parseTask = drama.parseTaskId ? db.tasks.find((t) => t.id === drama.parseTaskId) : null;
+    const composeTask = drama.composeTaskId ? db.tasks.find((t) => t.id === drama.composeTaskId) : null;
+    return {
+        ...drama,
+        shots,
+        parseTask: parseTask ? { ...parseTask, logs: (parseTask.logs || []).slice(-40) } : null,
+        composeTask: composeTask ? { ...composeTask, logs: (composeTask.logs || []).slice(-40) } : null
+    };
+}
+
+/** 项目列表（工作台「我的项目」与续做入口） */
+export async function listDramas() {
+    return respond(() => {
+        const db = getDb();
+        const me = currentUserId();
+        const list = dramasOf(db)
+            .filter((d) => d.ownerId === me)
+            .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+            .map((d) => {
+                const sum = summaryOf(d.shots || [], { model: d.model, targetSec: d.targetSec });
+                return {
+                    id: d.id,
+                    title: d.title,
+                    status: d.status,
+                    step: dramaStepOf(d),
+                    targetSec: d.targetSec,
+                    model: d.model,
+                    shotCount: (d.shots || []).length,
+                    totalSec: sum.totalSec,
+                    cost: sum.cost,
+                    done: sum.done,
+                    workId: d.workId || null,
+                    cover: d.cover || '',
+                    createdAt: d.createdAt,
+                    updatedAt: d.updatedAt
+                };
+            });
+        return { dramas: list };
+    }, { min: 40, max: 120 });
+}
+
+export async function getDrama(id) {
+    return respond(() => {
+        const db = getDb();
+        return { drama: withTasks(db, findDrama(db, id)) };
+    }, { min: 30, max: 90 });
+}
+
+/** 解析下单：startDrama 与 reparseDrama 共用，保证预算、日志与 payload 口径一致 */
+function pushParseTask(db, me, drama) {
+    const cost = scriptCost(drama.targetSec, drama.script.length);
+    if ((findUser(db, me)?.credits || 0) < cost) throw new ApiError(`算力不足：剧本解析需要 ${cost} 积分`, 'NO_CREDIT', 402);
+    const task = pushTask(db, me, {
+        type: 'script',
+        title: `${drama.title} · 长剧本解析`,
+        refId: drama.id,
+        cost,
+        payload: { dramaId: drama.id, targetSec: drama.targetSec, script: drama.script, model: drama.model },
+        logs: [
+            { t: clock(), level: 'info', msg: `解析任务已排队（${drama.script.length} 字 · 目标 ${drama.targetSec}s · 预算 ${cost} 算力）` },
+            { t: clock(), level: 'info', msg: '加载剧本结构模型与实体抽取管线' }
+        ]
+    });
+    drama.parseTaskId = task.id;
+    drama.parseCost = cost;
+    drama.status = 'parsing';
+    drama.updatedAt = now();
+    return task;
+}
+
+/** 第一步：建项目 + 下剧本解析单（解析本身是真实计费的任务，不是前端假动画） */
+export async function startDrama(input = {}) {
+    return respond(() => {
+        const db = getDb();
+        const me = currentUserId();
+        const cfg = normalizeDramaInput(input);
+        if (!cfg.title) throw new ApiError('请填写短剧名称');
+        if (cfg.script.length < 20) throw new ApiError('剧本过短：至少需要 20 个字，才能切出可用的叙事节拍');
+        if (!isLongForm(cfg.targetSec)) throw new ApiError(`${cfg.targetSec} 秒的短剧请直接使用快速生成`);
+        const drama = {
+            id: uid('dr'),
+            ownerId: me,
+            title: cfg.title,
+            script: cfg.script,
+            targetSec: cfg.targetSec,
+            model: cfg.model,
+            tone: cfg.tone,
+            ratio: cfg.ratio,
+            negative: cfg.negative,
+            assetRefs: cfg.assetRefs,
+            status: 'parsing',
+            shots: [],
+            parseTaskId: '',
+            composeTaskId: '',
+            workId: null,
+            cover: '',
+            parseCost: 0,
+            confirmedAt: null,
+            createdAt: now(),
+            updatedAt: now()
+        };
+        pushParseTask(db, me, drama);
+        dramasOf(db).unshift(drama);
+        changed('drama');
+        return { drama: withTasks(db, drama), task: db.tasks.find((t) => t.id === drama.parseTaskId) };
+    });
+}
+
+/**
+ * 第一步重做：剧本、目标时长或影调改了要按新参数重新下单——
+ * 旧任务的 payload 是创建时的快照，直接 retryTask 会解析到旧剧本。
+ */
+export async function reparseDrama(id, patch = {}) {
+    return respond(() => {
+        const db = getDb();
+        const me = currentUserId();
+        const drama = findDrama(db, id);
+        if (['generating', 'composing'].includes(drama.status)) throw new ApiError('项目已进入后续步骤，请先处理进行中的任务');
+        if (patch.shots) throw new ApiError('分镜已生成，请在审核步骤修改');
+        const prev = db.tasks.find((t) => t.id === drama.parseTaskId);
+        if (prev && DRAMA_ACTIVE.includes(prev.status)) throw new ApiError('解析任务正在进行中');
+        if (typeof patch.script === 'string' && patch.script.trim()) drama.script = patch.script.trim().slice(0, 4000);
+        if (Number(patch.targetSec) >= LONG_FORM_MIN) drama.targetSec = Math.min(180, Math.round(Number(patch.targetSec)));
+        ['title', 'tone', 'ratio', 'negative'].forEach((k) => {
+            if (typeof patch[k] === 'string' && patch[k].trim()) drama[k] = patch[k].trim();
+        });
+        if (patch.assetRefs) drama.assetRefs = patch.assetRefs;
+        if (drama.script.length < 20) throw new ApiError('剧本过短：至少需要 20 个字，才能切出可用的叙事节拍');
+        drama.shots = [];
+        const task = pushParseTask(db, me, drama);
+        changed('drama');
+        return { drama: withTasks(db, drama), task };
+    });
+}
+
+/** 第二步：保存分镜编辑（镜头增删改排序后回写，成本按模型上限复算，防止前端伪造） */
+export async function saveDrama(id, patch = {}) {
+    return respond(() => {
+        const db = getDb();
+        const drama = findDrama(db, id);
+        if (Array.isArray(patch.shots)) {
+            if (['generating', 'composing'].includes(drama.status)) throw new ApiError('任务进行中，请先停止后再修改分镜');
+            if (patch.shots.length > MAX_SHOTS) throw new ApiError(`分镜数量上限 ${MAX_SHOTS} 个`);
+            drama.shots = renumber(patch.shots.map((s) => normalizeShot(s, drama)));
+        }
+        ['title', 'script', 'tone', 'ratio', 'negative'].forEach((k) => {
+            if (typeof patch[k] === 'string' && patch[k].trim()) drama[k] = patch[k].trim();
+        });
+        if (Number(patch.targetSec) && !drama.workId) drama.targetSec = Math.max(LONG_FORM_MIN + 1, Math.min(180, Number(patch.targetSec)));
+        if (patch.assetRefs) drama.assetRefs = patch.assetRefs;
+        drama.updatedAt = now();
+        changed('drama');
+        return withTasks(db, drama);
+    }, { min: 30, max: 110 });
+}
+
+function normalizeShot(s = {}, drama = {}) {
+    const prev = (drama.shots || []).find((x) => x.id === s.id) || {};
+    const seconds = Math.max(SHOT_MIN_SEC, Math.min(30, Math.round(Number(s.seconds) || prev.seconds || 5)));
+    return {
+        id: s.id || prev.id || `sh_${s.no || 1}`,
+        no: Number(s.no) || 1,
+        name: String(s.name || prev.name || '').slice(0, 40),
+        beat: String(s.beat || prev.beat || '').slice(0, 200),
+        typeId: SHOT_TYPES.some((t) => t.id === s.typeId) ? s.typeId : prev.typeId || 'medium',
+        cameraId: CAMERA_MOVES.some((c) => c.id === s.cameraId) ? s.cameraId : prev.cameraId || 'static',
+        seconds,
+        prompt: String(s.prompt ?? prev.prompt ?? '').slice(0, 600),
+        negative: String(s.negative ?? prev.negative ?? '').slice(0, 300),
+        refs: s.refs || prev.refs || { character: [], prop: [], scenic: [] },
+        // 计费永远由服务端按模型与时长复算
+        cost: videoCost(drama.model, seconds),
+        status: prev.status || 'pending',
+        taskId: prev.taskId || '',
+        output: prev.output || null,
+        error: prev.error || null
+    };
+}
+
+/** 第三步：确认分镜并逐镜头下单（每镜头一条独立任务，单独计费、单独重试） */
+export async function confirmShots(id) {
+    return respond(() => {
+        const db = getDb();
+        const me = currentUserId();
+        const drama = findDrama(db, id);
+        const check = checkDrama(drama);
+        if (hasBlocker(check)) {
+            const first = check.issues.find((i) => i.level === 'error');
+            throw new ApiError(`分镜体检未通过：${first.msg}`, 'STORYBOARD_INVALID', 400);
+        }
+        const queue = drama.shots.filter((s) => !DRAMA_ACTIVE.includes(s.status) && s.status !== 'succeeded');
+        if (!queue.length) throw new ApiError('没有需要生成的镜头');
+        const total = queue.reduce((sum, s) => sum + videoCost(drama.model, s.seconds), 0);
+        const credits = findUser(db, me)?.credits || 0;
+        if (credits < total) throw new ApiError(`算力不足：${queue.length} 个镜头共需 ${total} 积分，当前余额 ${credits}`, 'NO_CREDIT', 402);
+        const tasks = queue.map((shot) => {
+            const cost = videoCost(drama.model, shot.seconds);
+            shot.cost = cost;
+            shot.status = 'queued';
+            shot.error = null;
+            shot.output = null;
+            const task = pushTask(db, me, {
+                type: 'video',
+                title: `${drama.title} · 镜头 ${String(shot.no).padStart(2, '0')}（${shot.seconds}s）`,
+                refId: drama.id,
+                cost,
+                payload: { dramaId: drama.id, shotId: shot.id, shotNo: shot.no, prompt: shot.prompt, negative: shot.negative, model: drama.model, duration: shot.seconds, ratio: drama.ratio, kind: 'video' },
+                logs: [{ t: clock(), level: 'info', msg: `镜头 ${String(shot.no).padStart(2, '0')} 已排队（${shot.seconds}s · ${cost} 算力 · ${shot.name}）` }]
+            });
+            shot.taskId = task.id;
+            return task;
+        });
+        drama.status = 'generating';
+        drama.confirmedAt = drama.confirmedAt || now();
+        drama.updatedAt = now();
+        changed('drama');
+        return { drama: withTasks(db, drama), tasks, total };
+    });
+}
+
+/** 单镜头重试：仅重建这一条任务，不触碰其他镜头的产物与计费 */
+export async function retryShot(id, shotId, promptPatch) {
+    return respond(() => {
+        const db = getDb();
+        const me = currentUserId();
+        const drama = findDrama(db, id);
+        const shot = (drama.shots || []).find((s) => s.id === shotId);
+        if (!shot) throw new ApiError('镜头不存在', 'NOT_FOUND', 404);
+        if (DRAMA_ACTIVE.includes(shot.status)) throw new ApiError('该镜头正在生成中，无需重试');
+        const cost = videoCost(drama.model, shot.seconds);
+        if ((findUser(db, me)?.credits || 0) < cost) throw new ApiError(`算力不足：重试该镜头需要 ${cost} 积分`, 'NO_CREDIT', 402);
+        if (typeof promptPatch === 'string' && promptPatch.trim()) shot.prompt = promptPatch.slice(0, 600);
+        shot.status = 'queued';
+        shot.error = null;
+        shot.output = null;
+        shot.cost = cost;
+        const task = pushTask(db, me, {
+            type: 'video',
+            title: `${drama.title} · 镜头 ${String(shot.no).padStart(2, '0')}（${shot.seconds}s）`,
+            refId: drama.id,
+            cost,
+            payload: { dramaId: drama.id, shotId: shot.id, shotNo: shot.no, prompt: shot.prompt, negative: shot.negative, model: drama.model, duration: shot.seconds, ratio: drama.ratio, kind: 'video' },
+            logs: [{ t: clock(), level: 'info', msg: `镜头 ${String(shot.no).padStart(2, '0')} 重新下单（${shot.name}）` }]
+        });
+        shot.taskId = task.id;
+        drama.status = 'generating';
+        drama.updatedAt = now();
+        changed('drama');
+        return { drama: withTasks(db, drama), task };
+    });
+}
+
+/** 第四步：片段合成（所有镜头产物就绪后才能下单） */
+export async function composeDrama(id) {
+    return respond(() => {
+        const db = getDb();
+        const me = currentUserId();
+        const drama = findDrama(db, id);
+        if (drama.composeTaskId && DRAMA_ACTIVE.includes(db.tasks.find((t) => t.id === drama.composeTaskId)?.status)) throw new ApiError('合成任务正在进行中');
+        const sum = summaryOf(drama.shots || [], { model: drama.model, targetSec: drama.targetSec });
+        if (sum.done !== sum.count) throw new ApiError(`还有 ${sum.count - sum.done} 个镜头没有可用片段，无法合成`, 'SHOTS_INCOMPLETE', 400);
+        const cost = composeCost(sum.totalSec, sum.count);
+        if ((findUser(db, me)?.credits || 0) < cost) throw new ApiError(`算力不足：片段合成需要 ${cost} 积分`, 'NO_CREDIT', 402);
+        const task = pushTask(db, me, {
+            type: 'compose',
+            title: `${drama.title} · 片段合成（${sum.totalSec}s）`,
+            refId: drama.id,
+            cost,
+            payload: { dramaId: drama.id, totalSec: sum.totalSec, shotCount: sum.count, model: drama.model, tone: drama.tone, ratio: drama.ratio },
+            logs: [{ t: clock(), level: 'info', msg: `合成任务已排队（${sum.count} 段 / ${sum.totalSec}s · 预算 ${cost} 算力）` }]
+        });
+        drama.composeTaskId = task.id;
+        drama.status = 'composing';
+        drama.updatedAt = now();
+        changed('drama');
+        return { drama: withTasks(db, drama), task };
+    });
+}
+
+/** 成片对应的作品记录改标题 / 打标 / 下架后，项目状态跟随回到待合成 */
+export async function markDramaPublished(id, workId) {
+    return mutate((db) => {
+        const drama = findDrama(db, id);
+        if (!drama) return null;
+        drama.workId = workId || drama.workId || null;
+        drama.status = 'done';
+        drama.updatedAt = now();
+        changed('drama');
+        return drama;
+    });
+}
+
+/** 放弃项目（不删任务与流水，保留可审计的历史） */
+export async function deleteDrama(id) {
+    return mutate((db) => {
+        const list = dramasOf(db);
+        const idx = list.findIndex((d) => d.id === id);
+        if (idx < 0) return false;
+        const drama = list[idx];
+        const active = (drama.shots || []).filter((s) => DRAMA_ACTIVE.includes(s.status));
+        if (active.length) throw new ApiError('还有镜头在生成中，请先在任务中心取消后再删除项目');
+        list.splice(idx, 1);
+        changed('drama');
+        return true;
     });
 }
 

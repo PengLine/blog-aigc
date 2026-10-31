@@ -441,7 +441,7 @@ export async function render(host, ctx) {
         hint.classList.toggle('hidden', !long);
         hint.innerHTML = long
             ? `${icon('info', 13)}` +
-              `${est.auto ? ` 已按剧本推算为 ${est.duration} 秒档（${est.suggest.reason}），想更短或更长可在「视频时长」里改手动档位。<br>` : ''}` +
+              `${est.auto ? ` 时长已按剧本规模自动推算：${est.suggest.reason}。想更短或更长，可在「视频时长」里改成手动档位。<br>` : ''}` +
               `${est.duration} 秒短剧会拆成约 ${est.count} 个镜头逐段生成：解析 → 审核修改 → 逐镜头下单 → 合成成片。项目在工作台里保存，成片合成后自动创建作品记录。`
             : '';
         $('#genHint').textContent = long ? '解析任务会进入任务中心，可随时离开页面续做' : '生成任务会进入任务中心，可随时离开页面';

@@ -409,7 +409,7 @@ export async function render(host, ctx) {
             : '≤15 秒请走快速生成';
         panel.querySelector('#nParseCost').innerHTML = `${icon('credit', 13)} 解析 ${parse} 算力`;
         panel.querySelector('#nEstimate').innerHTML = [
-            estTile('scroll', '预计镜头', `${count} 个`, `${p.maxShot}s/镜上限 · ${secs.slice(0, 4).join('s + ')}${secs.length > 4 ? ' …' : ''}s`),
+            estTile('scroll', '预计镜头', `${count} 个`, `${p.maxShot}s/镜上限 · ${secs.slice(0, 4).join(' + ')}${secs.length > 4 ? ' + …' : ''} 秒`),
             estTile('clock', '成片时长', `${secs.reduce((a, b) => a + b, 0)}s`, sug ? `自动推算：${sug.reason}` : `目标 ${v.targetSec}s · 配平误差 0s`),
             estTile('credit', '三步合计', `${total} 算力`, `解析 ${parse} + 片段 ${shotCostTotal} + 合成 ${compose}`, total > state.credits),
             estTile('zap', '镜头耗时', `约 ${eta} 分钟`, `${v.model} · 3 路并行出片`),

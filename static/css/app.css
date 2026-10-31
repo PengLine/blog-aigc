@@ -438,10 +438,79 @@
 }
 
 .page {
-    padding: 24px 26px 56px;
+    padding: 24px 26px 30px;
     width: 100%;
     max-width: var(--page-max);
     margin: 0 auto;
+}
+
+/* ---------- 全站底部栏（由 core/shell.js 统一注入） ---------- */
+.app-foot {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    padding: 16px 26px 22px;
+    border-top: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--muted);
+    font-size: 12.5px;
+}
+
+.app-foot-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    min-width: 0;
+}
+
+.app-foot-brand {
+    /* 版权人名即作者博客入口：平时跟周围文字同色不抢视觉，悬停才显品牌色 */
+    color: var(--text-2);
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: color .15s ease, border-color .15s ease;
+}
+
+.app-foot-brand:hover,
+.app-foot-brand:focus-visible {
+    color: var(--brand);
+    border-bottom-color: var(--brand);
+}
+
+.app-foot-sep {
+    opacity: .5;
+}
+
+.app-foot-links {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.app-foot-link {
+    /* 用 text-2 而非 muted：页脚字号小，深浅两套主题下都要稳定达到对比度要求 */
+    color: var(--text-2);
+    text-decoration: none;
+    transition: color .15s ease;
+}
+
+.app-foot-link:hover,
+.app-foot-link:focus-visible {
+    color: var(--brand);
+}
+
+@media (max-width: 720px) {
+    .app-foot {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 14px 16px 20px;
+    }
 }
 
 .page-head {

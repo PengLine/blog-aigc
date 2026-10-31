@@ -185,7 +185,7 @@ export function suggestDuration(script, model, opts = {}) {
     const rough = beats * SEC_PER_BEAT;
     const seconds = tiers.reduce((best, d) => (Math.abs(d - rough) < Math.abs(best - rough) ? d : best), tiers[0]);
     const count = planShotCount(seconds, beats, profileFor(model).maxShot);
-    return { seconds, beats, reason: `${beats} 个节拍 × 每节拍约 ${SEC_PER_BEAT} 秒 ≈ ${seconds} 秒档（拆 ${count} 个镜头）` };
+    return { seconds, beats, reason: `${beats} 个节拍 × 每节拍约 ${SEC_PER_BEAT} 秒 ≈ ${seconds} 秒 · 拆 ${count} 个镜头` };
 }
 
 /**

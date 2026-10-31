@@ -4,6 +4,7 @@ import { url, setPageTitle } from '../core/shell.js';
 import { icon, toast, imgTag, kindBadge, readFileAsDataURL, progressBar } from '../core/ui.js';
 import { escapeHtml, num, timeAgo } from '../core/format.js';
 import { on, EVENTS } from '../core/bus.js';
+import { artCover } from '../core/cover.js';
 import {
     DURATION_OPTIONS, LONG_FORM_MIN, isLongForm, profileFor, videoCost, scriptCost, composeCost,
     splitBeats, planShotCount, distributeSeconds, suggestDuration
@@ -166,7 +167,7 @@ export async function render(host, ctx) {
                     <div class="cover-picker">
                         <div>
                             <div class="cover-box" id="coverBox">
-                                ${state.cover ? imgTag(state.cover, '封面') : `${icon('image', 26)}<span class="small" style="margin-top:6px">暂无封面</span>`}
+                                ${state.cover ? imgTag(state.cover, coverTitle()) : `${icon('image', 26)}<span class="small" style="margin-top:6px">暂无封面</span>`}
                             </div>
                             <label class="btn btn-outline btn-sm btn-block" style="margin-top:8px">
                                 ${icon('upload', 14)}上传封面
@@ -299,7 +300,7 @@ export async function render(host, ctx) {
 
             <aside class="create-side">
                 <div class="card" style="overflow:hidden">
-                    <div class="preview-media" id="previewMedia">${state.cover ? imgTag(state.cover, '预览') : ''}</div>
+                    <div class="preview-media" id="previewMedia">${state.cover ? imgTag(state.cover, coverTitle()) : ''}</div>
                     <div class="card-body">
                         <div class="row" style="gap:6px">${kindBadge(kind)} <span class="badge">预览</span></div>
                         <h3 style="font-size:15px;margin-top:8px" id="previewTitle">${escapeHtml(editing?.title || '未命名' + kindInfo.name)}</h3>
@@ -325,7 +326,11 @@ export async function render(host, ctx) {
         </div>`;
 
     /* ---------------- 状态渲染 ---------------- */
-    const $ = (sel) => host.querySelector(sel);
+    // 用函数声明而非 const：模板字符串在拼接阶段就会调用 coverTitle() 等助手，
+    // 此时若写成 const 箭头函数会落入暂时性死区（TDZ）导致编辑态整页崩掉
+    function $(sel) {
+        return host.querySelector(sel);
+    }
 
     function renderTags() {
         const hostEl = $('#tagChips');
@@ -342,11 +347,37 @@ export async function render(host, ctx) {
         });
     }
 
+    /**
+     * 预览卡上显示的标题：一律用当前真实名称（编辑态就是作品原标题），
+     * 缺省才回落到「未命名xx」，避免图床不可用时卡面上写死「封面 / 预览」
+     */
+    function coverTitle() {
+        const typed = $('#fTitle')?.value;
+        const fallback = editing?.title || (source ? `${source.title} · 同款` : '');
+        return String(typed || fallback || '').trim() || `未命名${kindInfo.name}`;
+    }
+
     function renderCover() {
+        const title = coverTitle();
         $('#coverBox').innerHTML = state.cover
-            ? imgTag(state.cover, '封面')
+            ? imgTag(state.cover, title)
             : `${icon('image', 26)}<span class="small" style="margin-top:6px">暂无封面</span>`;
-        $('#previewMedia').innerHTML = state.cover ? imgTag(state.cover, '预览') : '';
+        $('#previewMedia').innerHTML = state.cover ? imgTag(state.cover, title) : '';
+    }
+
+    /**
+     * 改名后同步预览卡文字：确定性封面（SVG dataURL）直接按新标题重绘，
+     * 上传图与抽帧图只换 alt / 兜底标题，不重新赋值 src 以免闪烁
+     */
+    function syncCoverLabel() {
+        const title = coverTitle();
+        ['#coverBox', '#previewMedia'].forEach((sel) => {
+            const img = $(sel)?.querySelector('img');
+            if (!img) return;
+            img.alt = title;
+            img.dataset.fbTitle = title;
+            if (img.src.startsWith('data:image/svg')) img.src = artCover({ title });
+        });
     }
 
     function renderOutputs() {
@@ -441,7 +472,7 @@ export async function render(host, ctx) {
         hint.classList.toggle('hidden', !long);
         hint.innerHTML = long
             ? `${icon('info', 13)}` +
-              `${est.auto ? ` 已按剧本推算为 ${est.duration} 秒档（${est.suggest.reason}），想更短或更长可在「视频时长」里改手动档位。<br>` : ''}` +
+              `${est.auto ? ` 时长已按剧本规模自动推算：${est.suggest.reason}。想更短或更长，可在「视频时长」里改成手动档位。<br>` : ''}` +
               `${est.duration} 秒短剧会拆成约 ${est.count} 个镜头逐段生成：解析 → 审核修改 → 逐镜头下单 → 合成成片。项目在工作台里保存，成片合成后自动创建作品记录。`
             : '';
         $('#genHint').textContent = long ? '解析任务会进入任务中心，可随时离开页面续做' : '生成任务会进入任务中心，可随时离开页面';
@@ -507,6 +538,7 @@ export async function render(host, ctx) {
     $('#fPrompt')?.addEventListener('input', syncLongMode);
     $('#fTitle')?.addEventListener('input', () => {
         $('#previewTitle').textContent = $('#fTitle').value.trim() || `未命名${kindInfo.name}`;
+        syncCoverLabel();
         renderChecklist();
     });
     $('#fDesc')?.addEventListener('input', renderChecklist);
